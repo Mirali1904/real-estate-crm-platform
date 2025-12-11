@@ -1,3 +1,4 @@
+// app/page.tsx
 import Image from "next/image";
 import Link from "next/link";
 
@@ -36,20 +37,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="flex gap-8 pt-4 text-xs md:text-sm text-gray-500">
-            <div>
-              <p className="font-semibold text-[#c89a3b] text-base">
-                140k+
-              </p>
-              <p>Properties tracked</p>
-            </div>
-            <div>
-              <p className="font-semibold text-[#c89a3b] text-base">
-                Multi-tenant
-              </p>
-              <p>Agencies & teams</p>
-            </div>
-          </div>
+          
         </div>
 
         {/* RIGHT */}
