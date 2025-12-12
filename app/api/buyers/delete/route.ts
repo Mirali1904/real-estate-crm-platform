@@ -1,20 +1,12 @@
+// app/api/buyers/delete/route.ts
 import { NextResponse } from "next/server";
-import { deleteBuyer } from "@/server/service/buyerService";
+import { conn } from "@/lib/db";
 
 export async function POST(req: Request) {
-  try {
-    const { id, tenantId } = await req.json();
+  const body = await req.json();
+  const { id } = body;
+  if (!id) return NextResponse.json({ success: false, error: "missing id" }, { status: 400 });
 
-    const deleted = await deleteBuyer(id, tenantId);
-
-    return NextResponse.json({
-      message: deleted ? "Deleted" : "Not found",
-    });
-  } catch (err) {
-    console.log(err);
-    return NextResponse.json(
-      { message: "Server error" },
-      { status: 500 }
-    );
-  }
+  await conn.execute("DELETE FROM buyers WHERE id = ?", [id]);
+  return NextResponse.json({ success: true });
 }

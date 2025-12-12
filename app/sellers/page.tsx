@@ -1,38 +1,48 @@
+// app/sellers/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import SellerCard from "@/components/sellers/SellerCard";
+import { useRouter } from "next/navigation";
 import PrimaryButton from "@/components/PrimaryButton";
+import SellerCard from "@/components/sellers/SellerCard";
 
 export default function SellersPage() {
   const [sellers, setSellers] = useState<any[]>([]);
   const [user, setUser] = useState<any | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const raw = localStorage.getItem("loggedUser");
+    const raw = typeof window !== "undefined" ? localStorage.getItem("loggedUser") : null;
     if (!raw) return;
-
     const parsed = JSON.parse(raw);
     setUser(parsed);
 
-    fetch(`/api/sellers/${parsed.tenantId}`)
+    // tenant-style route (matches backend)
+    fetch(`/api/sellers/tenant/${parsed.tenantId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setSellers(data.sellers || []);
+        if (data && data.success) setSellers(data.sellers || []);
+        else if (Array.isArray(data)) setSellers(data);
+        else setSellers([]);
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error("fetch sellers", err);
+        setSellers([]);
+      });
   }, []);
 
   const handleDelete = async (id: number) => {
     if (!user) return;
+    try {
+      await fetch(`/api/sellers/${id}`, { method: "DELETE" });
+      setSellers((prev) => prev.filter((s) => s.id !== id));
+    } catch (err) {
+      console.error("delete seller error", err);
+    }
+  };
 
-    await fetch("/api/sellers/delete", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, tenantId: user.tenantId }),
-    });
-
-    setSellers((prev) => prev.filter((s) => s.id !== id));
+  const openSeller = (id: number) => {
+    router.push(`/sellers/${id}`);
   };
 
   return (
@@ -45,16 +55,21 @@ export default function SellersPage() {
 
       <div className="mt-6 space-y-3">
         {sellers.map((seller) => (
-          <SellerCard
+          <div
             key={seller.id}
-            seller={seller}
-            onDelete={handleDelete}
-          />
+            role="button"
+            tabIndex={0}
+            onClick={() => openSeller(seller.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") openSeller(seller.id);
+            }}
+            className="cursor-pointer"
+          >
+            <SellerCard seller={seller} onDelete={handleDelete} />
+          </div>
         ))}
 
-        {sellers.length === 0 && (
-          <p className="text-sm text-gray-500">No properties yet.</p>
-        )}
+        {sellers.length === 0 && <p className="text-sm text-gray-500">No properties yet.</p>}
       </div>
     </div>
   );

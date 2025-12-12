@@ -44,8 +44,7 @@ export default function Sidebar() {
               <Link href="/users" className={itemClass("/users")}>Users / Team</Link>
               <Link href="/buyers" className={itemClass("/buyers")}>Buyers</Link>
               <Link href="/sellers" className={itemClass("/sellers")}>Sellers / Properties</Link>
-              <Link href="/leads" className={itemClass("/leads")}>Leads</Link>
-              <Link href="/groups" className={itemClass("/groups")}>Groups</Link>
+            <Link href="/groups" className={itemClass("/groups")}>Groups</Link>
             </nav>
           </div>
 

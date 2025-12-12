@@ -1,3 +1,4 @@
+// app/sellers/new/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -13,17 +14,20 @@ export default function NewSellerPage() {
   const [propertyType, setPropertyType] = useState("");
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState("");
+  const [lat, setLat] = useState("");
+  const [lng, setLng] = useState("");
+  const [bedrooms, setBedrooms] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const raw = localStorage.getItem("loggedUser");
+    const raw = typeof window !== "undefined" ? localStorage.getItem("loggedUser") : null;
     if (!raw) {
       router.replace("/login");
       return;
     }
     const parsed = JSON.parse(raw);
-    setTenantId(parsed.tenantId);
+    setTenantId(parsed.tenantId || parsed.tenant_id || null);
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,29 +37,41 @@ export default function NewSellerPage() {
     setLoading(true);
     setMessage("");
 
-    const res = await fetch("/api/sellers/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tenantId,
-        name,
-        phone,
-        email,
-        propertyType,
-        location,
-        price,
-      }),
-    });
+    const payload = {
+      property_address: name,
+      owner_contact: phone || email,
+      email,
+      property_type: propertyType || null,
+      location,
+      lat: lat ? Number(lat) : null,
+      lng: lng ? Number(lng) : null,
+      price: price ? Number(price) : null,
+      bedrooms: bedrooms ? Number(bedrooms) : null,
+    };
 
-    const data = await res.json();
-    setLoading(false);
+    try {
+      const res = await fetch(`/api/sellers/tenant/${tenantId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (!res.ok || !data.success) {
-      setMessage(data.message || "Failed to add property");
-      return;
+      let j = null;
+      try { j = await res.json(); } catch { j = null; }
+
+      if (!res.ok) {
+        setMessage(j?.error || `Server error ${res.status}`);
+        setLoading(false);
+        return;
+      }
+
+      router.push("/sellers");
+    } catch (err) {
+      console.error(err);
+      setMessage("Something went wrong");
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/sellers");
   };
 
   if (!tenantId) {
@@ -76,27 +92,26 @@ export default function NewSellerPage() {
         <form onSubmit={handleSubmit} className="space-y-3 text-sm">
           <div>
             <label className="block mb-1 text-gray-600">
-              Seller Name <span className="text-red-500">*</span>
+              Property Address <span className="text-red-500">*</span>
             </label>
             <input
               className="border rounded-xl px-3 py-2 w-full"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Owner name"
+              placeholder="Property address or title"
               required
             />
           </div>
 
           <div>
             <label className="block mb-1 text-gray-600">
-              Phone <span className="text-red-500">*</span>
+              Phone / Contact
             </label>
             <input
               className="border rounded-xl px-3 py-2 w-full"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Contact number"
-              required
             />
           </div>
 
@@ -121,14 +136,15 @@ export default function NewSellerPage() {
             />
           </div>
 
-          <div>
-            <label className="block mb-1 text-gray-600">Location</label>
-            <input
-              className="border rounded-xl px-3 py-2 w-full"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Area / City"
-            />
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block mb-1 text-gray-600">Latitude</label>
+              <input className="border rounded-xl px-3 py-2 w-full" value={lat} onChange={(e) => setLat(e.target.value)} placeholder="19.07" />
+            </div>
+            <div>
+              <label className="block mb-1 text-gray-600">Longitude</label>
+              <input className="border rounded-xl px-3 py-2 w-full" value={lng} onChange={(e) => setLng(e.target.value)} placeholder="72.87" />
+            </div>
           </div>
 
           <div>
@@ -138,6 +154,16 @@ export default function NewSellerPage() {
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="e.g. 25000 or 4500000"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 text-gray-600">Bedrooms</label>
+            <input
+              className="border rounded-xl px-3 py-2 w-full"
+              value={bedrooms}
+              onChange={(e) => setBedrooms(e.target.value)}
+              placeholder="e.g. 2"
             />
           </div>
 

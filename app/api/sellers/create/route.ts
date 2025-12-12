@@ -1,37 +1,24 @@
+// app/api/sellers/create/route.ts
 import { NextResponse } from "next/server";
-import { createSeller } from "@/server/service/sellerService";
+import { conn } from "@/lib/db";
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const { tenantId, name, phone, email, propertyType, location, price } = body;
+  const body = await req.json();
+  const {
+    tenantId, property_address, owner_contact, email, property_type,
+    lat, lng, price, bedrooms
+  } = body;
 
-    if (!tenantId || !name || !phone) {
-      return NextResponse.json(
-        { success: false, message: "tenantId, name and phone are required" },
-        { status: 400 }
-      );
-    }
+  if (!tenantId || !property_address) return NextResponse.json({ success: false, error: "missing tenantId or property_address" }, { status: 400 });
 
-    const sellerId = await createSeller({
-      tenantId: Number(tenantId),
-      name,
-      phone,
-      email,
-      propertyType,
-      location,
-      price: price ? Number(price) : undefined,
-    });
+  const q = `INSERT INTO sellers
+    (tenant_id, property_address, owner_contact, email, property_type, lat, lng, price, bedrooms, status, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'LISTED', NOW())`;
 
-    return NextResponse.json(
-      { success: true, sellerId },
-      { status: 201 }
-    );
-  } catch (err: any) {
-    console.error(err);
-    return NextResponse.json(
-      { success: false, message: "Server error" },
-      { status: 500 }
-    );
-  }
+  await conn.execute(q, [
+    tenantId, property_address, owner_contact || null, email || null, property_type || null,
+    lat ?? null, lng ?? null, price ?? null, bedrooms ?? null
+  ]);
+
+  return NextResponse.json({ success: true });
 }

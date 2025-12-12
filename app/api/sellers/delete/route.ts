@@ -1,29 +1,12 @@
+// app/api/sellers/delete/route.ts
 import { NextResponse } from "next/server";
-import { deleteSeller } from "@/server/service/sellerService";
+import { conn } from "@/lib/db";
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const { id, tenantId } = body;
+  const body = await req.json();
+  const { id } = body;
+  if (!id) return NextResponse.json({ success: false, error: "missing id" }, { status: 400 });
 
-    if (!id || !tenantId) {
-      return NextResponse.json(
-        { success: false, message: "id and tenantId are required" },
-        { status: 400 }
-      );
-    }
-
-    await deleteSeller(Number(id), Number(tenantId));
-
-    return NextResponse.json(
-      { success: true },
-      { status: 200 }
-    );
-  } catch (err: any) {
-    console.error(err);
-    return NextResponse.json(
-      { success: false, message: "Server error" },
-      { status: 500 }
-    );
-  }
+  await conn.execute("DELETE FROM sellers WHERE id = ?", [id]);
+  return NextResponse.json({ success: true });
 }
