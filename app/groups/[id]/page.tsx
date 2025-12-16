@@ -50,6 +50,11 @@ export default function GroupDetailPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"posts" | "members">("posts");
   const [isAdmin, setIsAdmin] = useState(false);
+  // post responses
+const [openPostId, setOpenPostId] = useState<number | null>(null);
+const [responses, setResponses] = useState<any[]>([]);
+const [replyText, setReplyText] = useState("");
+
 
   // Modals
   const [showPostModal, setShowPostModal] = useState(false);
@@ -229,6 +234,32 @@ export default function GroupDetailPage() {
       </div>
     );
   }
+  const fetchResponses = async (postId: number) => {
+  const res = await fetch(
+    `/api/groups/posts/responses?postId=${postId}`
+  );
+  const data = await res.json();
+  setResponses(data);
+};
+
+const submitReply = async () => {
+  if (!replyText.trim() || !user || !openPostId) return;
+
+  await fetch("/api/groups/posts/responses", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      postId: openPostId,
+      userId: user.id,
+      message: replyText,
+    }),
+  });
+
+  setReplyText("");
+  fetchResponses(openPostId);
+  fetchGroupData(user.tenantId, user.id);
+};
+
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -322,6 +353,41 @@ export default function GroupDetailPage() {
                         💰 Budget: ₹{post.budget.toLocaleString()}
                       </p>
                     )}
+                    <button
+  onClick={() => {
+    setOpenPostId(post.id);
+    fetchResponses(post.id);
+  }}
+  className="text-sm text-[#c99a2e] mt-2"
+>
+  View / Add Responses
+</button>
+
+{openPostId === post.id && (
+  <div className="mt-3 border-t pt-3 space-y-2">
+    {responses.map((r) => (
+      <div key={r.id} className="text-sm text-gray-700">
+        <b>{r.author_name}:</b> {r.message}
+      </div>
+    ))}
+
+    <div className="flex gap-2 mt-2">
+      <input
+        value={replyText}
+        onChange={(e) => setReplyText(e.target.value)}
+        className="flex-1 border rounded px-2 py-1 text-sm"
+        placeholder="Write a reply..."
+      />
+      <button
+        onClick={submitReply}
+        className="bg-[#c99a2e] text-white px-3 rounded text-sm"
+      >
+        Send
+      </button>
+    </div>
+  </div>
+)}
+
                     <div className="flex justify-between items-center mt-3 pt-3 border-t text-sm text-gray-500">
                       <span>Posted by {post.author_name}</span>
                       <span>{post.response_count} responses</span>

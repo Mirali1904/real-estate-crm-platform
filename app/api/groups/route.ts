@@ -3,7 +3,9 @@ import { GroupService } from "@/server/service/group.service";
 
 const groupService = new GroupService();
 
-// GET /api/groups - Get all groups for tenant
+// ============================
+// GET /api/groups
+// ============================
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -18,8 +20,7 @@ export async function GET(req: Request) {
     }
 
     let groups;
-    
-    // If userId provided, get user's groups, otherwise get all tenant groups
+
     if (userId) {
       groups = await groupService.getUserGroups(userId, tenantId);
     } else {
@@ -36,11 +37,20 @@ export async function GET(req: Request) {
   }
 }
 
-// POST /api/groups - Create new group
+// ============================
+// POST /api/groups
+// ============================
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+
+    console.log("CREATE GROUP BODY =>", body);
+
     const { tenantId, name, description, createdBy } = body;
+
+    console.log("tenantId:", tenantId);
+    console.log("name:", name);
+    console.log("createdBy:", createdBy);
 
     if (!tenantId || !name || !createdBy) {
       return NextResponse.json(
@@ -56,7 +66,10 @@ export async function POST(req: Request) {
       createdBy
     );
 
-    return NextResponse.json({ id: groupId, message: "Group created successfully" });
+    return NextResponse.json({
+      id: groupId,
+      message: "Group created successfully",
+    });
   } catch (error: any) {
     console.error("Error creating group:", error);
     return NextResponse.json(
@@ -66,7 +79,10 @@ export async function POST(req: Request) {
   }
 }
 
-// PUT /api/groups - Update group
+
+// ============================
+// PUT /api/groups
+// ============================
 export async function PUT(req: Request) {
   try {
     const body = await req.json();
@@ -79,7 +95,6 @@ export async function PUT(req: Request) {
       );
     }
 
-    // Check if user is admin
     const isAdmin = await groupService.isGroupAdmin(groupId, userId);
     if (!isAdmin) {
       return NextResponse.json(
@@ -95,14 +110,9 @@ export async function PUT(req: Request) {
       description
     );
 
-    if (success) {
-      return NextResponse.json({ message: "Group updated successfully" });
-    } else {
-      return NextResponse.json(
-        { error: "Failed to update group" },
-        { status: 400 }
-      );
-    }
+    return success
+      ? NextResponse.json({ message: "Group updated successfully" })
+      : NextResponse.json({ error: "Failed to update group" }, { status: 400 });
   } catch (error: any) {
     console.error("Error updating group:", error);
     return NextResponse.json(
@@ -112,7 +122,9 @@ export async function PUT(req: Request) {
   }
 }
 
-// DELETE /api/groups - Delete group
+// ============================
+// DELETE /api/groups
+// ============================
 export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -127,7 +139,6 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Check if user is admin
     const isAdmin = await groupService.isGroupAdmin(groupId, userId);
     if (!isAdmin) {
       return NextResponse.json(
@@ -138,14 +149,9 @@ export async function DELETE(req: Request) {
 
     const success = await groupService.deleteGroup(groupId, tenantId);
 
-    if (success) {
-      return NextResponse.json({ message: "Group deleted successfully" });
-    } else {
-      return NextResponse.json(
-        { error: "Failed to delete group" },
-        { status: 400 }
-      );
-    }
+    return success
+      ? NextResponse.json({ message: "Group deleted successfully" })
+      : NextResponse.json({ error: "Failed to delete group" }, { status: 400 });
   } catch (error: any) {
     console.error("Error deleting group:", error);
     return NextResponse.json(

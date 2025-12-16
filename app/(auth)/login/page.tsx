@@ -18,8 +18,21 @@ export default function LoginPage() {
     });
 
     if (res.ok) {
-      router.push("/dashboard");
-    } else {
+  const data = await res.json();
+
+  localStorage.setItem(
+    "loggedUser",
+    JSON.stringify({
+      id: data.user.id,
+      tenantId: data.user.tenantId,
+      name: data.user.name,
+      email: data.user.email,
+    })
+  );
+
+  router.push("/dashboard");
+}
+ else {
       alert("Login failed");
     }
   }

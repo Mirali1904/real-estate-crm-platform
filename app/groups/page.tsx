@@ -89,7 +89,7 @@ export default function GroupsPage() {
         `/api/groups?tenantId=${tenantId}&userId=${userId}`
       );
       const data = await response.json();
-      setGroups(data);
+     setGroups(Array.isArray(data) ? data : data.groups || []);
     } catch (error) {
       console.error("Error fetching groups:", error);
       setGroups([]);
