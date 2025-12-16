@@ -1,23 +1,94 @@
-// app/api/buyers/[id]/matches/route.ts
-import { NextResponse } from "next/server";
-import * as MatchService from "@/server/service/matchService";
+import { NextRequest, NextResponse } from "next/server";
+import pool from "@/lib/db";
 
-async function resolveParams(context: any) {
-  try { return await context.params; } catch { return context.params; }
-}
+/**
+ * Buyer → Seller matching
+ * Applies:
+ * - tenant
+ * - status = LISTED
+ * - budget
+ * - bedrooms
+ * - distance (Haversine)
+ */
+export async function GET(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  // ✅ FIX: unwrap params properly
+  const { id } = await context.params;
+  const buyerId = Number(id);
 
-export async function GET(req: Request, context: any) {
-  const params = await resolveParams(context);
-  const buyerId = Number(params?.id || 0);
-  const url = new URL(req.url);
-  const tenantId = Number(url.searchParams.get("tenantId") || 0);
+  const tenantId = Number(req.nextUrl.searchParams.get("tenantId"));
 
-  if (!buyerId || !tenantId) return NextResponse.json({ success: false, error: "missing buyerId or tenantId" }, { status: 400 });
+  if (!buyerId || !tenantId) {
+    return NextResponse.json({ matches: [] });
+  }
+
+  const conn = await pool.getConnection();
 
   try {
-    const matches = await MatchService.findSellersForBuyer(tenantId, buyerId, 50);
-    return NextResponse.json({ success: true, matches });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: String(err?.message || err) }, { status: 500 });
+    // 1️⃣ Fetch buyer
+    const [buyers]: any = await conn.execute(
+      `
+      SELECT
+        id,
+        budget_min,
+        budget_max,
+        bedrooms,
+        lat,
+        lng,
+        radius_km
+      FROM buyers
+      WHERE id = ? AND tenant_id = ? AND is_deleted = 0
+      `,
+      [buyerId, tenantId]
+    );
+
+    if (!buyers.length) {
+      return NextResponse.json({ matches: [] });
+    }
+
+    const buyer = buyers[0];
+
+    // 2️⃣ Fetch sellers with distance
+    const [rows]: any = await conn.execute(
+      `
+      SELECT
+        s.*,
+        (
+          6371 * acos(
+            cos(radians(?)) *
+            cos(radians(s.lat)) *
+            cos(radians(s.lng) - radians(?)) +
+            sin(radians(?)) *
+            sin(radians(s.lat))
+          )
+        ) AS distance_km
+      FROM sellers s
+      WHERE s.tenant_id = ?
+        AND s.status = 'LISTED'
+        AND s.price BETWEEN ? AND ?
+        AND s.bedrooms = ?
+      HAVING distance_km <= ?
+      ORDER BY distance_km ASC
+      `,
+      [
+        buyer.lat,
+        buyer.lng,
+        buyer.lat,
+        tenantId,
+        buyer.budget_min,
+        buyer.budget_max,
+        buyer.bedrooms,
+        buyer.radius_km,
+      ]
+    );
+
+    return NextResponse.json({ matches: rows });
+  } catch (err) {
+    console.error("Buyer match error:", err);
+    return NextResponse.json({ matches: [] }, { status: 500 });
+  } finally {
+    conn.release();
   }
 }

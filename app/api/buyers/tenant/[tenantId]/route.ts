@@ -1,80 +1,150 @@
-// app/api/buyers/tenant/[tenantId]/route.ts
 import { NextResponse } from "next/server";
 import { conn } from "@/lib/db";
 
+/* =========================
+   Safe params resolver
+   ========================= */
 async function resolveParams(ctx: any) {
-  try { return await ctx.params; } catch { return ctx.params; }
+  try {
+    return await ctx.params;
+  } catch {
+    return ctx.params;
+  }
 }
 
+/* ======================================================
+   GET /api/buyers/tenant/[tenantId]
+   Fetch buyers list
+   ====================================================== */
 export async function GET(_req: Request, ctx: any) {
   const params = await resolveParams(ctx);
-  const tenantId = Number(params?.tenantId || 0);
+  const tenantId = Number(params?.tenantId);
+
   if (!tenantId) {
-    return NextResponse.json({ success: false, error: "Missing tenantId" }, { status: 400 });
+    return NextResponse.json(
+      { success: false, error: "Missing tenantId" },
+      { status: 400 }
+    );
   }
 
   try {
     const [rows]: any = await conn.execute(
-      `SELECT id, tenant_id, name, email, phone, requirement, location, lat, lng, radius_km, budget_min, budget_max, bedrooms, status, created_at
-       FROM buyers
-       WHERE tenant_id = ?
-       ORDER BY created_at DESC`,
+      `
+      SELECT
+        id,
+        tenant_id,
+        name,
+        email,
+        phone,
+        requirement,
+        location,
+        lat,
+        lng,
+        radius_km,
+        budget_min,
+        budget_max,
+        bedrooms,
+        status,
+        created_at
+      FROM buyers
+      WHERE tenant_id = ?
+      ORDER BY created_at DESC
+      `,
       [tenantId]
     );
 
-    return NextResponse.json({ success: true, buyers: rows || [] });
+    return NextResponse.json({
+      success: true,
+      buyers: rows || [],
+    });
   } catch (err: any) {
-    console.error("GET /api/buyers/tenant/:", err);
-    return NextResponse.json({ success: false, error: err.message || "DB error" }, { status: 500 });
+    console.error("GET buyers error:", err);
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 }
+    );
   }
 }
 
+/* ======================================================
+   POST /api/buyers/tenant/[tenantId]
+   Create new buyer
+   ====================================================== */
 export async function POST(req: Request, ctx: any) {
   const params = await resolveParams(ctx);
-  const tenantId = Number(params?.tenantId || 0);
+  const tenantId = Number(params?.tenantId);
+
   if (!tenantId) {
-    return NextResponse.json({ success: false, error: "Missing tenantId" }, { status: 400 });
+    return NextResponse.json(
+      { success: false, error: "Missing tenantId" },
+      { status: 400 }
+    );
   }
 
-  let body: any;
   try {
-    body = await req.json();
-  } catch (e) {
-    return NextResponse.json({ success: false, error: "Invalid JSON body" }, { status: 400 });
-  }
+    const body = await req.json();
 
-  const name = body.name;
-  if (!name) return NextResponse.json({ success: false, error: "Missing name" }, { status: 400 });
+    const name = body.name?.trim();
+    const phone = body.phone?.trim();
+    const email = body.email || null;
+    const requirement = body.requirement || null;
+    const location = body.location || null;
 
-  const {
-    phone, email, requirement, location,
-    lat, lng, radius_km, budget_min, budget_max, bedrooms
-  } = body;
+    const lat = body.latitude ?? body.lat ?? null;
+    const lng = body.longitude ?? body.lng ?? null;
 
-  try {
-    const q = `INSERT INTO buyers
-      (tenant_id, name, email, phone, requirement, location, lat, lng, radius_km, budget_min, budget_max, bedrooms, status, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ENQUIRY', NOW())`;
+    const radius_km = Number(body.radius ?? body.radius_km ?? 0);
+    const budget_min = Number(body.budgetMin ?? body.budget_min);
+    const budget_max = Number(body.budgetMax ?? body.budget_max);
+    const bedrooms = Number(body.bedrooms ?? 0);
 
-    const [result]: any = await conn.execute(q, [
-      tenantId,
-      name,
-      email ?? null,
-      phone ?? null,
-      requirement ?? null,
-      location ?? null,
-      lat ?? null,
-      lng ?? null,
-      radius_km ?? null,
-      budget_min ?? null,
-      budget_max ?? null,
-      bedrooms ?? null
-    ]);
+    if (!name || !phone || isNaN(budget_min) || isNaN(budget_max)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid buyer data" },
+        { status: 400 }
+      );
+    }
 
-    const insertId = result?.insertId ?? null;
-    return NextResponse.json({ success: true, id: insertId }, { status: 201 });
+    await conn.execute(
+      `
+      INSERT INTO buyers (
+        tenant_id,
+        name,
+        email,
+        phone,
+        requirement,
+        location,
+        lat,
+        lng,
+        radius_km,
+        budget_min,
+        budget_max,
+        bedrooms,
+        status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ENQUIRY')
+      `,
+      [
+        tenantId,
+        name,
+        email,
+        phone,
+        requirement,
+        location,
+        lat,
+        lng,
+        radius_km,
+        budget_min,
+        budget_max,
+        bedrooms,
+      ]
+    );
+
+    return NextResponse.json({ success: true });
   } catch (err: any) {
-    console.error("POST /api/buyers/tenant/:", err);
-    return NextResponse.json({ success: false, error: err.message || "DB error" }, { status: 500 });
+    console.error("POST buyer error:", err);
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 }
+    );
   }
 }
