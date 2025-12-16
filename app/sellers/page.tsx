@@ -1,10 +1,10 @@
-// app/sellers/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PrimaryButton from "@/components/PrimaryButton";
 import SellerCard from "@/components/sellers/SellerCard";
+import BackButton from "@/components/BackButton";
 
 export default function SellersPage() {
   const [sellers, setSellers] = useState<any[]>([]);
@@ -12,12 +12,15 @@ export default function SellersPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const raw = typeof window !== "undefined" ? localStorage.getItem("loggedUser") : null;
+    const raw =
+      typeof window !== "undefined"
+        ? localStorage.getItem("loggedUser")
+        : null;
     if (!raw) return;
+
     const parsed = JSON.parse(raw);
     setUser(parsed);
 
-    // tenant-style route (matches backend)
     fetch(`/api/sellers/tenant/${parsed.tenantId}`)
       .then((res) => res.json())
       .then((data) => {
@@ -46,30 +49,46 @@ export default function SellersPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-4">Sellers / Properties</h1>
+    <div className="w-full">
+      {/* CENTER CONTAINER */}
+      <div className="max-w-5xl mx-auto p-6">
+        {/* BACK BUTTON */}
+        <div className="mb-4">
+          <BackButton />
+        </div>
 
-      <a href="/sellers/new">
-        <PrimaryButton>+ Add Property</PrimaryButton>
-      </a>
+        {/* HEADER */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Sellers / Properties</h1>
+          <a href="/sellers/new">
+            <PrimaryButton>+ Add Property</PrimaryButton>
+          </a>
+        </div>
 
-      <div className="mt-6 space-y-3">
-        {sellers.map((seller) => (
-          <div
-            key={seller.id}
-            role="button"
-            tabIndex={0}
-            onClick={() => openSeller(seller.id)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") openSeller(seller.id);
-            }}
-            className="cursor-pointer"
-          >
-            <SellerCard seller={seller} onDelete={handleDelete} />
-          </div>
-        ))}
+        {/* LIST */}
+        <div className="space-y-3">
+          {sellers.map((seller) => (
+            <div
+              key={seller.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => openSeller(seller.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ")
+                  openSeller(seller.id);
+              }}
+              className="cursor-pointer"
+            >
+              <SellerCard seller={seller} onDelete={handleDelete} />
+            </div>
+          ))}
 
-        {sellers.length === 0 && <p className="text-sm text-gray-500">No properties yet.</p>}
+          {sellers.length === 0 && (
+            <p className="text-sm text-gray-500">
+              No properties yet.
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

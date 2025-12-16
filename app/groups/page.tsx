@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import BackButton from "@/components/BackButton";
 
 interface Group {
   id: number;
@@ -13,9 +14,14 @@ interface Group {
   created_at: string;
 }
 
-// GroupCard component inline
-function GroupCard({ group, onClick }: { 
-  group: Group; 
+/* -------------------------
+   Group Card
+-------------------------- */
+function GroupCard({
+  group,
+  onClick,
+}: {
+  group: Group;
   onClick: () => void;
 }) {
   return (
@@ -68,14 +74,16 @@ export default function GroupsPage() {
   const [user, setUser] = useState<any | null>(null);
 
   useEffect(() => {
-    // Get user from localStorage (like sellers page)
-    const raw = typeof window !== "undefined" ? localStorage.getItem("loggedUser") : null;
+    const raw =
+      typeof window !== "undefined"
+        ? localStorage.getItem("loggedUser")
+        : null;
+
     if (raw) {
       const parsed = JSON.parse(raw);
       setUser(parsed);
       fetchGroups(parsed.tenantId, parsed.id);
     } else {
-      // Fallback to hardcoded (like buyers page)
       const fallbackUser = { id: 1, tenantId: 1 };
       setUser(fallbackUser);
       fetchGroups(fallbackUser.tenantId, fallbackUser.id);
@@ -89,7 +97,7 @@ export default function GroupsPage() {
         `/api/groups?tenantId=${tenantId}&userId=${userId}`
       );
       const data = await response.json();
-     setGroups(Array.isArray(data) ? data : data.groups || []);
+      setGroups(Array.isArray(data) ? data : data.groups || []);
     } catch (error) {
       console.error("Error fetching groups:", error);
       setGroups([]);
@@ -102,60 +110,66 @@ export default function GroupsPage() {
     router.push(`/groups/${groupId}`);
   };
 
-  const handleCreateClick = () => {
-    router.push("/groups/create");
-  };
-
   if (loading) {
     return <p className="p-6">Loading...</p>;
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold">Groups</h1>
-          <p className="text-gray-600 mt-1">
-            Collaborate with other agents in your network
-          </p>
+    <div className="w-full">
+      {/* CENTER CONTAINER */}
+      <div className="max-w-5xl mx-auto p-6">
+        {/* BACK BUTTON */}
+        <div className="mb-4">
+          <BackButton />
         </div>
-       {user && user.role !== "AGENT" && (
-  <button
-    onClick={() => router.push("/groups/create")}
-    className="bg-[#c99a2e] text-white px-4 py-2 rounded-full"
-  >
-    + Create Group
-  </button>
-)}
 
+        {/* HEADER */}
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-semibold">Groups</h1>
+            <p className="text-gray-600 mt-1">
+              Collaborate with other agents in your network
+            </p>
+          </div>
+
+          {user && user.role !== "AGENT" && (
+            <button
+              onClick={() => router.push("/groups/create")}
+              className="bg-[#c99a2e] text-white px-4 py-2 rounded-full"
+            >
+              + Create Group
+            </button>
+          )}
+        </div>
+
+        {/* CONTENT */}
+        {groups.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+            <div className="text-gray-400 text-lg mb-2">
+              No groups yet
+            </div>
+            <p className="text-gray-500 mb-6">
+              Create your first group to start collaborating
+            </p>
+            <button
+              onClick={() => router.push("/groups/create")}
+              className="bg-[#c99a2e] text-white px-4 py-2 rounded-full"
+            >
+              Create Group
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {groups.map((group) => (
+              <GroupCard
+                key={group.id}
+                group={group}
+                onClick={() => handleGroupClick(group.id)}
+              />
+            ))}
+          </div>
+        )}
       </div>
-
-      {/* Groups Grid */}
-      {groups.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-          <div className="text-gray-400 text-lg mb-2">No groups yet</div>
-          <p className="text-gray-500 mb-6">
-            Create your first group to start collaborating with agents
-          </p>
-          <button
-            onClick={handleCreateClick}
-            className="bg-[#c99a2e] text-white px-4 py-2 rounded-full"
-          >
-            Create Group
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {groups.map((group) => (
-            <GroupCard
-              key={group.id}
-              group={group}
-              onClick={() => handleGroupClick(group.id)}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

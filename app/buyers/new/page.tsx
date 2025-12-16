@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import PrimaryButton from "@/components/PrimaryButton";
+import BackButton from "@/components/BackButton";
 
 export default function AddBuyerPage() {
   const router = useRouter();
@@ -56,50 +57,81 @@ export default function AddBuyerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8">
-        {/* HEADER */}
-        <h1 className="text-2xl font-semibold mb-1">
-          Add <span className="text-[#c99a2e]">Buyer</span>
-        </h1>
-        <p className="text-sm text-gray-500 mb-6">
-          Enter buyer preferences and budget details
-        </p>
-
-        {/* FORM */}
-        <div className="grid grid-cols-2 gap-6">
-          {/* LEFT COLUMN */}
-          <div className="space-y-4">
-            <Input label="Buyer Name" name="name" onChange={handleChange} />
-            <Input label="Phone Number" name="phone" onChange={handleChange} />
-            <Input label="Email" name="email" onChange={handleChange} />
-            <Input label="Requirement (e.g. 2BHK Flat)" name="requirement" onChange={handleChange} />
-            <Input label="Preferred Location" name="location" onChange={handleChange} />
-          </div>
-
-          {/* RIGHT COLUMN */}
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Input label="Latitude" name="lat" onChange={handleChange} />
-              <Input label="Longitude" name="lng" onChange={handleChange} />
-            </div>
-
-            <Input label="Search Radius (km)" name="radius_km" onChange={handleChange} />
-
-            <div className="grid grid-cols-2 gap-4">
-              <Input label="Budget Min (₹)" name="budget_min" onChange={handleChange} />
-              <Input label="Budget Max (₹)" name="budget_max" onChange={handleChange} />
-            </div>
-
-            <Input label="Bedrooms" name="bedrooms" onChange={handleChange} />
-          </div>
+    <div className="w-full">
+      {/* CENTER WRAPPER */}
+      <div className="max-w-5xl mx-auto p-6">
+        {/* BACK BUTTON */}
+        <div className="mb-4">
+          <BackButton />
         </div>
 
-        {/* ACTIONS */}
-        <div className="flex justify-end mt-8">
-          <PrimaryButton onClick={handleSubmit}>
-            Save Buyer
-          </PrimaryButton>
+        {/* FORM CARD */}
+        <div className="w-full max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-8">
+          <h1 className="text-2xl font-semibold mb-1">
+            Add <span className="text-[#c99a2e]">Buyer</span>
+          </h1>
+          <p className="text-sm text-gray-500 mb-6">
+            Enter buyer preferences and budget details
+          </p>
+
+          <div className="grid grid-cols-2 gap-6">
+            {/* LEFT */}
+            <div className="space-y-4">
+              <Input label="Buyer Name" name="name" onChange={handleChange} />
+              <Input label="Phone Number" name="phone" onChange={handleChange} />
+              <Input label="Email" name="email" onChange={handleChange} />
+              <Input
+                label="Requirement (e.g. 2BHK Flat)"
+                name="requirement"
+                onChange={handleChange}
+              />
+              <Input
+                label="Preferred Location"
+                name="location"
+                onChange={handleChange}
+              />
+            </div>
+
+            {/* RIGHT */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Latitude" name="lat" onChange={handleChange} />
+                <Input label="Longitude" name="lng" onChange={handleChange} />
+              </div>
+
+              <Input
+                label="Search Radius (km)"
+                name="radius_km"
+                onChange={handleChange}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label="Budget Min (₹)"
+                  name="budget_min"
+                  onChange={handleChange}
+                />
+                <Input
+                  label="Budget Max (₹)"
+                  name="budget_max"
+                  onChange={handleChange}
+                />
+              </div>
+
+              <Input
+                label="Bedrooms"
+                name="bedrooms"
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          {/* ACTION */}
+          <div className="flex justify-end mt-8">
+            <PrimaryButton onClick={handleSubmit}>
+              Save Buyer
+            </PrimaryButton>
+          </div>
         </div>
       </div>
     </div>
@@ -107,7 +139,7 @@ export default function AddBuyerPage() {
 }
 
 /* ----------------------------------
-   Reusable Input Component
+   Reusable Input
 ----------------------------------- */
 function Input({
   label,

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import BackButton from "@/components/BackButton";
 
 type LoggedUser = {
   id: number;
@@ -65,15 +66,22 @@ export default function UsersPage() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center">
+      <div className="p-6">
         <p className="text-sm text-gray-500">Checking session...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-[#f5f5f5]">
-      <div className="max-w-4xl mx-auto py-10 px-4">
+    <div className="w-full">
+      {/* CENTER CONTAINER */}
+      <div className="max-w-5xl mx-auto p-6">
+        {/* BACK BUTTON */}
+        <div className="mb-4">
+          <BackButton />
+        </div>
+
+        {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold">Team Members</h1>
@@ -90,6 +98,7 @@ export default function UsersPage() {
           </Link>
         </div>
 
+        {/* CONTENT */}
         {loading ? (
           <p className="text-sm text-gray-500">Loading users...</p>
         ) : users.length === 0 ? (
@@ -109,7 +118,10 @@ export default function UsersPage() {
               </thead>
               <tbody>
                 {users.map((u) => (
-                  <tr key={u.id} className="border-t border-gray-100">
+                  <tr
+                    key={u.id}
+                    className="border-t border-gray-100"
+                  >
                     <td className="px-4 py-3">{u.name}</td>
                     <td className="px-4 py-3 text-xs text-gray-600">
                       {u.email}
