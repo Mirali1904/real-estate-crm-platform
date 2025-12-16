@@ -120,12 +120,15 @@ export default function GroupsPage() {
             Collaborate with other agents in your network
           </p>
         </div>
-        <button
-          onClick={handleCreateClick}
-          className="bg-[#c99a2e] text-white px-4 py-2 rounded-full"
-        >
-          + Create Group
-        </button>
+       {user && user.role !== "AGENT" && (
+  <button
+    onClick={() => router.push("/groups/create")}
+    className="bg-[#c99a2e] text-white px-4 py-2 rounded-full"
+  >
+    + Create Group
+  </button>
+)}
+
       </div>
 
       {/* Groups Grid */}

@@ -223,6 +223,35 @@ const [replyText, setReplyText] = useState("");
     }
   };
 
+  const handleDeleteGroup = async () => {
+  if (!user) return;
+
+  const confirmDelete = confirm(
+    "Are you sure you want to delete this group? This action cannot be undone."
+  );
+
+  if (!confirmDelete) return;
+
+  try {
+    const response = await fetch(
+      `/api/groups?groupId=${groupId}&tenantId=${user.tenantId}&userId=${user.id}`,
+      { method: "DELETE" }
+    );
+
+    if (response.ok) {
+      alert("Group deleted successfully");
+      router.push("/groups");
+    } else {
+      const error = await response.json();
+      alert(error.error || "Failed to delete group");
+    }
+  } catch (error) {
+    console.error("Error deleting group:", error);
+    alert("Failed to delete group");
+  }
+};
+
+
   if (loading) {
     return <p className="p-6">Loading...</p>;
   }
@@ -284,12 +313,26 @@ const submitReply = async () => {
               <span>{members.length} members</span>
             </div>
           </div>
-          <button
-            onClick={() => setShowPostModal(true)}
-            className="bg-[#c99a2e] hover:bg-[#b08926] text-white px-4 py-2 rounded-full"
-          >
-            + New Post
-          </button>
+          
+<div className="flex items-center gap-2">
+  <button
+    onClick={() => setShowPostModal(true)}
+    className="bg-[#c99a2e] hover:bg-[#b08926] text-white px-4 py-2 rounded-full"
+  >
+    + New Post
+  </button>
+
+  {isAdmin && (
+    <button
+      onClick={handleDeleteGroup}
+      className="bg-[#c99a2e] hover:bg-[#b08926] text-white px-4 py-2 rounded-full"
+    >
+      Delete Group
+    </button>
+  )}
+</div>
+
+
         </div>
       </div>
 
