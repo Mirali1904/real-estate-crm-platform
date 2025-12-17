@@ -5,42 +5,39 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
+    // 🔐 tenant from logged-in user
+    const tenantHeader = req.headers.get("x-tenant-id");
+    const tenantId = tenantHeader ? Number(tenantHeader) : null;
+
+    if (!tenantId) {
+      return NextResponse.json(
+        { error: "Unauthorized tenant" },
+        { status: 401 }
+      );
+    }
+
     const {
-      tenant_id,
       name,
       phone,
       email,
       requirement,
-      budget_min,
-      budget_max,
       location,
       lat,
       lng,
       radius_km,
+      budget_min,
+      budget_max,
       bedrooms,
     } = body;
 
-    /* --------------------------------
-       BASIC VALIDATION
-    --------------------------------- */
-    if (
-      !tenant_id ||
-      !name ||
-      !phone ||
-      !budget_min ||
-      !budget_max ||
-      lat === undefined ||
-      lng === undefined
-    ) {
+    // ✅ MINIMUM REQUIRED (NO STRICT BLOCKING)
+    if (!name || !phone) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Name and phone are required" },
         { status: 400 }
       );
     }
 
-    /* --------------------------------
-       INSERT BUYER (FULL & CORRECT)
-    --------------------------------- */
     await conn.execute(
       `
       INSERT INTO buyers (
@@ -62,26 +59,27 @@ export async function POST(req: NextRequest) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ENQUIRY', 0)
       `,
       [
-        tenant_id,
+        tenantId,
         name,
         phone,
         email || null,
         requirement || null,
-        budget_min,
-        budget_max,
+        Number(budget_min) || 0,
+        Number(budget_max) || 0,
         location || null,
-        lat,
-        lng,
-        radius_km ?? 0,   // 👈 IMPORTANT
-        bedrooms ?? null,
+        Number(lat) || 0,
+        Number(lng) || 0,
+        Number(radius_km) || 0,
+        bedrooms ? Number(bedrooms) : null,
       ]
     );
 
-    return NextResponse.json({
-      message: "Buyer created successfully",
-    });
-  } catch (error) {
-    console.error("Create buyer error:", error);
+    return NextResponse.json(
+      { message: "Buyer created successfully" },
+      { status: 201 }
+    );
+  } catch (err) {
+    console.error("Create buyer failed:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
