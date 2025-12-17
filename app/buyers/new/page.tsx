@@ -22,69 +22,90 @@ export default function AddBuyerPage() {
     bedrooms: "",
   });
 
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [loadingLocation, setLoadingLocation] = useState(false);
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  async function handleSubmit() {
-    const raw = localStorage.getItem("loggedUser");
+  /* ---------------- LOCATION AUTOCOMPLETE ---------------- */
 
-    if (!raw) {
-      alert("Not logged in");
+  async function handleLocationChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    setForm({ ...form, location: value });
+
+    if (value.length < 3) {
+      setSuggestions([]);
       return;
     }
 
-    const user = JSON.parse(raw);
+    setLoadingLocation(true);
 
-    // ✅ SAFE TENANT RESOLUTION
-    const tenantId =
-      user.tenant_id ||
-      user.tenantId ||
-      user.tenant?.id ||
-      null;
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${value}`
+    );
 
-    if (!tenantId) {
-      alert("Tenant not found for this user");
-      return;
-    }
-
-    const res = await fetch("/api/buyers/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-tenant-id": String(tenantId), // ✅ NOW GUARANTEED
-      },
-      body: JSON.stringify({
-        name: form.name,
-        phone: form.phone,
-        email: form.email,
-        requirement: form.requirement,
-        location: form.location,
-        lat: form.lat,
-        lng: form.lng,
-        radius_km: form.radius_km,
-        budget_min: form.budget_min,
-        budget_max: form.budget_max,
-        bedrooms: form.bedrooms,
-      }),
-    });
-
-    if (res.ok) {
-      router.push("/buyers");
-    } else {
-      const err = await res.json();
-      alert(err.error || "Failed to create buyer");
-    }
+    const data = await res.json();
+    setSuggestions(data);
+    setLoadingLocation(false);
   }
+
+  function selectLocation(place: any) {
+    setForm({
+      ...form,
+      location: place.display_name,
+      lat: place.lat,
+      lng: place.lon,
+    });
+    setSuggestions([]);
+  }
+
+  /* ---------------- SUBMIT ---------------- */
+
+ async function handleSubmit() {
+  const raw = localStorage.getItem("loggedUser");
+
+  if (!raw) {
+    alert("Not logged in");
+    return;
+  }
+
+  const user = JSON.parse(raw);
+
+  // ✅ FIX: tenantId correct read
+  const tenantId = user.tenant_id ?? user.tenantId;
+
+  if (!tenantId) {
+    alert("Tenant not found");
+    return;
+  }
+
+  const res = await fetch("/api/buyers/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-tenant-id": String(tenantId),
+    },
+    body: JSON.stringify(form),
+  });
+
+  if (res.ok) {
+    alert("Buyer created");
+    router.push("/buyers");
+  } else {
+    const err = await res.json();
+    alert(err.error || "Failed");
+  }
+}
+
 
   return (
     <div className="w-full">
       <div className="max-w-5xl mx-auto p-6">
-        <div className="mb-4">
-          <BackButton />
-        </div>
+        <BackButton />
 
-        <div className="w-full max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-8">
+        <div className="bg-white rounded-2xl shadow-lg p-8 mt-4">
           <h1 className="text-2xl font-semibold mb-6">Add Buyer</h1>
 
           <div className="grid grid-cols-2 gap-6">
@@ -92,16 +113,45 @@ export default function AddBuyerPage() {
             <Input label="Phone" name="phone" onChange={handleChange} />
             <Input label="Email" name="email" onChange={handleChange} />
             <Input label="Requirement" name="requirement" onChange={handleChange} />
-            <Input label="Location" name="location" onChange={handleChange} />
-            <Input label="Latitude" name="lat" onChange={handleChange} />
-            <Input label="Longitude" name="lng" onChange={handleChange} />
+
+            {/* LOCATION AUTOCOMPLETE */}
+            <div className="col-span-2 relative">
+              <label className="text-sm mb-1 block">Location</label>
+              <input
+                value={form.location}
+                onChange={handleLocationChange}
+                className="w-full border rounded-lg px-3 py-2"
+                placeholder="Type area name (e.g. Manjalpur)"
+              />
+
+              {loadingLocation && (
+                <p className="text-xs text-gray-500 mt-1">Searching...</p>
+              )}
+
+              {suggestions.length > 0 && (
+                <div className="absolute z-10 bg-white border w-full rounded-lg max-h-48 overflow-auto">
+                  {suggestions.map((place, i) => (
+                    <div
+                      key={i}
+                      onClick={() => selectLocation(place)}
+                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                    >
+                      {place.display_name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Input label="Latitude" value={form.lat} readOnly />
+            <Input label="Longitude" value={form.lng} readOnly />
             <Input label="Radius (km)" name="radius_km" onChange={handleChange} />
             <Input label="Budget Min" name="budget_min" onChange={handleChange} />
             <Input label="Budget Max" name="budget_max" onChange={handleChange} />
             <Input label="Bedrooms" name="bedrooms" onChange={handleChange} />
           </div>
 
-          <div className="flex justify-end mt-8">
+          <div className="flex justify-end mt-6">
             <PrimaryButton onClick={handleSubmit}>
               Save Buyer
             </PrimaryButton>
@@ -112,20 +162,16 @@ export default function AddBuyerPage() {
   );
 }
 
-function Input({
-  label,
-  name,
-  onChange,
-}: {
-  label: string;
-  name: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}) {
+/* ---------------- INPUT ---------------- */
+
+function Input({ label, name, onChange, value, readOnly = false }: any) {
   return (
     <div>
-      <label className="block text-sm font-medium mb-1">{label}</label>
+      <label className="block text-sm mb-1">{label}</label>
       <input
         name={name}
+        value={value}
+        readOnly={readOnly}
         onChange={onChange}
         className="w-full border rounded-lg px-3 py-2"
       />

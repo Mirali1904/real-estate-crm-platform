@@ -3,18 +3,17 @@ import { conn } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-
-    // 🔐 tenant from logged-in user
     const tenantHeader = req.headers.get("x-tenant-id");
     const tenantId = tenantHeader ? Number(tenantHeader) : null;
 
     if (!tenantId) {
       return NextResponse.json(
-        { error: "Unauthorized tenant" },
+        { error: "Tenant not found" },
         { status: 401 }
       );
     }
+
+    const body = await req.json();
 
     const {
       name,
@@ -30,10 +29,9 @@ export async function POST(req: NextRequest) {
       bedrooms,
     } = body;
 
-    // ✅ MINIMUM REQUIRED (NO STRICT BLOCKING)
     if (!name || !phone) {
       return NextResponse.json(
-        { error: "Name and phone are required" },
+        { error: "Name and phone required" },
         { status: 400 }
       );
     }
@@ -74,12 +72,9 @@ export async function POST(req: NextRequest) {
       ]
     );
 
-    return NextResponse.json(
-      { message: "Buyer created successfully" },
-      { status: 201 }
-    );
+    return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {
-    console.error("Create buyer failed:", err);
+    console.error("Create buyer error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

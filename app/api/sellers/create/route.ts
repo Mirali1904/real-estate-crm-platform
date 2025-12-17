@@ -1,24 +1,66 @@
-// app/api/sellers/create/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { conn } from "@/lib/db";
 
-export async function POST(req: Request) {
-  const body = await req.json();
-  const {
-    tenantId, property_address, owner_contact, email, property_type,
-    lat, lng, price, bedrooms
-  } = body;
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
 
-  if (!tenantId || !property_address) return NextResponse.json({ success: false, error: "missing tenantId or property_address" }, { status: 400 });
+    const {
+      tenantId,
+      owner_contact,
+      email,
+      property_type,
+      location,
+      lat,
+      lng,
+      price,
+      bedrooms,
+    } = body;
 
-  const q = `INSERT INTO sellers
-    (tenant_id, property_address, owner_contact, email, property_type, lat, lng, price, bedrooms, status, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'LISTED', NOW())`;
+    // ✅ REQUIRED VALIDATION
+    if (!tenantId || !location) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
-  await conn.execute(q, [
-    tenantId, property_address, owner_contact || null, email || null, property_type || null,
-    lat ?? null, lng ?? null, price ?? null, bedrooms ?? null
-  ]);
+    // ✅ INSERT (MATCHES DB COLUMNS)
+    const query = `
+      INSERT INTO sellers (
+        tenant_id,
+        owner_contact,
+        email,
+        property_type,
+        location,
+        lat,
+        lng,
+        price,
+        bedrooms,
+        status,
+        created_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'LISTED', NOW())
+    `;
 
-  return NextResponse.json({ success: true });
+    await conn.execute(query, [
+      tenantId,
+      owner_contact || null,
+      email || null,
+      property_type || null,
+      location,
+      lat ?? null,
+      lng ?? null,
+      price ?? null,
+      bedrooms ?? null,
+    ]);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Create seller error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
