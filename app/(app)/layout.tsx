@@ -1,20 +1,26 @@
-// app/(auth)/layout.tsx
+// app/(app)/layout.tsx
+import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 
-export default function AuthLayout({
+export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <>
-      {/* HEADER */}
-      <Header />
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white border-r">
+        <Sidebar />
+      </aside>
 
-      {/* PAGE CONTENT */}
-      <main className="p-6 bg-gray-50 min-h-screen">
-        {children}
-      </main>
-    </>
+      {/* Main area */}
+      <div className="flex-1 flex flex-col">
+        <Header />
+        <main className="flex-1 p-8 overflow-y-auto">
+          {children}
+        </main>
+      </div>
+    </div>
   );
 }

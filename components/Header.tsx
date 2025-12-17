@@ -1,4 +1,3 @@
-// components/Header.tsx
 "use client";
 
 import Link from "next/link";
@@ -17,9 +16,9 @@ export default function Header() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-40">
+    <header className="h-16 bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4 md:px-6">
-        {/* LEFT: logo + nav */}
+        {/* LEFT */}
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-md bg-[#c89a3b]" />
@@ -35,17 +34,14 @@ export default function Header() {
           </nav>
         </div>
 
-        {/* RIGHT: email + avatar + logout */}
+        {/* RIGHT */}
         <div className="flex items-center gap-4">
           <div className="hidden md:flex flex-col items-end text-sm text-gray-600">
             <span className="select-text">mirali123@gmail.com</span>
             <span className="text-xs text-gray-400">ADMIN</span>
           </div>
 
-          <div
-            className="w-9 h-9 rounded-full bg-[#c89a3b] flex items-center justify-center text-white font-medium"
-            title="Profile"
-          >
+          <div className="w-9 h-9 rounded-full bg-[#c89a3b] flex items-center justify-center text-white font-medium">
             M
           </div>
 

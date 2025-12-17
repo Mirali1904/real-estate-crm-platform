@@ -1,4 +1,3 @@
-// components/Sidebar.tsx
 "use client";
 
 import Link from "next/link";
@@ -23,11 +22,10 @@ export default function Sidebar() {
     }`;
 
   return (
-    // ⬇️ HEADER HEIGHT OFFSET (h-16 = 64px)
-    <div className="mt-16 h-[calc(100vh-64px)] flex flex-col">
+    <div className="h-screen flex flex-col">
       <div className="bg-white h-full w-full border-r box-border">
         <div className="h-full flex flex-col p-6">
-          
+
           {/* TOP */}
           <div>
             <div className="flex items-center gap-4 mb-6">
@@ -63,7 +61,7 @@ export default function Sidebar() {
             </nav>
           </div>
 
-          {/* LOGOUT — ALWAYS BOTTOM */}
+          {/* LOGOUT — BOTTOM */}
           <div className="mt-auto pt-4">
             <button
               onClick={handleLogout}
@@ -73,6 +71,7 @@ export default function Sidebar() {
               Logout
             </button>
           </div>
+
         </div>
       </div>
     </div>
