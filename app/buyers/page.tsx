@@ -17,17 +17,30 @@ type Buyer = {
 
 export default function BuyersPage() {
   const router = useRouter();
-  const tenantId = 1;
 
   const [buyers, setBuyers] = useState<Buyer[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const raw = localStorage.getItem("loggedUser");
+    if (!raw) {
+      setLoading(false);
+      return;
+    }
+
+    const user = JSON.parse(raw);
+    const tenantId = user.tenant_id || user.tenantId;
+
     fetch(`/api/buyers/tenant/${tenantId}`)
       .then((res) => res.json())
       .then((data) => {
-        setBuyers(data.buyers || []);
-        setLoading(false);
+        setBuyers(data);
+      })
+      .catch((err) => {
+        console.error("Error fetching buyers:", err);
+      })
+      .finally(() => {
+        setLoading(false); // ✅ VERY IMPORTANT
       });
   }, []);
 
@@ -64,6 +77,11 @@ export default function BuyersPage() {
             + Add Buyer
           </button>
         </div>
+
+        {/* EMPTY STATE */}
+        {buyers.length === 0 && (
+          <p className="text-gray-500">No buyers found.</p>
+        )}
 
         {/* LIST */}
         {buyers.map((buyer) => (
