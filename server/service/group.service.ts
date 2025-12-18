@@ -2,19 +2,45 @@ import { conn } from "../../lib/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export class GroupService {
-  // Get all groups for a tenant
-  async getGroupsByTenant(tenantId: number) {
-    const [groups] = await conn.query<RowDataPacket[]>(
-      `SELECT g.*, u.name as creator_name, u.email as creator_email,
-       (SELECT COUNT(*) FROM group_members WHERE group_id = g.id AND status = 'active') as member_count
-       FROM groups g
-       LEFT JOIN users u ON g.created_by = u.id
-       WHERE g.tenant_id = ? AND g.status = 'active'
-       ORDER BY g.created_at DESC`,
-      [tenantId]
-    );
-    return groups;
-  }
+  
+async getGroupsForUser(userId: number, tenantId: number) {
+  const [groups] = await conn.query<RowDataPacket[]>(
+    `
+    SELECT DISTINCT
+      g.*,
+      u.name AS creator_name,
+      (
+        SELECT COUNT(*)
+        FROM group_members gm2
+        WHERE gm2.group_id = g.id
+          AND gm2.status = 'active'
+      ) AS member_count,
+      CASE
+        WHEN g.created_by = ? THEN 'ADMIN'
+        ELSE gm.role
+      END AS user_role
+    FROM groups g
+    LEFT JOIN group_members gm
+      ON gm.group_id = g.id
+      AND gm.user_id = ?
+      AND gm.status = 'active'
+    LEFT JOIN users u ON g.created_by = u.id
+    WHERE g.tenant_id = ?
+      AND g.status = 'active'
+      AND (
+        g.created_by = ?
+        OR gm.user_id IS NOT NULL
+      )
+    ORDER BY g.created_at DESC
+    `,
+    [userId, userId, tenantId, userId]
+  );
+
+  return groups;
+}
+
+
+
 
   // Get groups where user is a member
   async getUserGroups(userId: number, tenantId: number) {
@@ -54,7 +80,6 @@ export class GroupService {
     try {
       await connection.beginTransaction();
 
-      // Insert group
       const [result] = await connection.query<ResultSetHeader>(
         `INSERT INTO groups (tenant_id, name, description, created_by, status, created_at)
          VALUES (?, ?, ?, ?, 'active', NOW())`,
@@ -63,7 +88,6 @@ export class GroupService {
 
       const groupId = result.insertId;
 
-      // Add creator as admin member
       await connection.query(
         `INSERT INTO group_members (group_id, user_id, role, status, created_at)
          VALUES (?, ?, 'ADMIN', 'active', NOW())`,
@@ -96,7 +120,7 @@ export class GroupService {
     return result.affectedRows > 0;
   }
 
-  // Delete group (soft delete)
+  // Delete group (SOFT DELETE)
   async deleteGroup(groupId: number, tenantId: number) {
     const [result] = await conn.query<ResultSetHeader>(
       `UPDATE groups SET status = 'inactive' WHERE id = ? AND tenant_id = ?`,
@@ -120,21 +144,18 @@ export class GroupService {
 
   // Add member to group
   async addMember(groupId: number, userId: number, role: string = "MEMBER") {
-    // Check if already member
     const [existing] = await conn.query<RowDataPacket[]>(
       `SELECT id FROM group_members WHERE group_id = ? AND user_id = ?`,
       [groupId, userId]
     );
 
     if (existing.length > 0) {
-      // Update existing membership
       const [result] = await conn.query<ResultSetHeader>(
         `UPDATE group_members SET status = 'active', role = ? WHERE group_id = ? AND user_id = ?`,
         [role, groupId, userId]
       );
       return result.affectedRows > 0;
     } else {
-      // Add new member
       const [result] = await conn.query<ResultSetHeader>(
         `INSERT INTO group_members (group_id, user_id, role, status, created_at)
          VALUES (?, ?, ?, 'active', NOW())`,
@@ -153,26 +174,15 @@ export class GroupService {
     return result.affectedRows > 0;
   }
 
-  // Check if user is group admin
+  // 🔥 ONLY GROUP CREATOR CHECK (VERY IMPORTANT)
   async isGroupAdmin(groupId: number, userId: number): Promise<boolean> {
-  const [rows] = await conn.query<RowDataPacket[]>(
-    `
-    SELECT 1
-    FROM groups g
-    LEFT JOIN group_members gm 
-      ON gm.group_id = g.id 
-      AND gm.user_id = ? 
-      AND gm.role = 'ADMIN' 
-      AND gm.status = 'active'
-    WHERE g.id = ?
-      AND (g.created_by = ? OR gm.id IS NOT NULL)
-    `,
-    [userId, groupId, userId]
-  );
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `SELECT 1 FROM groups WHERE id = ? AND created_by = ?`,
+      [groupId, userId]
+    );
 
-  return rows.length > 0;
-}
-
+    return rows.length > 0;
+  }
 
   // Check if user is group member
   async isGroupMember(groupId: number, userId: number): Promise<boolean> {
@@ -182,6 +192,13 @@ export class GroupService {
       [groupId, userId]
     );
     return result.length > 0;
+  }
+
+  async deletePostResponse(responseId: number) {
+    await conn.execute(
+      "DELETE FROM group_post_responses WHERE id = ?",
+      [responseId]
+    );
   }
 
   // Create post in group
@@ -252,7 +269,7 @@ export class GroupService {
     return responses;
   }
 
-  // Get available agents (not in group)
+  // Get available agents
   async getAvailableAgents(groupId: number, tenantId: number) {
     const [agents] = await conn.query<RowDataPacket[]>(
       `SELECT u.id, u.name, u.email, u.role

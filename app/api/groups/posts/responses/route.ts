@@ -52,3 +52,32 @@ export async function POST(req: Request) {
     );
   }
 }
+
+// DELETE /api/groups/posts/responses?responseId=1
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const responseId = Number(searchParams.get("responseId"));
+
+    if (!responseId) {
+      return NextResponse.json(
+        { error: "responseId required" },
+        { status: 400 }
+      );
+    }
+
+    // delete response
+    await groupService.deletePostResponse(responseId);
+
+    return NextResponse.json({
+      message: "Response deleted successfully",
+    });
+  } catch (error: any) {
+    console.error("Error deleting response:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to delete response" },
+      { status: 500 }
+    );
+  }
+}
+

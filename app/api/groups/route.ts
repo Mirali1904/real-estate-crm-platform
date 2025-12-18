@@ -6,26 +6,26 @@ const groupService = new GroupService();
 // ============================
 // GET /api/groups
 // ============================
+// ============================
+// GET /api/groups
+// ============================
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const tenantId = Number(searchParams.get("tenantId"));
     const userId = Number(searchParams.get("userId"));
 
-    if (!tenantId) {
+    if (!tenantId || !userId) {
       return NextResponse.json(
-        { error: "tenantId required" },
+        { error: "tenantId and userId required" },
         { status: 400 }
       );
     }
 
-    let groups;
-
-    if (userId) {
-      groups = await groupService.getUserGroups(userId, tenantId);
-    } else {
-      groups = await groupService.getGroupsByTenant(tenantId);
-    }
+    const groups = await groupService.getGroupsForUser(
+      userId,
+      tenantId
+    );
 
     return NextResponse.json(groups);
   } catch (error: any) {
@@ -37,20 +37,15 @@ export async function GET(req: Request) {
   }
 }
 
+
+
 // ============================
 // POST /api/groups
 // ============================
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-
-    console.log("CREATE GROUP BODY =>", body);
-
     const { tenantId, name, description, createdBy } = body;
-
-    console.log("tenantId:", tenantId);
-    console.log("name:", name);
-    console.log("createdBy:", createdBy);
 
     if (!tenantId || !name || !createdBy) {
       return NextResponse.json(
@@ -78,7 +73,6 @@ export async function POST(req: Request) {
     );
   }
 }
-
 
 // ============================
 // PUT /api/groups
@@ -142,16 +136,21 @@ export async function DELETE(req: Request) {
     const isAdmin = await groupService.isGroupAdmin(groupId, userId);
     if (!isAdmin) {
       return NextResponse.json(
-        { error: "Only group admins can delete group" },
+        { error: "Only group creator can delete this group" },
         { status: 403 }
       );
     }
 
     const success = await groupService.deleteGroup(groupId, tenantId);
 
-    return success
-      ? NextResponse.json({ message: "Group deleted successfully" })
-      : NextResponse.json({ error: "Failed to delete group" }, { status: 400 });
+    if (!success) {
+      return NextResponse.json(
+        { error: "Failed to delete group" },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({ message: "Group deleted successfully" });
   } catch (error: any) {
     console.error("Error deleting group:", error);
     return NextResponse.json(
