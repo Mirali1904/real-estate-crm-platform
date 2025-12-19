@@ -8,7 +8,6 @@ import SecondaryButton from "@/components/SecondaryButton";
 export default function SellerDetailPage() {
   const params = useParams();
   const sellerId = Number(params?.id);
-  const tenantId = 1; // 🔴 IMPORTANT
 
   const [seller, setSeller] = useState<any>(null);
   const [buyers, setBuyers] = useState<any[]>([]);
@@ -20,13 +19,31 @@ export default function SellerDetailPage() {
   useEffect(() => {
     if (!sellerId) return;
 
+    const raw = localStorage.getItem("loggedUser");
+    if (!raw) {
+      setError("Not logged in");
+      return;
+    }
+
+    const user = JSON.parse(raw);
+    const tenantId = user.tenant_id ?? user.tenantId;
+
+    if (!tenantId) {
+      setError("Tenant not found");
+      return;
+    }
+
     // Fetch seller
     fetch(`/api/sellers/${sellerId}`)
       .then((r) => r.json())
       .then(setSeller);
 
-    // Fetch matched buyers
-    fetch(`/api/sellers/${sellerId}/matches?tenantId=${tenantId}`)
+    // ✅ FIX: tenantId via HEADER (not query param)
+    fetch(`/api/sellers/${sellerId}/matches`, {
+      headers: {
+        "x-tenant-id": String(tenantId),
+      },
+    })
       .then(async (r) => {
         if (!r.ok) throw new Error("Failed to fetch matches");
         return r.json();

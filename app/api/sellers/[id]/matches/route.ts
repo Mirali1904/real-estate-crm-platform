@@ -12,8 +12,8 @@ export async function GET(
     const { id } = await params;
     const sellerId = Number(id);
 
-    const { searchParams } = new URL(req.url);
-    const tenantId = Number(searchParams.get("tenantId"));
+    // ✅ FIX: read tenantId from HEADER (not query)
+    const tenantId = Number(req.headers.get("x-tenant-id"));
 
     if (!sellerId || !tenantId) {
       return NextResponse.json(

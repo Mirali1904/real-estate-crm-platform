@@ -14,11 +14,14 @@ export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  // ✅ FIX: unwrap params properly
+  // ✅ unwrap params
   const { id } = await context.params;
   const buyerId = Number(id);
 
-  const tenantId = Number(req.nextUrl.searchParams.get("tenantId"));
+  // ✅ FIX: tenantId from HEADER first, fallback to query param
+  const tenantId =
+    Number(req.headers.get("x-tenant-id")) ||
+    Number(req.nextUrl.searchParams.get("tenantId"));
 
   if (!buyerId || !tenantId) {
     return NextResponse.json({ matches: [] });

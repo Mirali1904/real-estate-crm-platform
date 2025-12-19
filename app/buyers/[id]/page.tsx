@@ -8,7 +8,6 @@ import SecondaryButton from "@/components/SecondaryButton";
 export default function BuyerDetailPage() {
   const params = useParams();
   const buyerId = Number(params?.id);
-  const tenantId = 1;
 
   const [buyer, setBuyer] = useState<any>(null);
   const [matches, setMatches] = useState<any[]>([]);
@@ -20,15 +19,32 @@ export default function BuyerDetailPage() {
 
     async function loadData() {
       try {
-        const buyerRes = await fetch(`/api/buyers/${buyerId}`);
+        // ✅ GET tenantId dynamically (NO HARDCODE)
+        const raw = localStorage.getItem("loggedUser");
+        if (!raw) return;
+
+        const user = JSON.parse(raw);
+        const tenantId = user.tenant_id ?? user.tenantId;
+
+        // BUYER DETAILS
+        const buyerRes = await fetch(`/api/buyers/${buyerId}`, {
+          headers: {
+            "x-tenant-id": String(tenantId),
+          },
+        });
+
         if (!buyerRes.ok) return;
+
         const buyerData = await buyerRes.json();
         setBuyer(buyerData);
         setSelectedSellerId(buyerData?.selected_seller_id ?? null);
 
-        const matchRes = await fetch(
-          `/api/buyers/${buyerId}/matches?tenantId=${tenantId}`
-        );
+        // ✅ MATCHES (NO ?tenantId=1)
+        const matchRes = await fetch(`/api/buyers/${buyerId}/matches`, {
+          headers: {
+            "x-tenant-id": String(tenantId),
+          },
+        });
 
         if (!matchRes.ok) {
           setMatches([]);
@@ -48,9 +64,18 @@ export default function BuyerDetailPage() {
   }, [buyerId]);
 
   async function markInterested(sellerId: number) {
+    const raw = localStorage.getItem("loggedUser");
+    if (!raw) return;
+
+    const user = JSON.parse(raw);
+    const tenantId = user.tenant_id ?? user.tenantId;
+
     const res = await fetch(`/api/buyers/${buyerId}/interest`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-tenant-id": String(tenantId),
+      },
       body: JSON.stringify({ sellerId }),
     });
 
