@@ -40,33 +40,25 @@ export default function AddBuyerPage() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loadingLocation, setLoadingLocation] = useState(false);
 
-  /* ---------------- DEBOUNCED VALUE ---------------- */
   const debouncedLocation = useDebounce(form.location, 600);
-
-  /* ---------------- PREVENT REPEAT CALLS ---------------- */
   const lastSearchedRef = useRef<string>("");
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  /* ---------------- LOCATION INPUT CHANGE ---------------- */
   function handleLocationChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({ ...form, location: e.target.value });
   }
 
-  /* ---------------- LOCATION SEARCH EFFECT ---------------- */
+  /* ---------------- LOCATION SEARCH ---------------- */
   useEffect(() => {
     if (debouncedLocation.length < 3) {
       setSuggestions([]);
       return;
     }
 
-    // ❌ Same text → no API hit
-    if (lastSearchedRef.current === debouncedLocation) {
-      return;
-    }
-
+    if (lastSearchedRef.current === debouncedLocation) return;
     lastSearchedRef.current = debouncedLocation;
 
     const controller = new AbortController();
@@ -75,7 +67,7 @@ export default function AddBuyerPage() {
       setLoadingLocation(true);
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${debouncedLocation}`,
+          `/api/location/search?q=${encodeURIComponent(debouncedLocation)}`,
           { signal: controller.signal }
         );
 
@@ -91,12 +83,9 @@ export default function AddBuyerPage() {
     }
 
     fetchLocations();
-
-    // ✅ cancel previous request
     return () => controller.abort();
   }, [debouncedLocation]);
 
-  /* ---------------- SELECT LOCATION ---------------- */
   function selectLocation(place: any) {
     setForm({
       ...form,
@@ -107,10 +96,8 @@ export default function AddBuyerPage() {
     setSuggestions([]);
   }
 
-  /* ---------------- SUBMIT ---------------- */
   async function handleSubmit() {
     const raw = localStorage.getItem("loggedUser");
-
     if (!raw) {
       alert("Not logged in");
       return;
@@ -134,7 +121,6 @@ export default function AddBuyerPage() {
     });
 
     if (res.ok) {
-      alert("Buyer created");
       router.push("/buyers");
     } else {
       const err = await res.json();
@@ -156,14 +142,12 @@ export default function AddBuyerPage() {
             <Input label="Email" name="email" onChange={handleChange} />
             <Input label="Requirement" name="requirement" onChange={handleChange} />
 
-            {/* LOCATION AUTOCOMPLETE */}
             <div className="col-span-2 relative">
               <label className="text-sm mb-1 block">Location</label>
               <input
                 value={form.location}
                 onChange={handleLocationChange}
                 className="w-full border rounded-lg px-3 py-2"
-                placeholder="Type area name (e.g. Manjalpur)"
               />
 
               {loadingLocation && (

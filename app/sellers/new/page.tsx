@@ -53,10 +53,15 @@ export default function AddSellerPage() {
 
       try {
         setLoadingLocation(true);
+
+        // ✅ FIX: USE BACKEND PROXY (NO DIRECT NOMINATIM)
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${value}`,
+          `/api/location/search?q=${encodeURIComponent(value)}`,
           { signal: controller.signal }
         );
+
+        if (!res.ok) return;
+
         const data = await res.json();
         setSuggestions(data);
       } catch (err: any) {
@@ -64,7 +69,7 @@ export default function AddSellerPage() {
       } finally {
         setLoadingLocation(false);
       }
-    }, 700); // ✅ only after user stops typing
+    }, 700);
   }
 
   function selectLocation(place: any) {

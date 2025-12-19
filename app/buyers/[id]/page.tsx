@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import PrimaryButton from "@/components/PrimaryButton";
-import SecondaryButton from "@/components/SecondaryButton";
 
 export default function BuyerDetailPage() {
   const params = useParams();
@@ -11,50 +9,63 @@ export default function BuyerDetailPage() {
 
   const [buyer, setBuyer] = useState<any>(null);
   const [matches, setMatches] = useState<any[]>([]);
-  const [selectedSellerId, setSelectedSellerId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // propertyId -> status mapping
+  const [propertyStatus, setPropertyStatus] = useState<Record<number, string>>(
+    {}
+  );
+
+  const STATUS_OPTIONS = [
+    "New",
+    "Interested",
+    "Shortlisted",
+    "Site Visit Planned",
+    "Deal Closed",
+    "Not Interested",
+  ];
 
   useEffect(() => {
     if (!buyerId) return;
 
     async function loadData() {
       try {
-        // ✅ GET tenantId dynamically (NO HARDCODE)
         const raw = localStorage.getItem("loggedUser");
         if (!raw) return;
 
         const user = JSON.parse(raw);
         const tenantId = user.tenant_id ?? user.tenantId;
 
-        // BUYER DETAILS
+        /* BUYER DETAILS */
         const buyerRes = await fetch(`/api/buyers/${buyerId}`, {
-          headers: {
-            "x-tenant-id": String(tenantId),
-          },
+          headers: { "x-tenant-id": String(tenantId) },
         });
-
         if (!buyerRes.ok) return;
+        setBuyer(await buyerRes.json());
 
-        const buyerData = await buyerRes.json();
-        setBuyer(buyerData);
-        setSelectedSellerId(buyerData?.selected_seller_id ?? null);
-
-        // ✅ MATCHES (NO ?tenantId=1)
+        /* MATCHED PROPERTIES */
         const matchRes = await fetch(`/api/buyers/${buyerId}/matches`, {
-          headers: {
-            "x-tenant-id": String(tenantId),
-          },
+          headers: { "x-tenant-id": String(tenantId) },
         });
+        if (!matchRes.ok) return;
 
-        if (!matchRes.ok) {
-          setMatches([]);
-          return;
+        const sellers = (await matchRes.json()).matches || [];
+        setMatches(sellers);
+
+        /* PROPERTY STATUS (PERSISTENCE) */
+        const statusRes = await fetch(
+          `/api/buyers/${buyerId}/property-status`,
+          { headers: { "x-tenant-id": String(tenantId) } }
+        );
+
+        if (statusRes.ok) {
+          const data = await statusRes.json();
+          const map: Record<number, string> = {};
+          data.statuses.forEach((r: any) => {
+            map[r.seller_id] = r.status;
+          });
+          setPropertyStatus(map);
         }
-
-        const matchData = await matchRes.json();
-        setMatches(matchData.matches || []);
-      } catch (err) {
-        console.error("Failed loading buyer page", err);
       } finally {
         setLoading(false);
       }
@@ -63,29 +74,21 @@ export default function BuyerDetailPage() {
     loadData();
   }, [buyerId]);
 
-  async function markInterested(sellerId: number) {
-    const raw = localStorage.getItem("loggedUser");
-    if (!raw) return;
-
-    const user = JSON.parse(raw);
-    const tenantId = user.tenant_id ?? user.tenantId;
-
-    const res = await fetch(`/api/buyers/${buyerId}/interest`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-tenant-id": String(tenantId),
-      },
-      body: JSON.stringify({ sellerId }),
-    });
-
-    if (!res.ok) {
-      alert("Failed to mark interest");
-      return;
+  function getCardStyle(status: string) {
+    switch (status) {
+      case "Interested":
+        return "border-green-400 bg-green-50";
+      case "Shortlisted":
+        return "border-green-600 bg-green-100";
+      case "Site Visit Planned":
+        return "border-yellow-400 bg-yellow-50";
+      case "Deal Closed":
+        return "border-green-700 bg-green-200";
+      case "Not Interested":
+        return "border-gray-300 bg-gray-100 opacity-60";
+      default:
+        return "border-gray-200 bg-white";
     }
-
-    setSelectedSellerId(sellerId);
-    setBuyer((b: any) => ({ ...b, status: "WON" }));
   }
 
   if (loading) return <div className="p-6">Loading...</div>;
@@ -109,6 +112,9 @@ export default function BuyerDetailPage() {
             <span className="text-orange-600 font-medium">
               {buyer.status}
             </span>
+            <span className="text-xs text-gray-500 ml-2">
+              (based on property selections)
+            </span>
           </p>
         </div>
       </div>
@@ -117,44 +123,92 @@ export default function BuyerDetailPage() {
       <div className="w-full">
         <h2 className="text-lg font-semibold mb-3">Matched Properties</h2>
 
-        {matches.length === 0 && (
-          <div className="border rounded-xl p-4 text-sm text-gray-500">
-            No matching properties found
-          </div>
-        )}
-
         <div className="space-y-4">
-          {matches.map((seller) => (
-            <div
-              key={seller.id}
-              className="w-full border rounded-xl p-4 flex justify-between items-center"
-            >
-              <div>
-                <p className="font-medium">
-                  {seller.property_type || "Property"}
-                </p>
-                <p className="text-sm text-gray-600">
-                  ₹{seller.price} • {seller.bedrooms} BHK
-                </p>
+          {matches.map((seller) => {
+            const status = propertyStatus[seller.id] || "New";
+            const isRejected = status === "Not Interested";
 
-                {seller.distance_km !== undefined && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Distance: {seller.distance_km.toFixed(2)} km
+            return (
+              <div
+                key={seller.id}
+                className={`w-full border rounded-xl p-4 flex justify-between items-center
+                  ${getCardStyle(status)}
+                  ${isRejected ? "pointer-events-none opacity-60" : ""}`}
+              >
+                {/* LEFT */}
+                <div>
+                  <p className="font-medium">
+                    {seller.property_type || "Property"}
                   </p>
-                )}
-              </div>
+                  <p className="text-sm text-gray-600">
+                    ₹{seller.price} • {seller.bedrooms} BHK
+                  </p>
+                  {isRejected && (
+                    <p className="text-xs text-red-500 mt-1">
+                      Marked as Not Interested
+                    </p>
+                  )}
+                </div>
 
-              {selectedSellerId === seller.id ? (
-                <SecondaryButton className="bg-green-500 text-white border-green-600">
-                  Interested
-                </SecondaryButton>
-              ) : (
-                <PrimaryButton onClick={() => markInterested(seller.id)}>
-                  Mark Interested
-                </PrimaryButton>
-              )}
-            </div>
-          ))}
+                {/* RIGHT */}
+                <div className="flex flex-col">
+                  <label className="text-xs text-gray-500 mb-1">
+                    Property Status
+                  </label>
+                  <select
+                    value={status}
+                    disabled={isRejected}
+                    onChange={async (e) => {
+                      const newStatus = e.target.value;
+
+                      setPropertyStatus((prev) => ({
+                        ...prev,
+                        [seller.id]: newStatus,
+                      }));
+
+                      const raw = localStorage.getItem("loggedUser");
+                      if (!raw) return;
+                      const user = JSON.parse(raw);
+                      const tenantId =
+                        user.tenant_id ?? user.tenantId;
+
+                      const res = await fetch(
+                        `/api/buyers/${buyerId}/property-status`,
+                        {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            "x-tenant-id": String(tenantId),
+                          },
+                          body: JSON.stringify({
+                            sellerId: seller.id,
+                            status: newStatus,
+                          }),
+                        }
+                      );
+
+                      if (res.ok) {
+                        const data = await res.json();
+                        if (data?.buyerStatus) {
+                          setBuyer((prev: any) => ({
+                            ...prev,
+                            status: data.buyerStatus,
+                          }));
+                        }
+                      }
+                    }}
+                    className="border rounded-md px-2 py-1 text-sm"
+                  >
+                    {STATUS_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
