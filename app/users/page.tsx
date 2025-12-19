@@ -73,72 +73,65 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="w-full">
-      {/* CENTER CONTAINER */}
-      <div className="max-w-5xl mx-auto p-6">
-        {/* BACK BUTTON */}
-        <div className="mb-4">
-          <BackButton />
-        </div>
-
-        {/* HEADER */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Team Members</h1>
-            <p className="text-xs text-gray-500 mt-1">
-              Users in your agency (tenant_id{" "}
-              {currentUser.tenantId ?? currentUser.tenant_id})
-            </p>
-          </div>
-
-          <Link href="/users/new">
-            <button className="bg-[#c89a3b] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#b4882f] transition">
-              + Add User
-            </button>
-          </Link>
-        </div>
-
-        {/* CONTENT */}
-        {loading ? (
-          <p className="text-sm text-gray-500">Loading users...</p>
-        ) : users.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            No users yet. Use &quot;Add User&quot; to invite your team.
-          </p>
-        ) : (
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs uppercase text-gray-500">
-                <tr>
-                  <th className="text-left px-4 py-3">Name</th>
-                  <th className="text-left px-4 py-3">Email</th>
-                  <th className="text-left px-4 py-3">Role</th>
-                  <th className="text-left px-4 py-3">Created</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u) => (
-                  <tr
-                    key={u.id}
-                    className="border-t border-gray-100"
-                  >
-                    <td className="px-4 py-3">{u.name}</td>
-                    <td className="px-4 py-3 text-xs text-gray-600">
-                      {u.email}
-                    </td>
-                    <td className="px-4 py-3 text-xs uppercase tracking-[0.15em] text-gray-500">
-                      {u.role}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-400">
-                      {new Date(u.created_at).toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+    <div className="w-full p-6">
+      {/* BACK BUTTON */}
+      <div className="mb-4">
+        <BackButton />
       </div>
+
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Team Members</h1>
+          <p className="text-xs text-gray-500 mt-1">
+            Users in your agency (tenant_id {currentUser.tenantId})
+          </p>
+        </div>
+
+        <Link href="/users/new">
+          <button className="bg-[#c89a3b] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#b4882f] transition">
+            + Add User
+          </button>
+        </Link>
+      </div>
+
+      {/* CONTENT */}
+      {loading ? (
+        <p className="text-sm text-gray-500">Loading users...</p>
+      ) : users.length === 0 ? (
+        <p className="text-sm text-gray-500">
+          No users yet. Use &quot;Add User&quot; to invite your team.
+        </p>
+      ) : (
+        <div className="w-full bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+              <tr>
+                <th className="text-left px-4 py-3">Name</th>
+                <th className="text-left px-4 py-3">Email</th>
+                <th className="text-left px-4 py-3">Role</th>
+                <th className="text-left px-4 py-3">Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u.id} className="border-t border-gray-100">
+                  <td className="px-4 py-3">{u.name}</td>
+                  <td className="px-4 py-3 text-xs text-gray-600">
+                    {u.email}
+                  </td>
+                  <td className="px-4 py-3 text-xs uppercase tracking-[0.15em] text-gray-500">
+                    {u.role}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-gray-400">
+                    {new Date(u.created_at).toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

@@ -49,46 +49,43 @@ export default function SellersPage() {
   };
 
   return (
-    <div className="w-full">
-      {/* CENTER CONTAINER */}
-      <div className="max-w-5xl mx-auto p-6">
-        {/* BACK BUTTON */}
-        <div className="mb-4">
-          <BackButton />
-        </div>
+    <div className="w-full p-6">
+      {/* BACK BUTTON */}
+      <div className="mb-4">
+        <BackButton />
+      </div>
 
-        {/* HEADER */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Sellers / Properties</h1>
-          <a href="/sellers/new">
-            <PrimaryButton>+ Add Property</PrimaryButton>
-          </a>
-        </div>
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Sellers / Properties</h1>
+        <a href="/sellers/new">
+          <PrimaryButton>+ Add Property</PrimaryButton>
+        </a>
+      </div>
 
-        {/* LIST */}
-        <div className="space-y-3">
-          {sellers.map((seller) => (
-            <div
-              key={seller.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => openSeller(seller.id)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ")
-                  openSeller(seller.id);
-              }}
-              className="cursor-pointer"
-            >
-              <SellerCard seller={seller} onDelete={handleDelete} />
-            </div>
-          ))}
+      {/* LIST */}
+      <div className="space-y-3 w-full">
+        {sellers.map((seller) => (
+          <div
+            key={seller.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => openSeller(seller.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ")
+                openSeller(seller.id);
+            }}
+            className="cursor-pointer"
+          >
+            <SellerCard seller={seller} onDelete={handleDelete} />
+          </div>
+        ))}
 
-          {sellers.length === 0 && (
-            <p className="text-sm text-gray-500">
-              No properties yet.
-            </p>
-          )}
-        </div>
+        {sellers.length === 0 && (
+          <p className="text-sm text-gray-500">
+            No properties yet.
+          </p>
+        )}
       </div>
     </div>
   );

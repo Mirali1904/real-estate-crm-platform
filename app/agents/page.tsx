@@ -3,8 +3,9 @@
 export default function AgentsPage() {
   return (
     <div className="min-h-[calc(100vh-64px)] bg-[#f5f5f5]">
-      <div className="max-w-5xl mx-auto py-12 px-4">
-        {/* Title + small description */}
+      {/* FULL WIDTH CONTAINER */}
+      <div className="w-full py-12 px-6">
+        {/* Title + description */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">
             Agents & <span className="text-[#c89a3b]">Teams</span>
@@ -16,7 +17,7 @@ export default function AgentsPage() {
           </p>
         </div>
 
-        {/* 3 cards explaining features */}
+        {/* Feature cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-10">
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5">
             <p className="text-xs uppercase tracking-[0.18em] text-gray-400 mb-2">
@@ -58,7 +59,7 @@ export default function AgentsPage() {
           </div>
         </div>
 
-        {/* Small CTA section */}
+        {/* CTA */}
         <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h2 className="text-sm font-semibold mb-1">
@@ -70,6 +71,7 @@ export default function AgentsPage() {
               your tenant.
             </p>
           </div>
+
           <a
             href="/users"
             className="bg-[#c89a3b] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#b4882f] transition"

@@ -40,7 +40,7 @@ export default function BuyersPage() {
         console.error("Error fetching buyers:", err);
       })
       .finally(() => {
-        setLoading(false); // ✅ VERY IMPORTANT
+        setLoading(false);
       });
   }, []);
 
@@ -59,57 +59,54 @@ export default function BuyersPage() {
   if (loading) return <p className="p-6">Loading...</p>;
 
   return (
-    <div className="w-full">
-      {/* CENTER CONTAINER */}
-      <div className="max-w-5xl mx-auto p-6">
-        {/* BACK */}
-        <div className="mb-4">
-          <BackButton />
-        </div>
-
-        {/* HEADER */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Buyer Leads</h1>
-          <button
-            onClick={() => router.push("/buyers/new")}
-            className="bg-[#c99a2e] text-white px-4 py-2 rounded-full"
-          >
-            + Add Buyer
-          </button>
-        </div>
-
-        {/* EMPTY STATE */}
-        {buyers.length === 0 && (
-          <p className="text-gray-500">No buyers found.</p>
-        )}
-
-        {/* LIST */}
-        {buyers.map((buyer) => (
-          <div
-            key={buyer.id}
-            className="border rounded-xl p-4 mb-4 flex justify-between items-center cursor-pointer hover:bg-gray-50"
-            onClick={() => router.push(`/buyers/${buyer.id}`)}
-          >
-            <div>
-              <p className="font-semibold">{buyer.name}</p>
-              <p className="text-sm text-gray-600">{buyer.email}</p>
-              <p className="text-sm text-gray-600">{buyer.phone}</p>
-              <p className="text-sm">
-                Budget: {buyer.budget_min} - {buyer.budget_max}
-              </p>
-              <p className="text-sm font-medium">
-                Status: <span className="uppercase">{buyer.status}</span>
-              </p>
-            </div>
-
-            <div onClick={(e) => e.stopPropagation()}>
-              <SecondaryButton onClick={() => handleDelete(buyer.id)}>
-                Delete
-              </SecondaryButton>
-            </div>
-          </div>
-        ))}
+    <div className="w-full p-6">
+      {/* BACK */}
+      <div className="mb-4">
+        <BackButton />
       </div>
+
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-semibold">Buyer Leads</h1>
+        <button
+          onClick={() => router.push("/buyers/new")}
+          className="bg-[#c99a2e] text-white px-4 py-2 rounded-full"
+        >
+          + Add Buyer
+        </button>
+      </div>
+
+      {/* EMPTY STATE */}
+      {buyers.length === 0 && (
+        <p className="text-gray-500">No buyers found.</p>
+      )}
+
+      {/* LIST */}
+      {buyers.map((buyer) => (
+        <div
+          key={buyer.id}
+          className="w-full border rounded-xl p-4 mb-4 flex justify-between items-center cursor-pointer hover:bg-gray-50"
+          onClick={() => router.push(`/buyers/${buyer.id}`)}
+        >
+          <div>
+            <p className="font-semibold">{buyer.name}</p>
+            <p className="text-sm text-gray-600">{buyer.email}</p>
+            <p className="text-sm text-gray-600">{buyer.phone}</p>
+            <p className="text-sm">
+              Budget: {buyer.budget_min} - {buyer.budget_max}
+            </p>
+            <p className="text-sm font-medium">
+              Status: <span className="uppercase">{buyer.status}</span>
+            </p>
+          </div>
+
+          <div onClick={(e) => e.stopPropagation()}>
+            <SecondaryButton onClick={() => handleDelete(buyer.id)}>
+              Delete
+            </SecondaryButton>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

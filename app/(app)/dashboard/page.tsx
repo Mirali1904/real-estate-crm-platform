@@ -1,5 +1,19 @@
-// app/(app)/dashboard/page.tsx
+"use client";
+
+import { useEffect, useState } from "react";
+
 export default function DashboardPage() {
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const raw = localStorage.getItem("loggedUser");
+    if (raw) {
+      setUser(JSON.parse(raw));
+    }
+  }, []);
+
+  if (!user) return null;
+
   return (
     // ⬇️ THIS LINE FIXES THE GAP
     <div className="w-full -mt-6">
@@ -12,16 +26,19 @@ export default function DashboardPage() {
           <div>
             <h2 className="text-2xl md:text-3xl font-bold">
               Welcome back,{" "}
-              <span className="text-[#c89a3b]">mirali</span>
+              <span className="text-[#c89a3b]">
+                {user.name}
+              </span>
             </h2>
+
             <div className="text-sm text-gray-500 mt-1">
-              Tenant: Mirali's Dream Home (ID 1)
+              Tenant ID: {user.tenantId}
             </div>
           </div>
 
           <div className="text-right">
             <div className="text-sm text-gray-500">
-              mirali123@gmail.com
+              {user.email}
             </div>
             <div className="text-xs text-gray-400 mt-1">
               ADMIN

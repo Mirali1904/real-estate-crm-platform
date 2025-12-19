@@ -2,9 +2,18 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Header() {
   const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const raw = localStorage.getItem("loggedUser");
+    if (raw) {
+      setUser(JSON.parse(raw));
+    }
+  }, []);
 
   async function handleLogout() {
     try {
@@ -12,6 +21,7 @@ export default function Header() {
     } catch (e) {
       console.error("logout error", e);
     }
+    localStorage.removeItem("loggedUser");
     router.push("/login");
   }
 
@@ -37,12 +47,16 @@ export default function Header() {
         {/* RIGHT */}
         <div className="flex items-center gap-4">
           <div className="hidden md:flex flex-col items-end text-sm text-gray-600">
-            <span className="select-text">mirali123@gmail.com</span>
-            <span className="text-xs text-gray-400">ADMIN</span>
+            <span className="select-text">
+              {user?.email || ""}
+            </span>
+            <span className="text-xs text-gray-400">
+              ADMIN
+            </span>
           </div>
 
           <div className="w-9 h-9 rounded-full bg-[#c89a3b] flex items-center justify-center text-white font-medium">
-            M
+            {user?.email?.[0]?.toUpperCase() || ""}
           </div>
 
           <button

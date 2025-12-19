@@ -159,7 +159,8 @@ export default function GroupDetailPage() {
   if (!group) return <div className="p-6">Group not found</div>;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+   <div className="w-full p-6">
+
       {/* HEADER */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6 flex justify-between items-start">
         <div>

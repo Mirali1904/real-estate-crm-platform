@@ -25,12 +25,10 @@ export default function SellerDetailPage() {
       .then((r) => r.json())
       .then(setSeller);
 
-    // 🔴 FIX: tenantId added
+    // Fetch matched buyers
     fetch(`/api/sellers/${sellerId}/matches?tenantId=${tenantId}`)
       .then(async (r) => {
-        if (!r.ok) {
-          throw new Error("Failed to fetch matches");
-        }
+        if (!r.ok) throw new Error("Failed to fetch matches");
         return r.json();
       })
       .then((d) => setBuyers(d.matches || []))
@@ -40,12 +38,14 @@ export default function SellerDetailPage() {
   if (!seller) return <div className="p-6">Loading...</div>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* SELLER CARD */}
-      <div className="border rounded-lg p-5 bg-white">
-        <h1 className="text-xl font-semibold">Property</h1>
+    <div className="w-full p-6 space-y-6">
+      {/* SELLER DETAILS */}
+      <div className="border rounded-xl p-6 bg-white">
+        <h1 className="text-xl font-semibold mb-2">
+          Property Details
+        </h1>
 
-        <div className="mt-2 text-sm space-y-1">
+        <div className="text-sm space-y-1">
           <p><strong>Price:</strong> ₹{seller.price}</p>
           <p><strong>Bedrooms:</strong> {seller.bedrooms}</p>
           <p><strong>Status:</strong> {seller.status}</p>
@@ -54,7 +54,9 @@ export default function SellerDetailPage() {
 
       {/* MATCHED BUYERS */}
       <div>
-        <h2 className="text-lg font-semibold mb-3">Matched Buyers</h2>
+        <h2 className="text-lg font-semibold mb-3">
+          Matched Buyers
+        </h2>
 
         {error && (
           <p className="text-sm text-red-500">{error}</p>
@@ -66,11 +68,11 @@ export default function SellerDetailPage() {
           </p>
         )}
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {buyers.map((buyer) => (
             <div
               key={buyer.id}
-              className="border rounded-lg p-4 flex justify-between items-center"
+              className="border rounded-xl p-4 flex justify-between items-center bg-white"
             >
               <div className="text-sm space-y-1">
                 <p className="font-medium">{buyer.name}</p>

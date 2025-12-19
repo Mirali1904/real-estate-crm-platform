@@ -67,14 +67,14 @@ export default function BuyerDetailPage() {
   if (!buyer) return <div className="p-6">Buyer not found</div>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* BUYER CARD */}
-      <div className="border rounded-lg p-5 bg-white">
+    <div className="w-full p-6 space-y-6">
+      {/* BUYER DETAILS */}
+      <div className="w-full border rounded-xl p-6 bg-white">
         <h1 className="text-xl font-semibold">{buyer.name}</h1>
         <p className="text-sm text-gray-600">{buyer.email}</p>
         <p className="text-sm text-gray-600">{buyer.phone}</p>
 
-        <div className="mt-3 text-sm space-y-1">
+        <div className="mt-4 text-sm space-y-1">
           <p><strong>Requirement:</strong> {buyer.requirement}</p>
           <p><strong>Budget:</strong> ₹{buyer.budget_min} – ₹{buyer.budget_max}</p>
           <p><strong>Bedrooms:</strong> {buyer.bedrooms}</p>
@@ -89,11 +89,11 @@ export default function BuyerDetailPage() {
       </div>
 
       {/* MATCHED PROPERTIES */}
-      <div>
+      <div className="w-full">
         <h2 className="text-lg font-semibold mb-3">Matched Properties</h2>
 
         {matches.length === 0 && (
-          <div className="border rounded-lg p-4 text-sm text-gray-500">
+          <div className="border rounded-xl p-4 text-sm text-gray-500">
             No matching properties found
           </div>
         )}
@@ -102,7 +102,7 @@ export default function BuyerDetailPage() {
           {matches.map((seller) => (
             <div
               key={seller.id}
-              className="border rounded-lg p-4 flex justify-between items-center"
+              className="w-full border rounded-xl p-4 flex justify-between items-center"
             >
               <div>
                 <p className="font-medium">
