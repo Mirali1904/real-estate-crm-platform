@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import PrimaryButton from "@/components/PrimaryButton";
 import BackButton from "@/components/BackButton";
@@ -19,10 +19,65 @@ export default function AddSellerPage() {
     bedrooms: "",
   });
 
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [loadingLocation, setLoadingLocation] = useState(false);
+
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
+  /* ---------------- LOCATION (DEBOUNCED) ---------------- */
+  function handleLocationChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    setForm({ ...form, location: value });
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    if (value.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      if (abortRef.current) {
+        abortRef.current.abort();
+      }
+
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      try {
+        setLoadingLocation(true);
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${value}`,
+          { signal: controller.signal }
+        );
+        const data = await res.json();
+        setSuggestions(data);
+      } catch (err: any) {
+        if (err.name !== "AbortError") console.error(err);
+      } finally {
+        setLoadingLocation(false);
+      }
+    }, 700); // ✅ only after user stops typing
+  }
+
+  function selectLocation(place: any) {
+    setForm({
+      ...form,
+      location: place.display_name,
+      lat: place.lat,
+      lng: place.lon,
+    });
+    setSuggestions([]);
+  }
+
+  /* ---------------- SUBMIT ---------------- */
   async function handleSubmit() {
     const raw = localStorage.getItem("loggedUser");
     if (!raw) {
@@ -35,13 +90,8 @@ export default function AddSellerPage() {
 
     const res = await fetch("/api/sellers/create", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        tenantId,
-        ...form,
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tenantId, ...form }),
     });
 
     if (res.ok) {
@@ -56,71 +106,50 @@ export default function AddSellerPage() {
     <div className="w-full">
       <BackButton />
 
-      {/* ===== CENTER + SLIGHTLY UP ===== */}
-     <div className="flex justify-center">
-  <div className="w-full max-w-md mt-0">
-
+      <div className="flex justify-center">
+        <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h1 className="text-2xl font-semibold mb-6">
               Add <span className="text-[#c99a2e]">Property / Seller</span>
             </h1>
 
             <div className="space-y-4">
-              <Input
-                label="Phone / Contact"
-                name="owner_contact"
-                value={form.owner_contact}
-                onChange={handleChange}
-              />
+              <Input label="Phone / Contact" name="owner_contact" value={form.owner_contact} onChange={handleChange} />
+              <Input label="Email" name="email" value={form.email} onChange={handleChange} />
+              <Input label="Property Type" name="property_type" value={form.property_type} onChange={handleChange} />
 
-              <Input
-                label="Email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-              />
+              {/* LOCATION */}
+              <div className="relative">
+                <Input
+                  label="Location"
+                  name="location"
+                  value={form.location}
+                  onChange={handleLocationChange}
+                />
 
-              <Input
-                label="Property Type"
-                name="property_type"
-                value={form.property_type}
-                onChange={handleChange}
-              />
+                {loadingLocation && (
+                  <p className="text-xs text-gray-500 mt-1">Searching...</p>
+                )}
 
-              <Input
-                label="Location"
-                name="location"
-                value={form.location}
-                onChange={handleChange}
-              />
+                {suggestions.length > 0 && (
+                  <div className="absolute z-10 bg-white border w-full rounded-lg max-h-48 overflow-auto">
+                    {suggestions.map((place, i) => (
+                      <div
+                        key={i}
+                        onClick={() => selectLocation(place)}
+                        className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      >
+                        {place.display_name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-              <Input
-                label="Latitude"
-                name="lat"
-                value={form.lat}
-                onChange={handleChange}
-              />
-
-              <Input
-                label="Longitude"
-                name="lng"
-                value={form.lng}
-                onChange={handleChange}
-              />
-
-              <Input
-                label="Price"
-                name="price"
-                value={form.price}
-                onChange={handleChange}
-              />
-
-              <Input
-                label="Bedrooms"
-                name="bedrooms"
-                value={form.bedrooms}
-                onChange={handleChange}
-              />
+              <Input label="Latitude" name="lat" value={form.lat} onChange={handleChange} />
+              <Input label="Longitude" name="lng" value={form.lng} onChange={handleChange} />
+              <Input label="Price" name="price" value={form.price} onChange={handleChange} />
+              <Input label="Bedrooms" name="bedrooms" value={form.bedrooms} onChange={handleChange} />
             </div>
 
             <div className="flex justify-end mt-6">
@@ -135,19 +164,8 @@ export default function AddSellerPage() {
   );
 }
 
-/* ================= INPUT ================= */
-
-function Input({
-  label,
-  name,
-  value,
-  onChange,
-}: {
-  label: string;
-  name: string;
-  value: string;
-  onChange: any;
-}) {
+/* ---------------- INPUT ---------------- */
+function Input({ label, name, value, onChange }: any) {
   return (
     <div>
       <label className="block text-sm mb-1">{label}</label>

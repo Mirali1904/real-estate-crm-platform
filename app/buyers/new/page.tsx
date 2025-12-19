@@ -1,9 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import PrimaryButton from "@/components/PrimaryButton";
 import BackButton from "@/components/BackButton";
+
+/* ---------------- DEBOUNCE HOOK ---------------- */
+function useDebounce(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 export default function AddBuyerPage() {
   const router = useRouter();
@@ -25,32 +40,63 @@ export default function AddBuyerPage() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loadingLocation, setLoadingLocation] = useState(false);
 
+  /* ---------------- DEBOUNCED VALUE ---------------- */
+  const debouncedLocation = useDebounce(form.location, 600);
+
+  /* ---------------- PREVENT REPEAT CALLS ---------------- */
+  const lastSearchedRef = useRef<string>("");
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  /* ---------------- LOCATION AUTOCOMPLETE ---------------- */
+  /* ---------------- LOCATION INPUT CHANGE ---------------- */
+  function handleLocationChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setForm({ ...form, location: e.target.value });
+  }
 
-  async function handleLocationChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value;
-    setForm({ ...form, location: value });
-
-    if (value.length < 3) {
+  /* ---------------- LOCATION SEARCH EFFECT ---------------- */
+  useEffect(() => {
+    if (debouncedLocation.length < 3) {
       setSuggestions([]);
       return;
     }
 
-    setLoadingLocation(true);
+    // ❌ Same text → no API hit
+    if (lastSearchedRef.current === debouncedLocation) {
+      return;
+    }
 
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${value}`
-    );
+    lastSearchedRef.current = debouncedLocation;
 
-    const data = await res.json();
-    setSuggestions(data);
-    setLoadingLocation(false);
-  }
+    const controller = new AbortController();
 
+    async function fetchLocations() {
+      setLoadingLocation(true);
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${debouncedLocation}`,
+          { signal: controller.signal }
+        );
+
+        const data = await res.json();
+        setSuggestions(data);
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          console.error("Location error", err);
+        }
+      } finally {
+        setLoadingLocation(false);
+      }
+    }
+
+    fetchLocations();
+
+    // ✅ cancel previous request
+    return () => controller.abort();
+  }, [debouncedLocation]);
+
+  /* ---------------- SELECT LOCATION ---------------- */
   function selectLocation(place: any) {
     setForm({
       ...form,
@@ -62,43 +108,39 @@ export default function AddBuyerPage() {
   }
 
   /* ---------------- SUBMIT ---------------- */
+  async function handleSubmit() {
+    const raw = localStorage.getItem("loggedUser");
 
- async function handleSubmit() {
-  const raw = localStorage.getItem("loggedUser");
+    if (!raw) {
+      alert("Not logged in");
+      return;
+    }
 
-  if (!raw) {
-    alert("Not logged in");
-    return;
+    const user = JSON.parse(raw);
+    const tenantId = user.tenant_id ?? user.tenantId;
+
+    if (!tenantId) {
+      alert("Tenant not found");
+      return;
+    }
+
+    const res = await fetch("/api/buyers/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-tenant-id": String(tenantId),
+      },
+      body: JSON.stringify(form),
+    });
+
+    if (res.ok) {
+      alert("Buyer created");
+      router.push("/buyers");
+    } else {
+      const err = await res.json();
+      alert(err.error || "Failed");
+    }
   }
-
-  const user = JSON.parse(raw);
-
-  // ✅ FIX: tenantId correct read
-  const tenantId = user.tenant_id ?? user.tenantId;
-
-  if (!tenantId) {
-    alert("Tenant not found");
-    return;
-  }
-
-  const res = await fetch("/api/buyers/create", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-tenant-id": String(tenantId),
-    },
-    body: JSON.stringify(form),
-  });
-
-  if (res.ok) {
-    alert("Buyer created");
-    router.push("/buyers");
-  } else {
-    const err = await res.json();
-    alert(err.error || "Failed");
-  }
-}
-
 
   return (
     <div className="w-full">
@@ -163,7 +205,6 @@ export default function AddBuyerPage() {
 }
 
 /* ---------------- INPUT ---------------- */
-
 function Input({ label, name, onChange, value, readOnly = false }: any) {
   return (
     <div>

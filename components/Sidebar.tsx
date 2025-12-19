@@ -42,20 +42,20 @@ export default function Sidebar() {
           </h3>
 
           <nav className="flex flex-col gap-2">
-            <Link href="/users/new" className={itemClass("/users/new")}>
-              Add User / Agent
-            </Link>
-            <Link href="/users" className={itemClass("/users")}>
-              Users / Team
-            </Link>
             <Link href="/buyers" className={itemClass("/buyers")}>
               Buyers
             </Link>
+
             <Link href="/sellers" className={itemClass("/sellers")}>
               Sellers / Properties
             </Link>
+
             <Link href="/groups" className={itemClass("/groups")}>
               Groups
+            </Link>
+
+            <Link href="/users" className={itemClass("/users")}>
+              Users / Team
             </Link>
           </nav>
         </div>
@@ -75,3 +75,4 @@ export default function Sidebar() {
     </aside>
   );
 }
+  
