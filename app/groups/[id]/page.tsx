@@ -215,7 +215,7 @@ export default function GroupDetailPage() {
                 : "border-transparent text-gray-500"
             }`}
           >
-            Members ({agencies.length})
+           Agencies ({agencies.length})
           </button>
         </div>
 
@@ -242,7 +242,7 @@ export default function GroupDetailPage() {
                     setShowAddMemberModal(true);
                   }}
                 >
-                  + Add Member
+                  + Add Agency
                 </SecondaryButton>
               )}
 

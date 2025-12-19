@@ -22,10 +22,8 @@ export async function GET(req: Request) {
       );
     }
 
-    const groups = await groupService.getGroupsForUser(
-      userId,
-      tenantId
-    );
+    // ✅ YE NAYA QUERY USE KARO - YE GROUPS DIKHAYEGA JAHA USER AGENCY HAI
+    const groups = await groupService.getGroupsForUser(userId);
 
     return NextResponse.json(groups);
   } catch (error: any) {

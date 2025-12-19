@@ -7,7 +7,8 @@ interface Response {
   id: number;
   message: string;
   user_id: number;
-  user_name: string;
+  author_name: string;
+  author_email?: string;
   created_at: string;
 }
 
@@ -82,14 +83,6 @@ export default function PostResponsesModal({
     if (onResponseAdded) onResponseAdded();
   };
 
-  /* ---------------- TIME FORMAT ---------------- */
-  const formatTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleString("en-IN", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -110,25 +103,24 @@ export default function PostResponsesModal({
           {responses.map((r) => (
             <div
               key={r.id}
-              className="border rounded p-3 text-sm relative"
+              className="border rounded-md p-3 bg-gray-50 relative"
             >
-              <p>{r.message}</p>
+              <p className="text-sm text-gray-800 mb-1">
+                {r.message}
+              </p>
 
-              <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+              <div className="text-xs text-gray-500 flex justify-between">
                 <span>
-                  — {r.user_name}
-                  {r.user_id === userId && (
-                    <span className="text-[#c99a2e] font-medium">
-                      {" "}
-                      (You)
-                    </span>
-                  )}
+                  Response by <b>{r.author_name}</b>
+                  {r.author_email ? ` (${r.author_email})` : ""}
                 </span>
 
-                <span>{formatTime(r.created_at)}</span>
+                <span>
+                  {new Date(r.created_at).toLocaleString()}
+                </span>
               </div>
 
-              {/* DELETE (ONLY OWN) */}
+              {/* DELETE (ONLY OWN RESPONSE) */}
               {r.user_id === userId && (
                 <button
                   onClick={() => handleDeleteResponse(r.id)}

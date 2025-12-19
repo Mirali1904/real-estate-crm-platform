@@ -3,7 +3,7 @@ import { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export class GroupService {
   
-async getGroupsForUser(userId: number, tenantId: number) {
+async getGroupsForUser(userId: number) {
   const [groups] = await conn.query<RowDataPacket[]>(
     `
     SELECT DISTINCT
@@ -11,33 +11,33 @@ async getGroupsForUser(userId: number, tenantId: number) {
       u.name AS creator_name,
       (
         SELECT COUNT(*)
-        FROM group_members gm2
-        WHERE gm2.group_id = g.id
-          AND gm2.status = 'active'
+        FROM group_agencies ga2
+        WHERE ga2.group_id = g.id
+          AND ga2.status = 'active'
       ) AS member_count,
       CASE
         WHEN g.created_by = ? THEN 'ADMIN'
-        ELSE gm.role
+        ELSE 'MEMBER'
       END AS user_role
     FROM groups g
-    LEFT JOIN group_members gm
-      ON gm.group_id = g.id
-      AND gm.user_id = ?
-      AND gm.status = 'active'
+    LEFT JOIN group_agencies ga
+      ON ga.group_id = g.id
+      AND ga.agency_id = ?
+      AND ga.status = 'active'
     LEFT JOIN users u ON g.created_by = u.id
-    WHERE g.tenant_id = ?
-      AND g.status = 'active'
+    WHERE g.status = 'active'
       AND (
         g.created_by = ?
-        OR gm.user_id IS NOT NULL
+        OR ga.agency_id IS NOT NULL
       )
     ORDER BY g.created_at DESC
     `,
-    [userId, userId, tenantId, userId]
+    [userId, userId, userId]
   );
 
   return groups;
 }
+
 
 
 
