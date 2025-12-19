@@ -11,8 +11,6 @@ export async function GET(
   try {
     const { id } = await params;
     const sellerId = Number(id);
-
-    // ✅ FIX: read tenantId from HEADER (not query)
     const tenantId = Number(req.headers.get("x-tenant-id"));
 
     if (!sellerId || !tenantId) {
@@ -22,20 +20,12 @@ export async function GET(
       );
     }
 
-    /* 1️⃣ Fetch seller */
+    /* 1️⃣ Seller */
     const [sellerRows]: any = await conn.execute(
       `
-      SELECT
-        id,
-        price,
-        bedrooms,
-        lat,
-        lng,
-        status
+      SELECT id, price, bedrooms, lat, lng
       FROM sellers
-      WHERE id = ?
-        AND tenant_id = ?
-        AND status = 'LISTED'
+      WHERE id = ? AND tenant_id = ?
       `,
       [sellerId, tenantId]
     );
@@ -46,7 +36,7 @@ export async function GET(
 
     const seller = sellerRows[0];
 
-    /* 2️⃣ Find matching buyers */
+    /* 2️⃣ ALL COMPATIBLE BUYERS */
     const [buyers]: any = await conn.execute(
       `
       SELECT
@@ -58,8 +48,6 @@ export async function GET(
         b.budget_max,
         b.bedrooms,
         b.radius_km,
-        b.lat,
-        b.lng,
         (
           6371 * ACOS(
             COS(RADIANS(b.lat))
@@ -68,10 +56,14 @@ export async function GET(
             + SIN(RADIANS(b.lat))
             * SIN(RADIANS(?))
           )
-        ) AS distance_km
+        ) AS distance_km,
+        ps.status AS property_status
       FROM buyers b
+      LEFT JOIN buyer_property_status ps
+        ON ps.buyer_id = b.id
+       AND ps.seller_id = ?
+       AND ps.tenant_id = ?
       WHERE b.tenant_id = ?
-        AND b.status = 'ENQUIRY'
         AND b.bedrooms = ?
         AND ? BETWEEN b.budget_min AND b.budget_max
       HAVING distance_km <= b.radius_km
@@ -81,6 +73,8 @@ export async function GET(
         seller.lat,
         seller.lng,
         seller.lat,
+        sellerId,
+        tenantId,
         tenantId,
         seller.bedrooms,
         seller.price,

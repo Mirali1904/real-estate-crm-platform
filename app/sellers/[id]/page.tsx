@@ -9,7 +9,6 @@ export default function SellerDetailPage() {
 
   const [seller, setSeller] = useState<any>(null);
   const [buyers, setBuyers] = useState<any[]>([]);
-  const [buyerStatus, setBuyerStatus] = useState<Record<number, string>>({});
   const [tenantId, setTenantId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,39 +35,26 @@ export default function SellerDetailPage() {
 
     async function loadData() {
       try {
-        /* SELLER */
+        /* SELLER DETAILS */
         const sellerRes = await fetch(`/api/sellers/${sellerId}`);
         if (!sellerRes.ok) return;
         setSeller(await sellerRes.json());
 
-        /* MATCHED BUYERS */
+        /* 🔥 BUYERS WITH STATUS (SOURCE OF TRUTH) */
         const buyersRes = await fetch(
-          `/api/sellers/${sellerId}/matches`,
-          {
-            headers: { "x-tenant-id": String(tenantId) },
-          }
-        );
-
-        if (!buyersRes.ok) return;
-        const buyersData = await buyersRes.json();
-        setBuyers(buyersData.matches || []);
-
-        /* BUYER-PROPERTY STATUS (REVERSE LOOKUP) */
-        const statusRes = await fetch(
           `/api/sellers/${sellerId}/buyer-status`,
           {
             headers: { "x-tenant-id": String(tenantId) },
           }
         );
 
-        if (statusRes.ok) {
-          const data = await statusRes.json();
-          const map: Record<number, string> = {};
-          data.statuses.forEach((r: any) => {
-            map[r.buyer_id] = r.status;
-          });
-          setBuyerStatus(map);
+        if (!buyersRes.ok) {
+          setBuyers([]);
+          return;
         }
+
+        const data = await buyersRes.json();
+        setBuyers(data.buyers || []);
       } finally {
         setLoading(false);
       }
@@ -118,26 +104,26 @@ export default function SellerDetailPage() {
         </div>
       </div>
 
-      {/* MATCHED BUYERS */}
+      {/* BUYERS WITH STATUS */}
       <div>
         <h2 className="text-lg font-semibold mb-3">
-          Matched Buyers
+          Buyers (Property-wise Status)
         </h2>
 
         {buyers.length === 0 && (
           <p className="text-sm text-gray-500">
-            No compatible buyers found
+            No buyers interacted with this property
           </p>
         )}
 
         <div className="space-y-4">
           {buyers.map((buyer) => {
-            const status = buyerStatus[buyer.id] || "New";
+            const status = buyer.property_status || "New";
             const isRejected = status === "Not Interested";
 
             return (
               <div
-                key={buyer.id}
+                key={buyer.buyer_id}
                 className={`border rounded-xl p-4 flex justify-between items-center
                   ${getCardStyle(status)}
                   ${isRejected ? "pointer-events-none opacity-60" : ""}`}
@@ -154,11 +140,6 @@ export default function SellerDetailPage() {
                   <p className="text-xs text-gray-500">
                     Distance: {buyer.distance_km.toFixed(2)} km
                   </p>
-                  {isRejected && (
-                    <p className="text-xs text-red-500">
-                      Buyer marked as Not Interested
-                    </p>
-                  )}
                 </div>
 
                 {/* RIGHT */}
@@ -172,10 +153,13 @@ export default function SellerDetailPage() {
                     onChange={async (e) => {
                       const newStatus = e.target.value;
 
-                      setBuyerStatus((prev) => ({
-                        ...prev,
-                        [buyer.id]: newStatus,
-                      }));
+                      setBuyers((prev) =>
+                        prev.map((b) =>
+                          b.buyer_id === buyer.buyer_id
+                            ? { ...b, property_status: newStatus }
+                            : b
+                        )
+                      );
 
                       const raw = localStorage.getItem("loggedUser");
                       if (!raw) return;
@@ -184,7 +168,7 @@ export default function SellerDetailPage() {
                         user.tenant_id ?? user.tenantId;
 
                       const res = await fetch(
-                        `/api/buyers/${buyer.id}/property-status`,
+                        `/api/buyers/${buyer.buyer_id}/property-status`,
                         {
                           method: "POST",
                           headers: {

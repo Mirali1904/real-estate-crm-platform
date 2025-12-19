@@ -73,9 +73,7 @@ export async function POST(
       );
     }
 
-    /* ------------------------------------------------
-       1️⃣ SAVE / UPDATE PROPERTY STATUS (PER PROPERTY)
-    ------------------------------------------------- */
+    /* 1️⃣ SAVE / UPDATE PROPERTY STATUS */
     await conn.execute(
       `
       INSERT INTO buyer_property_status
@@ -88,10 +86,7 @@ export async function POST(
       [tenantId, buyerId, sellerId, status]
     );
 
-    /* ------------------------------------------------
-       2️⃣ UPDATE SELLER STATUS
-       ❗ ONLY WHEN DEAL IS CLOSED
-    ------------------------------------------------- */
+    /* 2️⃣ SELLER → SOLD ONLY ON DEAL CLOSED */
     if (status === "Deal Closed") {
       await conn.execute(
         `
@@ -103,21 +98,11 @@ export async function POST(
       );
     }
 
-    /* ------------------------------------------------
-       3️⃣ UPDATE BUYER STATUS (EXACT AS SELECTED)
-       RULE:
-       - Interested        → Interested
-       - Shortlisted       → Shortlisted
-       - Site Visit Planned→ Site Visit Planned
-       - Deal Closed       → Deal Closed
-       - Not Interested    → ENQUIRY
-    ------------------------------------------------- */
-    let buyerStatus: string;
+    /* 3️⃣ BUYER STATUS RULE (FINAL) */
+    let buyerStatus = "ENQUIRY";
 
-    if (status === "Not Interested") {
-      buyerStatus = "ENQUIRY";
-    } else {
-      buyerStatus = status;
+    if (status === "Deal Closed") {
+      buyerStatus = "WON";
     }
 
     await conn.execute(
