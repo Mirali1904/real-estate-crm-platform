@@ -9,16 +9,15 @@ import pool from "@/lib/db";
  * - budget
  * - bedrooms
  * - distance (Haversine)
+ * + buyer_property_status JOIN (FIX)
  */
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  // unwrap params
   const { id } = await context.params;
   const buyerId = Number(id);
 
-  // tenantId from header or query
   const tenantId =
     Number(req.headers.get("x-tenant-id")) ||
     Number(req.nextUrl.searchParams.get("tenantId"));
@@ -53,7 +52,7 @@ export async function GET(
 
     const buyer = buyers[0];
 
-    // 2️⃣ Fetch sellers with distance + SELLER INFO
+    // 2️⃣ Fetch sellers + buyer status (🔥 FIX HERE)
     const [rows]: any = await conn.execute(
       `
       SELECT
@@ -64,12 +63,15 @@ export async function GET(
         s.location,
         s.lat,
         s.lng,
-        s.status,
+        s.status AS seller_status,
 
-        -- ✅ SELLER DETAILS (KEY FIX)
+        -- Seller details
         s.name          AS seller_name,
         s.email         AS seller_email,
         s.owner_contact AS seller_contact,
+
+        -- 🔥 BUYER ↔ SELLER STATUS
+        COALESCE(bps.status, 'New') AS buyer_property_status,
 
         (
           6371 * acos(
@@ -81,6 +83,10 @@ export async function GET(
           )
         ) AS distance_km
       FROM sellers s
+      LEFT JOIN buyer_property_status bps
+        ON bps.seller_id = s.id
+        AND bps.buyer_id = ?
+        AND bps.tenant_id = ?
       WHERE s.tenant_id = ?
         AND s.status = 'LISTED'
         AND s.price BETWEEN ? AND ?
@@ -92,6 +98,8 @@ export async function GET(
         buyer.lat,
         buyer.lng,
         buyer.lat,
+        buyerId,
+        tenantId,
         tenantId,
         buyer.budget_min,
         buyer.budget_max,

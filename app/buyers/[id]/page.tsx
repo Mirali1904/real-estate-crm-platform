@@ -10,11 +10,14 @@ export default function BuyerDetailPage() {
   const [buyer, setBuyer] = useState<any>(null);
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // 🔥 Only for user-changed values
   const [statusMap, setStatusMap] = useState<Record<number, string>>({});
 
-  /* Status options - ONLY for buyer side */
+  /* 🔥 FIX HERE: Contacted option was missing */
   const STATUS_OPTIONS = [
     "New",
+    "Contacted",          // ✅ VERY IMPORTANT FIX
     "Interested",
     "Site Visit Planned",
     "Deal Closed",
@@ -36,32 +39,27 @@ export default function BuyerDetailPage() {
         const buyerRes = await fetch(`/api/buyers/${buyerId}`, {
           headers: { "x-tenant-id": String(tenantId) },
         });
-        if (!buyerRes.ok) return;
-        setBuyer(await buyerRes.json());
+        if (buyerRes.ok) {
+          setBuyer(await buyerRes.json());
+        }
 
-        /* Fetch matched properties */
+        /* Fetch matched properties (includes buyer_property_status) */
         const matchRes = await fetch(`/api/buyers/${buyerId}/matches`, {
           headers: { "x-tenant-id": String(tenantId) },
         });
-        if (!matchRes.ok) return;
-        const sellers = (await matchRes.json()).matches || [];
-        setMatches(sellers);
 
-        /* Fetch status for all properties */
-        const statusRes = await fetch(
-          `/api/buyers/${buyerId}/property-status`,
-          {
-            headers: { "x-tenant-id": String(tenantId) },
-          }
-        );
+        if (matchRes.ok) {
+          const sellers = (await matchRes.json()).matches || [];
+          setMatches(sellers);
 
-        if (statusRes.ok) {
-          const data = await statusRes.json();
-          const map: Record<number, string> = {};
-          data.statuses.forEach((r: any) => {
-            map[r.seller_id] = r.status || "New";
+          // 🔥 Initialize statusMap from backend status
+          const initialStatusMap: Record<number, string> = {};
+          sellers.forEach((s: any) => {
+            if (s.buyer_property_status) {
+              initialStatusMap[s.id] = s.buyer_property_status;
+            }
           });
-          setStatusMap(map);
+          setStatusMap(initialStatusMap);
         }
       } finally {
         setLoading(false);
@@ -125,7 +123,11 @@ export default function BuyerDetailPage() {
 
         <div className="space-y-4">
           {matches.map((seller) => {
-            const status = statusMap[seller.id] || "New";
+            const status =
+              statusMap[seller.id] ??
+              seller.buyer_property_status ??
+              "New";
+
             const isDiscarded = status === "Discarded";
 
             return (
@@ -171,6 +173,7 @@ export default function BuyerDetailPage() {
                     onChange={async (e) => {
                       const newStatus = e.target.value;
 
+                      // UI update instantly
                       setStatusMap((prev) => ({
                         ...prev,
                         [seller.id]: newStatus,
