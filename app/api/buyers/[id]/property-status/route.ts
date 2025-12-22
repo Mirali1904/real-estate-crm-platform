@@ -46,13 +46,13 @@ export async function POST(
     const { id } = await context.params;
     const buyerId = Number(id);
     const tenantId = Number(req.headers.get("x-tenant-id"));
-
     const { sellerId, status } = await req.json();
 
     if (!buyerId || !sellerId || !tenantId || !status) {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 });
     }
 
+    // ✅ Save / update buyer-seller status
     await conn.execute(
       `
       INSERT INTO buyer_property_status
@@ -65,30 +65,63 @@ export async function POST(
       [tenantId, buyerId, sellerId, status]
     );
 
-    /* Update buyer's overall status if needed */
-    const [[buyer]]: any = await conn.execute(
-      `SELECT status FROM buyers WHERE id = ? AND tenant_id = ?`,
-      [buyerId, tenantId]
-    );
+    /* ===============================
+       FINAL DEAL LOGIC (FIXED)
+    =============================== */
 
-    let newBuyerStatus = buyer?.status || "ENQUIRY";
+    let newBuyerStatus = "ENQUIRY";
 
-    if (status === "Connected" || status === "In Progress") {
+    if (status === "Deal Closed") {
+      // ✅ Buyer WON
+      newBuyerStatus = "WON";
+
+      // ✅ Mark property SOLD (LOGIC + UI)
+      await conn.execute(
+        `
+        UPDATE sellers
+        SET 
+          is_sold = 1,
+          status = 'SOLD'
+        WHERE id = ? AND tenant_id = ?
+        `,
+        [sellerId, tenantId]
+      );
+
+      // ✅ Mark other sellers as LOST for this buyer
+      await conn.execute(
+        `
+        UPDATE buyer_property_status
+        SET status = 'Lost'
+        WHERE buyer_id = ?
+          AND tenant_id = ?
+          AND seller_id != ?
+        `,
+        [buyerId, tenantId, sellerId]
+      );
+    } 
+    else if (status === "Connected" || status === "In Progress") {
       newBuyerStatus = "IN_PROGRESS";
-    } else if (status === "Site Visit Planned") {
+    } 
+    else if (status === "Site Visit Planned") {
       newBuyerStatus = "SITE_VISIT";
-    } else if (status === "Interested" || status === "Contacted") {
+    } 
+    else if (status === "Interested" || status === "Contacted") {
       newBuyerStatus = "ACTIVE";
     }
 
+    // ✅ Update buyer master status
     await conn.execute(
-      `UPDATE buyers SET status = ? WHERE id = ? AND tenant_id = ?`,
+      `
+      UPDATE buyers
+      SET status = ?
+      WHERE id = ? AND tenant_id = ?
+      `,
       [newBuyerStatus, buyerId, tenantId]
     );
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      buyerStatus: newBuyerStatus
+      buyerStatus: newBuyerStatus,
     });
   } catch (err) {
     console.error("Buyer property-status POST error:", err);

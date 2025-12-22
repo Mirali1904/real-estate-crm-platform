@@ -17,11 +17,14 @@ export async function GET(
   const conn = await pool.getConnection();
 
   try {
+    // ✅ Fetch seller (ignore SOLD properties)
     const [[seller]]: any = await conn.execute(
       `
       SELECT price, bedrooms, lat, lng
       FROM sellers
-      WHERE id = ? AND tenant_id = ?
+      WHERE id = ?
+        AND tenant_id = ?
+        AND is_sold = 0
       `,
       [sellerId, tenantId]
     );
@@ -30,6 +33,7 @@ export async function GET(
       return NextResponse.json({ buyers: [] });
     }
 
+    // ✅ Fetch matching buyers with per-seller status
     const [rows]: any = await conn.execute(
       `
       SELECT
