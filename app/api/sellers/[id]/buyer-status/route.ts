@@ -1,21 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import { conn } from "@/lib/db";
+import pool from "@/lib/db";
 
-/* =================================================
-   GET → BUYERS FOR A SELLER (WITH STATUS)
-   SOURCE OF TRUTH: buyer_property_status
-================================================= */
+/* GET: Fetch all compatible buyers for this seller with their status */
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+  const sellerId = Number(id);
+  const tenantId = Number(req.headers.get("x-tenant-id"));
+
+  if (!sellerId || !tenantId) {
+    return NextResponse.json({ buyers: [] });
+  }
+
+  const conn = await pool.getConnection();
+
   try {
-    const { id } = await params;
-    const sellerId = Number(id);
+    const [[seller]]: any = await conn.execute(
+      `
+      SELECT price, bedrooms, lat, lng
+      FROM sellers
+      WHERE id = ? AND tenant_id = ?
+      `,
+      [sellerId, tenantId]
+    );
 
-    const tenantId = Number(req.headers.get("x-tenant-id"));
-
-    if (!sellerId || !tenantId) {
+    if (!seller) {
       return NextResponse.json({ buyers: [] });
     }
 
@@ -29,43 +40,31 @@ export async function GET(
         b.budget_min,
         b.budget_max,
         b.radius_km,
-        b.lat,
-        b.lng,
-        b.bedrooms,
-        bps.status AS property_status,
-        (
-          6371 * ACOS(
-            COS(RADIANS(b.lat))
-            * COS(RADIANS(s.lat))
-            * COS(RADIANS(s.lng) - RADIANS(b.lng))
-            + SIN(RADIANS(b.lat))
-            * SIN(RADIANS(s.lat))
-          )
-        ) AS distance_km
-      FROM buyer_property_status bps
-      JOIN buyers b ON b.id = bps.buyer_id
-      JOIN sellers s ON s.id = bps.seller_id
-      WHERE bps.seller_id = ?
+        COALESCE(bps.status, 'New') AS status
+      FROM buyers b
+      LEFT JOIN buyer_property_status bps
+        ON bps.buyer_id = b.id
+        AND bps.seller_id = ?
         AND bps.tenant_id = ?
+      WHERE b.tenant_id = ?
         AND b.is_deleted = 0
-      ORDER BY
-        FIELD(
-          bps.status,
-          'Deal Closed',
-          'Site Visit Planned',
-          'Shortlisted',
-          'Interested',
-          'New',
-          'Not Interested'
-        ),
-        bps.updated_at DESC
+        AND b.bedrooms = ?
+        AND ? BETWEEN b.budget_min AND b.budget_max
       `,
-      [sellerId, tenantId]
+      [
+        sellerId,
+        tenantId,
+        tenantId,
+        seller.bedrooms,
+        seller.price,
+      ]
     );
 
     return NextResponse.json({ buyers: rows });
   } catch (err) {
     console.error("Seller buyer-status error:", err);
     return NextResponse.json({ buyers: [] }, { status: 500 });
+  } finally {
+    conn.release();
   }
 }

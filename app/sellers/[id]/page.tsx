@@ -12,13 +12,12 @@ export default function SellerDetailPage() {
   const [tenantId, setTenantId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
+  /* Seller side dropdown options */
   const STATUS_OPTIONS = [
     "New",
-    "Interested",
-    "Shortlisted",
-    "Site Visit Planned",
-    "Deal Closed",
-    "Not Interested",
+    "Contacted",
+    "Site Visit Done",
+    "Dropped",
   ];
 
   /* ---------------- LOAD TENANT ---------------- */
@@ -35,12 +34,10 @@ export default function SellerDetailPage() {
 
     async function loadData() {
       try {
-        /* SELLER DETAILS */
         const sellerRes = await fetch(`/api/sellers/${sellerId}`);
         if (!sellerRes.ok) return;
         setSeller(await sellerRes.json());
 
-        /* BUYERS WITH STATUS */
         const buyersRes = await fetch(
           `/api/sellers/${sellerId}/buyer-status`,
           {
@@ -63,17 +60,21 @@ export default function SellerDetailPage() {
     loadData();
   }, [sellerId, tenantId]);
 
+  /* ---------------- CARD COLOR ---------------- */
   function getCardStyle(status: string) {
     switch (status) {
+      case "Contacted":
+        return "border-blue-400 bg-blue-50";
+      case "Site Visit Done":
+        return "border-green-600 bg-green-100";
       case "Interested":
         return "border-green-400 bg-green-50";
-      case "Shortlisted":
-        return "border-green-600 bg-green-100";
       case "Site Visit Planned":
         return "border-yellow-400 bg-yellow-50";
       case "Deal Closed":
         return "border-green-700 bg-green-200";
-      case "Not Interested":
+      case "Dropped":
+      case "Discarded":
         return "border-gray-300 bg-gray-100 opacity-60";
       default:
         return "border-gray-200 bg-white";
@@ -85,33 +86,17 @@ export default function SellerDetailPage() {
 
   return (
     <div className="w-full p-6 space-y-6">
-      {/* SELLER / PROPERTY DETAILS */}
+      {/* SELLER DETAILS */}
       <div className="border rounded-xl p-6 bg-white">
-        <h1 className="text-xl font-semibold mb-3">
-          Property Details
-        </h1>
+        <h1 className="text-xl font-semibold mb-3">Property Details</h1>
 
         <div className="text-sm space-y-1">
-          {/* ✅ NEW: SELLER INFO */}
-          <p>
-            <strong>Seller Name:</strong>{" "}
-            {seller.name || "Unknown Seller"}
-          </p>
-
-          {seller.email && (
-            <p>
-              <strong>Email:</strong> {seller.email}
-            </p>
-          )}
-
+          <p><strong>Seller Name:</strong> {seller.name}</p>
+          {seller.email && <p><strong>Email:</strong> {seller.email}</p>}
           {seller.owner_contact && (
-            <p>
-              <strong>Contact:</strong> {seller.owner_contact}
-            </p>
+            <p><strong>Contact:</strong> {seller.owner_contact}</p>
           )}
-
           <hr className="my-2" />
-
           <p><strong>Price:</strong> ₹{seller.price}</p>
           <p><strong>Bedrooms:</strong> {seller.bedrooms}</p>
           <p>
@@ -123,29 +108,28 @@ export default function SellerDetailPage() {
         </div>
       </div>
 
-      {/* BUYERS WITH STATUS */}
+      {/* BUYERS LIST */}
       <div>
         <h2 className="text-lg font-semibold mb-3">
-          Buyers (Property-wise Status)
+          Buyers (Seller Action)
         </h2>
 
         {buyers.length === 0 && (
-          <p className="text-sm text-gray-500">
-            No buyers interacted with this property
-          </p>
+          <p className="text-sm text-gray-500">No buyers found</p>
         )}
 
         <div className="space-y-4">
           {buyers.map((buyer) => {
-            const status = buyer.property_status || "New";
-            const isRejected = status === "Not Interested";
+            const status = buyer.status || "New";
+            const isDropped =
+              status === "Dropped" || status === "Discarded";
 
             return (
               <div
                 key={buyer.buyer_id}
                 className={`border rounded-xl p-4 flex justify-between items-center
                   ${getCardStyle(status)}
-                  ${isRejected ? "pointer-events-none opacity-60" : ""}`}
+                  ${isDropped ? "pointer-events-none opacity-60" : ""}`}
               >
                 <div className="text-sm space-y-1">
                   <p className="font-medium">{buyer.name}</p>
@@ -155,25 +139,29 @@ export default function SellerDetailPage() {
                   <p>
                     ₹{buyer.budget_min} – ₹{buyer.budget_max}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    Distance: {buyer.distance_km.toFixed(2)} km
+
+                  {/* 👇 THIS IS IMPORTANT */}
+                  <p className="text-xs mt-1">
+                    <strong>Buyer Interest:</strong>{" "}
+                    <span className="text-blue-600">{status}</span>
                   </p>
                 </div>
 
                 <div className="flex flex-col">
                   <label className="text-xs text-gray-500 mb-1">
-                    Buyer Status
+                    Seller Action
                   </label>
                   <select
                     value={status}
-                    disabled={isRejected}
+                    disabled={isDropped}
                     onChange={async (e) => {
                       const newStatus = e.target.value;
 
+                      /* UI update */
                       setBuyers((prev) =>
                         prev.map((b) =>
                           b.buyer_id === buyer.buyer_id
-                            ? { ...b, property_status: newStatus }
+                            ? { ...b, status: newStatus }
                             : b
                         )
                       );
@@ -184,7 +172,8 @@ export default function SellerDetailPage() {
                       const tenantId =
                         user.tenant_id ?? user.tenantId;
 
-                      const res = await fetch(
+                      /* DB update */
+                      await fetch(
                         `/api/buyers/${buyer.buyer_id}/property-status`,
                         {
                           method: "POST",
@@ -198,13 +187,6 @@ export default function SellerDetailPage() {
                           }),
                         }
                       );
-
-                      if (res.ok && newStatus === "Deal Closed") {
-                        setSeller((prev: any) => ({
-                          ...prev,
-                          status: "SOLD",
-                        }));
-                      }
                     }}
                     className="border rounded-md px-2 py-1 text-sm"
                   >

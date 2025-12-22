@@ -10,19 +10,15 @@ export default function BuyerDetailPage() {
   const [buyer, setBuyer] = useState<any>(null);
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statusMap, setStatusMap] = useState<Record<number, string>>({});
 
-  // propertyId -> status mapping
-  const [propertyStatus, setPropertyStatus] = useState<Record<number, string>>(
-    {}
-  );
-
+  /* Status options - ONLY for buyer side */
   const STATUS_OPTIONS = [
     "New",
     "Interested",
-    "Shortlisted",
     "Site Visit Planned",
     "Deal Closed",
-    "Not Interested",
+    "Discarded",
   ];
 
   useEffect(() => {
@@ -36,38 +32,36 @@ export default function BuyerDetailPage() {
         const user = JSON.parse(raw);
         const tenantId = user.tenant_id ?? user.tenantId;
 
-        /* BUYER DETAILS */
+        /* Fetch buyer details */
         const buyerRes = await fetch(`/api/buyers/${buyerId}`, {
           headers: { "x-tenant-id": String(tenantId) },
         });
         if (!buyerRes.ok) return;
         setBuyer(await buyerRes.json());
 
-        /* MATCHED PROPERTIES */
-        const matchRes = await fetch(
-          `/api/buyers/${buyerId}/matches`,
-          {
-            headers: { "x-tenant-id": String(tenantId) },
-          }
-        );
+        /* Fetch matched properties */
+        const matchRes = await fetch(`/api/buyers/${buyerId}/matches`, {
+          headers: { "x-tenant-id": String(tenantId) },
+        });
         if (!matchRes.ok) return;
         const sellers = (await matchRes.json()).matches || [];
         setMatches(sellers);
 
-        /* PROPERTY STATUS (PERSISTENCE) */
+        /* Fetch status for all properties */
         const statusRes = await fetch(
           `/api/buyers/${buyerId}/property-status`,
           {
             headers: { "x-tenant-id": String(tenantId) },
           }
         );
+
         if (statusRes.ok) {
           const data = await statusRes.json();
           const map: Record<number, string> = {};
           data.statuses.forEach((r: any) => {
-            map[r.seller_id] = r.status;
+            map[r.seller_id] = r.status || "New";
           });
-          setPropertyStatus(map);
+          setStatusMap(map);
         }
       } finally {
         setLoading(false);
@@ -81,13 +75,11 @@ export default function BuyerDetailPage() {
     switch (status) {
       case "Interested":
         return "border-green-400 bg-green-50";
-      case "Shortlisted":
-        return "border-green-600 bg-green-100";
       case "Site Visit Planned":
         return "border-yellow-400 bg-yellow-50";
       case "Deal Closed":
         return "border-green-700 bg-green-200";
-      case "Not Interested":
+      case "Discarded":
         return "border-gray-300 bg-gray-100 opacity-60";
       default:
         return "border-gray-200 bg-white";
@@ -99,60 +91,60 @@ export default function BuyerDetailPage() {
 
   return (
     <div className="w-full p-6 space-y-6">
-      {/* BUYER DETAILS */}
+      {/* Buyer Details */}
       <div className="w-full border rounded-xl p-6 bg-white">
         <h1 className="text-xl font-semibold">{buyer.name}</h1>
         <p className="text-sm text-gray-600">{buyer.email}</p>
         <p className="text-sm text-gray-600">{buyer.phone}</p>
 
         <div className="mt-4 text-sm space-y-1">
-          <p><strong>Requirement:</strong> {buyer.requirement}</p>
-          <p><strong>Budget:</strong> ₹{buyer.budget_min} – ₹{buyer.budget_max}</p>
-          <p><strong>Bedrooms:</strong> {buyer.bedrooms}</p>
-          <p><strong>Radius:</strong> {buyer.radius_km} km</p>
+          <p>
+            <strong>Requirement:</strong> {buyer.requirement}
+          </p>
+          <p>
+            <strong>Budget:</strong> ₹{buyer.budget_min} – ₹{buyer.budget_max}
+          </p>
+          <p>
+            <strong>Bedrooms:</strong> {buyer.bedrooms}
+          </p>
+          <p>
+            <strong>Radius:</strong> {buyer.radius_km} km
+          </p>
           <p>
             <strong>Status:</strong>{" "}
             <span className="text-orange-600 font-medium">
               {buyer.status}
             </span>
-            <span className="text-xs text-gray-500 ml-2">
-              (based on property selections)
-            </span>
           </p>
         </div>
       </div>
 
-      {/* MATCHED PROPERTIES */}
+      {/* Matched Properties */}
       <div className="w-full">
-        <h2 className="text-lg font-semibold mb-3">
-          Matched Properties
-        </h2>
+        <h2 className="text-lg font-semibold mb-3">Matched Properties</h2>
 
         <div className="space-y-4">
           {matches.map((seller) => {
-            const status = propertyStatus[seller.id] || "New";
-            const isRejected = status === "Not Interested";
+            const status = statusMap[seller.id] || "New";
+            const isDiscarded = status === "Discarded";
 
             return (
               <div
                 key={seller.id}
-                className={`w-full border rounded-xl p-4 flex justify-between items-center
-                  ${getCardStyle(status)}
-                  ${isRejected ? "pointer-events-none opacity-60" : ""}`}
+                className={`w-full border rounded-xl p-4 flex justify-between items-center ${getCardStyle(
+                  status
+                )} ${isDiscarded ? "pointer-events-none opacity-60" : ""}`}
               >
-                {/* LEFT */}
                 <div className="text-sm space-y-1">
                   <p className="font-medium">
                     {seller.property_type || "Property"}
                   </p>
-
                   <p className="text-gray-600">
                     ₹{seller.price} • {seller.bedrooms} BHK
                   </p>
 
-                  {/* 🔥 SELLER INFO (THIS WAS MISSING) */}
                   <p className="font-medium mt-2">
-                    Seller: {seller.seller_name || "Unknown Seller"}
+                    Seller: {seller.seller_name}
                   </p>
 
                   {seller.seller_contact && (
@@ -166,27 +158,20 @@ export default function BuyerDetailPage() {
                       {seller.seller_email}
                     </p>
                   )}
-
-                  {isRejected && (
-                    <p className="text-xs text-red-500 mt-1">
-                      Marked as Not Interested
-                    </p>
-                  )}
                 </div>
 
-                {/* RIGHT */}
                 <div className="flex flex-col">
                   <label className="text-xs text-gray-500 mb-1">
-                    Property Status
+                    Buyer Action
                   </label>
 
                   <select
                     value={status}
-                    disabled={isRejected}
+                    disabled={isDiscarded}
                     onChange={async (e) => {
                       const newStatus = e.target.value;
 
-                      setPropertyStatus((prev) => ({
+                      setStatusMap((prev) => ({
                         ...prev,
                         [seller.id]: newStatus,
                       }));
@@ -194,8 +179,7 @@ export default function BuyerDetailPage() {
                       const raw = localStorage.getItem("loggedUser");
                       if (!raw) return;
                       const user = JSON.parse(raw);
-                      const tenantId =
-                        user.tenant_id ?? user.tenantId;
+                      const tenantId = user.tenant_id ?? user.tenantId;
 
                       const res = await fetch(
                         `/api/buyers/${buyerId}/property-status`,

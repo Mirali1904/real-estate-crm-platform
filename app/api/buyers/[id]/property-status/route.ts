@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { conn } from "@/lib/db";
 
-/* =================================================
-   GET → FETCH SAVED PROPERTY STATUSES
-================================================= */
+/* GET: Fetch all property statuses for this buyer */
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -11,23 +9,22 @@ export async function GET(
   try {
     const { id } = await context.params;
     const buyerId = Number(id);
+    const tenantId = Number(req.headers.get("x-tenant-id"));
 
-    const tenantId = req.headers.get("x-tenant-id");
-
-    if (!tenantId || !buyerId) {
-      return NextResponse.json(
-        { error: "Missing tenantId or buyerId" },
-        { status: 400 }
-      );
+    if (!buyerId || !tenantId) {
+      return NextResponse.json({ statuses: [] });
     }
 
     const [rows]: any = await conn.execute(
       `
-      SELECT seller_id, status
+      SELECT
+        seller_id,
+        status
       FROM buyer_property_status
       WHERE buyer_id = ?
+        AND tenant_id = ?
       `,
-      [buyerId]
+      [buyerId, tenantId]
     );
 
     return NextResponse.json({
@@ -35,17 +32,12 @@ export async function GET(
       statuses: rows,
     });
   } catch (err) {
-    console.error("Failed to fetch property status", err);
-    return NextResponse.json(
-      { error: "Server error" },
-      { status: 500 }
-    );
+    console.error("Buyer property-status GET error:", err);
+    return NextResponse.json({ statuses: [] }, { status: 500 });
   }
 }
 
-/* =================================================
-   POST → SAVE / UPDATE PROPERTY STATUS
-================================================= */
+/* POST: Update status for a specific property */
 export async function POST(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -53,27 +45,14 @@ export async function POST(
   try {
     const { id } = await context.params;
     const buyerId = Number(id);
+    const tenantId = Number(req.headers.get("x-tenant-id"));
 
-    const tenantId = req.headers.get("x-tenant-id");
+    const { sellerId, status } = await req.json();
 
-    if (!tenantId || !buyerId) {
-      return NextResponse.json(
-        { error: "Missing tenantId or buyerId" },
-        { status: 400 }
-      );
+    if (!buyerId || !sellerId || !tenantId || !status) {
+      return NextResponse.json({ error: "Invalid data" }, { status: 400 });
     }
 
-    const body = await req.json();
-    const { sellerId, status } = body;
-
-    if (!sellerId || !status) {
-      return NextResponse.json(
-        { error: "sellerId and status required" },
-        { status: 400 }
-      );
-    }
-
-    /* 1️⃣ SAVE / UPDATE PROPERTY STATUS */
     await conn.execute(
       `
       INSERT INTO buyer_property_status
@@ -86,43 +65,33 @@ export async function POST(
       [tenantId, buyerId, sellerId, status]
     );
 
-    /* 2️⃣ SELLER → SOLD ONLY ON DEAL CLOSED */
-    if (status === "Deal Closed") {
-      await conn.execute(
-        `
-        UPDATE sellers
-        SET status = 'SOLD'
-        WHERE id = ?
-        `,
-        [sellerId]
-      );
-    }
+    /* Update buyer's overall status if needed */
+    const [[buyer]]: any = await conn.execute(
+      `SELECT status FROM buyers WHERE id = ? AND tenant_id = ?`,
+      [buyerId, tenantId]
+    );
 
-    /* 3️⃣ BUYER STATUS RULE (FINAL) */
-    let buyerStatus = "ENQUIRY";
+    let newBuyerStatus = buyer?.status || "ENQUIRY";
 
-    if (status === "Deal Closed") {
-      buyerStatus = "WON";
+    if (status === "Connected" || status === "In Progress") {
+      newBuyerStatus = "IN_PROGRESS";
+    } else if (status === "Site Visit Planned") {
+      newBuyerStatus = "SITE_VISIT";
+    } else if (status === "Interested" || status === "Contacted") {
+      newBuyerStatus = "ACTIVE";
     }
 
     await conn.execute(
-      `
-      UPDATE buyers
-      SET status = ?
-      WHERE id = ?
-      `,
-      [buyerStatus, buyerId]
+      `UPDATE buyers SET status = ? WHERE id = ? AND tenant_id = ?`,
+      [newBuyerStatus, buyerId, tenantId]
     );
 
-    return NextResponse.json({
+    return NextResponse.json({ 
       success: true,
-      buyerStatus,
+      buyerStatus: newBuyerStatus
     });
   } catch (err) {
-    console.error("Property status update failed", err);
-    return NextResponse.json(
-      { error: "Server error" },
-      { status: 500 }
-    );
+    console.error("Buyer property-status POST error:", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
