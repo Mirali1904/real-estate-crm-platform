@@ -9,6 +9,7 @@ export default function AddSellerPage() {
   const router = useRouter();
 
   const [form, setForm] = useState({
+    seller_name: "", // ✅ NEW
     owner_contact: "",
     email: "",
     property_type: "",
@@ -29,39 +30,29 @@ export default function AddSellerPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  /* ---------------- LOCATION (DEBOUNCED) ---------------- */
+  /* ---------------- LOCATION ---------------- */
   function handleLocationChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     setForm({ ...form, location: value });
 
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     if (value.length < 3) {
       setSuggestions([]);
       return;
     }
 
     debounceRef.current = setTimeout(async () => {
-      if (abortRef.current) {
-        abortRef.current.abort();
-      }
-
+      if (abortRef.current) abortRef.current.abort();
       const controller = new AbortController();
       abortRef.current = controller;
 
       try {
         setLoadingLocation(true);
-
-        // ✅ FIX: USE BACKEND PROXY (NO DIRECT NOMINATIM)
         const res = await fetch(
           `/api/location/search?q=${encodeURIComponent(value)}`,
           { signal: controller.signal }
         );
-
         if (!res.ok) return;
-
         const data = await res.json();
         setSuggestions(data);
       } catch (err: any) {
@@ -69,7 +60,7 @@ export default function AddSellerPage() {
       } finally {
         setLoadingLocation(false);
       }
-    }, 700);
+    }, 600);
   }
 
   function selectLocation(place: any) {
@@ -92,16 +83,30 @@ export default function AddSellerPage() {
 
     const user = JSON.parse(raw);
     const tenantId = user.tenant_id || user.tenantId;
+    if (!tenantId) {
+      alert("Tenant not found");
+      return;
+    }
 
     const res = await fetch("/api/sellers/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tenantId, ...form }),
+      body: JSON.stringify({
+        tenantId,
+        name: form.seller_name, // ✅ IMPORTANT
+        owner_contact: form.owner_contact,
+        email: form.email,
+        property_type: form.property_type,
+        location: form.location,
+        lat: form.lat,
+        lng: form.lng,
+        price: form.price,
+        bedrooms: form.bedrooms,
+      }),
     });
 
-    if (res.ok) {
-      router.push("/sellers");
-    } else {
+    if (res.ok) router.push("/sellers");
+    else {
       const data = await res.json();
       alert(data?.error || "Failed to save property");
     }
@@ -119,9 +124,34 @@ export default function AddSellerPage() {
             </h1>
 
             <div className="space-y-4">
-              <Input label="Phone / Contact" name="owner_contact" value={form.owner_contact} onChange={handleChange} />
-              <Input label="Email" name="email" value={form.email} onChange={handleChange} />
-              <Input label="Property Type" name="property_type" value={form.property_type} onChange={handleChange} />
+              {/* ✅ SELLER NAME */}
+              <Input
+                label="Seller Name"
+                name="seller_name"
+                value={form.seller_name}
+                onChange={handleChange}
+              />
+
+              <Input
+                label="Phone / Contact"
+                name="owner_contact"
+                value={form.owner_contact}
+                onChange={handleChange}
+              />
+
+              <Input
+                label="Email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+              />
+
+              <Input
+                label="Property Type"
+                name="property_type"
+                value={form.property_type}
+                onChange={handleChange}
+              />
 
               {/* LOCATION */}
               <div className="relative">
@@ -169,7 +199,7 @@ export default function AddSellerPage() {
   );
 }
 
-/* ---------------- INPUT ---------------- */
+/* INPUT */
 function Input({ label, name, value, onChange }: any) {
   return (
     <div>
@@ -178,7 +208,7 @@ function Input({ label, name, value, onChange }: any) {
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#c99a2e]"
+        className="w-full border rounded-lg px-3 py-2"
       />
     </div>
   );

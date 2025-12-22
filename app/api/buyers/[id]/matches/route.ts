@@ -14,11 +14,11 @@ export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  // ✅ unwrap params
+  // unwrap params
   const { id } = await context.params;
   const buyerId = Number(id);
 
-  // ✅ FIX: tenantId from HEADER first, fallback to query param
+  // tenantId from header or query
   const tenantId =
     Number(req.headers.get("x-tenant-id")) ||
     Number(req.nextUrl.searchParams.get("tenantId"));
@@ -53,11 +53,24 @@ export async function GET(
 
     const buyer = buyers[0];
 
-    // 2️⃣ Fetch sellers with distance
+    // 2️⃣ Fetch sellers with distance + SELLER INFO
     const [rows]: any = await conn.execute(
       `
       SELECT
-        s.*,
+        s.id,
+        s.property_type,
+        s.price,
+        s.bedrooms,
+        s.location,
+        s.lat,
+        s.lng,
+        s.status,
+
+        -- ✅ SELLER DETAILS (KEY FIX)
+        s.name          AS seller_name,
+        s.email         AS seller_email,
+        s.owner_contact AS seller_contact,
+
         (
           6371 * acos(
             cos(radians(?)) *

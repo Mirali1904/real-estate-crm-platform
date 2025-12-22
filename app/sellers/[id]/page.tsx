@@ -40,7 +40,7 @@ export default function SellerDetailPage() {
         if (!sellerRes.ok) return;
         setSeller(await sellerRes.json());
 
-        /* 🔥 BUYERS WITH STATUS (SOURCE OF TRUTH) */
+        /* BUYERS WITH STATUS */
         const buyersRes = await fetch(
           `/api/sellers/${sellerId}/buyer-status`,
           {
@@ -63,7 +63,6 @@ export default function SellerDetailPage() {
     loadData();
   }, [sellerId, tenantId]);
 
-  /* ---------------- CARD STYLE ---------------- */
   function getCardStyle(status: string) {
     switch (status) {
       case "Interested":
@@ -86,13 +85,33 @@ export default function SellerDetailPage() {
 
   return (
     <div className="w-full p-6 space-y-6">
-      {/* SELLER DETAILS */}
+      {/* SELLER / PROPERTY DETAILS */}
       <div className="border rounded-xl p-6 bg-white">
-        <h1 className="text-xl font-semibold mb-2">
+        <h1 className="text-xl font-semibold mb-3">
           Property Details
         </h1>
 
         <div className="text-sm space-y-1">
+          {/* ✅ NEW: SELLER INFO */}
+          <p>
+            <strong>Seller Name:</strong>{" "}
+            {seller.name || "Unknown Seller"}
+          </p>
+
+          {seller.email && (
+            <p>
+              <strong>Email:</strong> {seller.email}
+            </p>
+          )}
+
+          {seller.owner_contact && (
+            <p>
+              <strong>Contact:</strong> {seller.owner_contact}
+            </p>
+          )}
+
+          <hr className="my-2" />
+
           <p><strong>Price:</strong> ₹{seller.price}</p>
           <p><strong>Bedrooms:</strong> {seller.bedrooms}</p>
           <p>
@@ -128,7 +147,6 @@ export default function SellerDetailPage() {
                   ${getCardStyle(status)}
                   ${isRejected ? "pointer-events-none opacity-60" : ""}`}
               >
-                {/* LEFT */}
                 <div className="text-sm space-y-1">
                   <p className="font-medium">{buyer.name}</p>
                   <p className="text-gray-600">
@@ -142,7 +160,6 @@ export default function SellerDetailPage() {
                   </p>
                 </div>
 
-                {/* RIGHT */}
                 <div className="flex flex-col">
                   <label className="text-xs text-gray-500 mb-1">
                     Buyer Status

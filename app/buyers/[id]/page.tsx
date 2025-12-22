@@ -44,20 +44,23 @@ export default function BuyerDetailPage() {
         setBuyer(await buyerRes.json());
 
         /* MATCHED PROPERTIES */
-        const matchRes = await fetch(`/api/buyers/${buyerId}/matches`, {
-          headers: { "x-tenant-id": String(tenantId) },
-        });
+        const matchRes = await fetch(
+          `/api/buyers/${buyerId}/matches`,
+          {
+            headers: { "x-tenant-id": String(tenantId) },
+          }
+        );
         if (!matchRes.ok) return;
-
         const sellers = (await matchRes.json()).matches || [];
         setMatches(sellers);
 
         /* PROPERTY STATUS (PERSISTENCE) */
         const statusRes = await fetch(
           `/api/buyers/${buyerId}/property-status`,
-          { headers: { "x-tenant-id": String(tenantId) } }
+          {
+            headers: { "x-tenant-id": String(tenantId) },
+          }
         );
-
         if (statusRes.ok) {
           const data = await statusRes.json();
           const map: Record<number, string> = {};
@@ -121,7 +124,9 @@ export default function BuyerDetailPage() {
 
       {/* MATCHED PROPERTIES */}
       <div className="w-full">
-        <h2 className="text-lg font-semibold mb-3">Matched Properties</h2>
+        <h2 className="text-lg font-semibold mb-3">
+          Matched Properties
+        </h2>
 
         <div className="space-y-4">
           {matches.map((seller) => {
@@ -136,13 +141,32 @@ export default function BuyerDetailPage() {
                   ${isRejected ? "pointer-events-none opacity-60" : ""}`}
               >
                 {/* LEFT */}
-                <div>
+                <div className="text-sm space-y-1">
                   <p className="font-medium">
                     {seller.property_type || "Property"}
                   </p>
-                  <p className="text-sm text-gray-600">
+
+                  <p className="text-gray-600">
                     ₹{seller.price} • {seller.bedrooms} BHK
                   </p>
+
+                  {/* 🔥 SELLER INFO (THIS WAS MISSING) */}
+                  <p className="font-medium mt-2">
+                    Seller: {seller.seller_name || "Unknown Seller"}
+                  </p>
+
+                  {seller.seller_contact && (
+                    <p className="text-xs text-gray-500">
+                      Contact: {seller.seller_contact}
+                    </p>
+                  )}
+
+                  {seller.seller_email && (
+                    <p className="text-xs text-gray-500">
+                      {seller.seller_email}
+                    </p>
+                  )}
+
                   {isRejected && (
                     <p className="text-xs text-red-500 mt-1">
                       Marked as Not Interested
@@ -155,6 +179,7 @@ export default function BuyerDetailPage() {
                   <label className="text-xs text-gray-500 mb-1">
                     Property Status
                   </label>
+
                   <select
                     value={status}
                     disabled={isRejected}

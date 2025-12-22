@@ -7,6 +7,7 @@ export async function POST(req: NextRequest) {
 
     const {
       tenantId,
+      name,               // 👈 seller name frontend se aa raha hai
       owner_contact,
       email,
       property_type,
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
       bedrooms,
     } = body;
 
-    // ✅ REQUIRED VALIDATION
+    // ✅ validation
     if (!tenantId || !location) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -25,10 +26,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ✅ INSERT (MATCHES DB COLUMNS)
+    // ✅ GUARANTEE name is never null
+    const finalName =
+      name?.trim() ||
+      email?.split("@")[0] ||
+      "Unknown Seller";
+
+    // ✅ INSERT WITH NAME COLUMN
     const query = `
       INSERT INTO sellers (
         tenant_id,
+        name,
         owner_contact,
         email,
         property_type,
@@ -40,11 +48,12 @@ export async function POST(req: NextRequest) {
         status,
         created_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'LISTED', NOW())
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'LISTED', NOW())
     `;
 
     await conn.execute(query, [
       tenantId,
+      finalName,          // 👈 YAHI MAIN FIX HAI
       owner_contact || null,
       email || null,
       property_type || null,

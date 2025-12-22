@@ -12,7 +12,24 @@ export async function GET(_req: Request, context: any) {
   if (!id) return NextResponse.json({ success: false, error: "missing id" }, { status: 400 });
 
   try {
-    const [rows]: any = await conn.execute("SELECT * FROM sellers WHERE id = ?", [id]);
+    const [rows]: any = await conn.execute(
+  `
+  SELECT
+    id,
+    name,
+    email,
+    owner_contact,
+    property_type,
+    location,
+    price,
+    bedrooms,
+    status
+  FROM sellers
+  WHERE id = ?
+  `,
+  [id]
+);
+
     if (!rows || rows.length === 0) return NextResponse.json({ success: false, error: "not found" }, { status: 404 });
     return NextResponse.json(rows[0]);
   } catch (err: any) {

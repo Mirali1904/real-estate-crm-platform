@@ -1,4 +1,3 @@
-// components/sellers/SellerCard.tsx
 "use client";
 
 import SecondaryButton from "@/components/SecondaryButton";
@@ -23,44 +22,54 @@ export default function SellerCard({
   onDelete: (id: number) => void;
 }) {
   if (!seller) return null;
-  const title = seller.property_address || seller.name || "Property";
+
+  const sellerName =
+    seller.name ||
+    seller.property_address ||
+    "Unknown Seller";
 
   return (
     <div className="flex justify-between items-start border rounded-xl bg-white p-4 hover:shadow-sm">
       <div>
-        <p className="font-medium">{title}</p>
+        {/* ✅ SELLER NAME */}
+        <p className="font-semibold">{sellerName}</p>
 
-        {seller.email && <p className="text-xs text-gray-500">{seller.email}</p>}
-        {seller.phone && <p className="text-xs text-gray-500">{seller.phone}</p>}
+        {seller.email && (
+          <p className="text-xs text-gray-500">{seller.email}</p>
+        )}
+        {seller.phone && (
+          <p className="text-xs text-gray-500">{seller.phone}</p>
+        )}
 
-        {(seller.property_type || seller.location) && (
-          <p className="text-xs mt-1">
-            <span className="font-semibold">{seller.property_type || "Property"}</span>
-            {seller.location ? ` • ${seller.location}` : ""}
+        {seller.property_type && (
+          <p className="text-xs mt-1 font-medium">
+            {seller.property_type}
           </p>
         )}
 
-        {seller.price !== undefined && seller.price !== null && (
-          <p className="text-xs text-[#22a06b] font-semibold mt-1">₹ {seller.price}</p>
+        {seller.price != null && (
+          <p className="text-xs text-[#22a06b] font-semibold mt-1">
+            ₹ {seller.price}
+          </p>
         )}
 
         {seller.bedrooms != null && (
-          <p className="text-xs text-gray-500 mt-1">Bedrooms: {seller.bedrooms}</p>
+          <p className="text-xs text-gray-500 mt-1">
+            Bedrooms: {seller.bedrooms}
+          </p>
         )}
       </div>
 
-      <div>
-        <SecondaryButton
-          onClick={(e: any) => {
-            e.stopPropagation(); // IMPORTANT: prevent outer card click
-            e.preventDefault();
-            if (!confirm("Delete this property?")) return;
-            onDelete(seller.id);
-          }}
-        >
-          Delete
-        </SecondaryButton>
-      </div>
+      <SecondaryButton
+        onClick={(e: any) => {
+          e.stopPropagation();
+          e.preventDefault();
+          if (!confirm("Delete this property?")) return;
+          onDelete(seller.id);
+        }}
+      >
+        Delete
+      </SecondaryButton>
     </div>
   );
 }
