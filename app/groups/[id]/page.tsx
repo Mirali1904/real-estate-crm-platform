@@ -47,7 +47,6 @@ export default function GroupDetailPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [availableAgencies, setAvailableAgencies] = useState<any[]>([]);
-
   const [activeTab, setActiveTab] = useState<"posts" | "members">("posts");
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -62,7 +61,6 @@ export default function GroupDetailPage() {
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
     if (!raw) return;
-
     const u = JSON.parse(raw);
     setUser(u);
     fetchAll(u.id);
@@ -116,27 +114,27 @@ export default function GroupDetailPage() {
       `/api/groups/agencies?groupId=${groupId}&agencyId=${agencyId}`,
       { method: "DELETE" }
     );
+
     fetchAll(user.id);
   };
 
   const handleDeleteGroup = async () => {
-  if (!confirm("Are you sure you want to delete this group?")) return;
+    if (!confirm("Are you sure you want to delete this group?")) return;
 
-  const res = await fetch(
-    `/api/groups?groupId=${groupId}&tenantId=${user.tenantId}&userId=${user.id}`,
-    { method: "DELETE" }
-  );
+    const res = await fetch(
+      `/api/groups?groupId=${groupId}&tenantId=${user.tenantId}&userId=${user.id}`,
+      { method: "DELETE" }
+    );
 
-  const data = await res.json();
+    const data = await res.json();
 
-  if (!res.ok) {
-    alert(data.error || "You are not allowed to delete this group");
-    return;
-  }
+    if (!res.ok) {
+      alert(data.error || "You are not allowed to delete this group");
+      return;
+    }
 
-  router.push("/groups");
-};
-
+    router.push("/groups");
+  };
 
   const handleCreatePost = async (data: any) => {
     await fetch("/api/groups/posts", {
@@ -159,8 +157,7 @@ export default function GroupDetailPage() {
   if (!group) return <div className="p-6">Group not found</div>;
 
   return (
-   <div className="w-full p-6">
-
+    <div className="w-full p-6">
       {/* HEADER */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6 flex justify-between items-start">
         <div>
@@ -173,6 +170,7 @@ export default function GroupDetailPage() {
 
           <h1 className="text-2xl font-semibold">{group.name}</h1>
           <p className="text-gray-600">{group.description}</p>
+
           <p className="text-sm text-gray-500 mt-1">
             Created by {group.creator_name} • {agencies.length} members
           </p>
@@ -216,7 +214,7 @@ export default function GroupDetailPage() {
                 : "border-transparent text-gray-500"
             }`}
           >
-           Agencies ({agencies.length})
+            Agencies ({agencies.length})
           </button>
         </div>
 
@@ -228,6 +226,19 @@ export default function GroupDetailPage() {
                   key={post.id}
                   post={post}
                   onViewResponses={() => setActivePostId(post.id)}
+                  onDelete={async () => {
+                    if (!confirm("Delete this post?")) return;
+
+                    await fetch("/api/groups/posts/delete", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ postId: post.id }),
+                    });
+
+                    setPosts((prev) =>
+                      prev.filter((p) => p.id !== post.id)
+                    );
+                  }}
                 />
               ))}
             </div>
@@ -253,7 +264,9 @@ export default function GroupDetailPage() {
                     key={agency.id}
                     agency={agency}
                     isCreator={isAdmin}
-                    onRemove={() => handleRemoveAgency(agency.agency_id)}
+                    onRemove={() =>
+                      handleRemoveAgency(agency.agency_id)
+                    }
                   />
                 ))}
               </div>
@@ -276,14 +289,13 @@ export default function GroupDetailPage() {
         onSubmit={handleCreatePost}
       />
 
-      {/* ✅ RESPONSE MODAL (FIXED) */}
       <PostResponsesModal
         isOpen={activePostId !== null}
         postId={activePostId}
         userId={user?.id}
         onClose={() => {
           setActivePostId(null);
-          if (user?.id) fetchAll(user.id); // refresh counts
+          if (user?.id) fetchAll(user.id);
         }}
       />
     </div>

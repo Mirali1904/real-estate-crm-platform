@@ -11,19 +11,38 @@ interface PostCardProps {
     created_at: string;
   };
   onViewResponses: () => void;
+  onDelete: () => void;
 }
 
-export default function PostCard({ post, onViewResponses }: PostCardProps) {
+export default function PostCard({
+  post,
+  onViewResponses,
+  onDelete,
+}: PostCardProps) {
   return (
     <div className="border border-gray-300 rounded-lg p-4">
-      <div className="mb-2">
-        <span className="inline-block bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded mr-2">
-          {post.post_type}
-        </span>
-        <h3 className="text-lg font-semibold inline">{post.title}</h3>
+      <div className="mb-2 flex justify-between items-start">
+        <div>
+          <span className="inline-block bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded mr-2">
+            {post.post_type}
+          </span>
+          <h3 className="text-lg font-semibold inline">
+            {post.title}
+          </h3>
+        </div>
+
+        {/* DELETE BUTTON */}
+        <button
+          onClick={onDelete}
+          className="text-red-500 text-xs hover:underline"
+        >
+          Delete
+        </button>
       </div>
 
-      <p className="text-gray-700 mb-2">{post.description}</p>
+      <p className="text-gray-700 mb-2">
+        {post.description}
+      </p>
 
       {post.location && <p className="text-sm">📍 {post.location}</p>}
       {post.budget && <p className="text-sm">💰 ₹{post.budget}</p>}

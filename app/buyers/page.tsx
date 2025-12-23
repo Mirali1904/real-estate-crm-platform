@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import SecondaryButton from "@/components/SecondaryButton";
 import BackButton from "@/components/BackButton";
+import ShareToGroupModal from "@/components/groups/ShareToGroupModal";
 
 type Buyer = {
   id: number;
@@ -20,6 +21,9 @@ export default function BuyersPage() {
 
   const [buyers, setBuyers] = useState<Buyer[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // ✅ ONLY NEW STATE
+  const [shareBuyerId, setShareBuyerId] = useState<number | null>(null);
 
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
@@ -100,13 +104,34 @@ export default function BuyersPage() {
             </p>
           </div>
 
-          <div onClick={(e) => e.stopPropagation()}>
+          {/* 👉 ACTIONS (ONLY ADDITION HERE) */}
+          <div
+            className="flex gap-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShareBuyerId(buyer.id)}
+              className="px-3 py-1 text-sm rounded-full border border-[#c99a2e] text-[#c99a2e]"
+            >
+              Share
+            </button>
+
             <SecondaryButton onClick={() => handleDelete(buyer.id)}>
               Delete
             </SecondaryButton>
           </div>
         </div>
       ))}
+
+      {/* ✅ SHARE MODAL */}
+      {shareBuyerId !== null && (
+        <ShareToGroupModal
+          open={true}
+          onClose={() => setShareBuyerId(null)}
+          entityType="buyer"
+          entityId={shareBuyerId}
+        />
+      )}
     </div>
   );
 }
