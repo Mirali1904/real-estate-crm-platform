@@ -173,6 +173,22 @@ export class GroupService {
     return rows.length > 0;
   }
 
+  // ✅ ✅ ✅ THIS FIXES DELETE ERROR
+  async isGroupAdmin(groupId: number, userId: number): Promise<boolean> {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `
+      SELECT id
+      FROM groups
+      WHERE id = ?
+        AND created_by = ?
+        AND status = 'active'
+      `,
+      [groupId, userId]
+    );
+
+    return rows.length > 0;
+  }
+
   async getGroupMembers(groupId: number) {
     const [members] = await conn.query<RowDataPacket[]>(
       `
