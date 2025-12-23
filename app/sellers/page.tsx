@@ -5,10 +5,15 @@ import { useRouter } from "next/navigation";
 import PrimaryButton from "@/components/PrimaryButton";
 import SellerCard from "@/components/sellers/SellerCard";
 import BackButton from "@/components/BackButton";
+import ShareToGroupModal from "@/components/groups/ShareToGroupModal"; // ✅ ADD
 
 export default function SellersPage() {
   const [sellers, setSellers] = useState<any[]>([]);
   const [user, setUser] = useState<any | null>(null);
+
+  // ✅ ADD THIS STATE (VERY IMPORTANT)
+  const [shareSellerId, setShareSellerId] = useState<number | null>(null);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -77,7 +82,11 @@ export default function SellersPage() {
             }}
             className="cursor-pointer"
           >
-            <SellerCard seller={seller} onDelete={handleDelete} />
+            <SellerCard
+              seller={seller}
+              onDelete={handleDelete}
+              onShare={(id) => setShareSellerId(id)} // ✅ FIXED
+            />
           </div>
         ))}
 
@@ -87,6 +96,16 @@ export default function SellersPage() {
           </p>
         )}
       </div>
+
+      {/* ✅ SHARE MODAL (SAME AS BUYER) */}
+      {shareSellerId !== null && (
+        <ShareToGroupModal
+          open={true}
+          onClose={() => setShareSellerId(null)}
+          entityType="seller"
+          entityId={shareSellerId}
+        />
+      )}
     </div>
   );
 }

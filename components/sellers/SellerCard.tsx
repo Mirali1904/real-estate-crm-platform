@@ -17,9 +17,11 @@ type Seller = {
 export default function SellerCard({
   seller,
   onDelete,
+  onShare,
 }: {
   seller: Seller;
   onDelete: (id: number) => void;
+  onShare: (id: number) => void; // 🔴 REQUIRED
 }) {
   if (!seller) return null;
 
@@ -30,46 +32,49 @@ export default function SellerCard({
 
   return (
     <div className="flex justify-between items-start border rounded-xl bg-white p-4 hover:shadow-sm">
+      {/* LEFT */}
       <div>
-        {/* ✅ SELLER NAME */}
         <p className="font-semibold">{sellerName}</p>
 
-        {seller.email && (
-          <p className="text-xs text-gray-500">{seller.email}</p>
-        )}
-        {seller.phone && (
-          <p className="text-xs text-gray-500">{seller.phone}</p>
-        )}
-
         {seller.property_type && (
-          <p className="text-xs mt-1 font-medium">
-            {seller.property_type}
-          </p>
+          <p className="text-xs mt-1">{seller.property_type}</p>
         )}
 
         {seller.price != null && (
-          <p className="text-xs text-[#22a06b] font-semibold mt-1">
+          <p className="text-xs text-[#22a06b] font-semibold">
             ₹ {seller.price}
           </p>
         )}
 
         {seller.bedrooms != null && (
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500">
             Bedrooms: {seller.bedrooms}
           </p>
         )}
       </div>
 
-      <SecondaryButton
-        onClick={(e: any) => {
-          e.stopPropagation();
-          e.preventDefault();
-          if (!confirm("Delete this property?")) return;
-          onDelete(seller.id);
-        }}
+      {/* RIGHT — SAME AS BUYER */}
+      <div
+        className="flex gap-2"
+        onClick={(e) => e.stopPropagation()}
       >
-        Delete
-      </SecondaryButton>
+        <button
+          onClick={() => onShare(seller.id)}
+          className="px-3 py-1 text-sm rounded-full border border-[#c99a2e] text-[#c99a2e]"
+        >
+          Share
+        </button>
+
+        <SecondaryButton
+          onClick={(e: any) => {
+            e.preventDefault();
+            if (!confirm("Delete this property?")) return;
+            onDelete(seller.id);
+          }}
+        >
+          Delete
+        </SecondaryButton>
+      </div>
     </div>
   );
 }
