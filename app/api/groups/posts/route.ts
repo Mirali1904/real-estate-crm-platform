@@ -3,7 +3,7 @@ import { GroupService } from "@/server/service/group.service";
 
 const groupService = new GroupService();
 
-// GET /api/groups/posts - Get group posts
+/* ================= GET GROUP POSTS ================= */
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -18,8 +18,8 @@ export async function GET(req: Request) {
 
     const posts = await groupService.getGroupPosts(groupId);
     return NextResponse.json(posts);
+
   } catch (error: any) {
-    console.error("Error fetching posts:", error);
     return NextResponse.json(
       { error: error.message || "Failed to fetch posts" },
       { status: 500 }
@@ -27,19 +27,21 @@ export async function GET(req: Request) {
   }
 }
 
-// POST /api/groups/posts - Create post in group
+/* ================= CREATE GROUP POST ================= */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+
     const {
       groupId,
       userId,
       tenantId,
-      postType,
+      postType,      // "buyer" | "seller"
       title,
       description,
       location,
       budget,
+      referenceId,   // buyer_id | seller_id
     } = body;
 
     if (!groupId || !userId || !tenantId || !postType || !title) {
@@ -49,7 +51,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if user is member
+    // ✅ EXACT NAME AS SERVICE FILE
     const isMember = await groupService.isGroupMember(groupId, userId);
     if (!isMember) {
       return NextResponse.json(
@@ -58,20 +60,26 @@ export async function POST(req: Request) {
       );
     }
 
-    const postId = await groupService.createPost(groupId, userId, tenantId, {
-      postType,
-      title,
-      description,
-      location,
-      budget: budget ? Number(budget) : undefined,
-    });
+    const postId = await groupService.createPost(
+      groupId,
+      userId,
+      tenantId,
+      {
+        postType, // SAME AS SERVICE
+        title,
+        description,
+        location,
+        budget: budget ? Number(budget) : undefined,
+        referenceId: referenceId ?? undefined,
+      }
+    );
 
     return NextResponse.json({
-      message: "Post created successfully",
+      success: true,
       postId,
     });
+
   } catch (error: any) {
-    console.error("Error creating post:", error);
     return NextResponse.json(
       { error: error.message || "Failed to create post" },
       { status: 500 }

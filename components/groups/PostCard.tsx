@@ -3,9 +3,24 @@ interface PostCardProps {
     id: number;
     post_type: string;
     title: string;
-    description: string;
+    description?: string;
+
+    // Generic
     location?: string;
     budget?: number;
+
+    // Buyer-specific (from JOIN)
+    buyer_name?: string;
+    buyer_requirement?: string;
+    buyer_location?: string;
+    buyer_budget_min?: number;
+    buyer_budget_max?: number;
+
+    // Seller-specific (future safe)
+    seller_name?: string;
+    seller_price?: number;
+    seller_bedrooms?: number;
+
     author_name: string;
     response_count: number;
     created_at: string;
@@ -21,6 +36,7 @@ export default function PostCard({
 }: PostCardProps) {
   return (
     <div className="border border-gray-300 rounded-lg p-4">
+      {/* HEADER */}
       <div className="mb-2 flex justify-between items-start">
         <div>
           <span className="inline-block bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded mr-2">
@@ -31,7 +47,6 @@ export default function PostCard({
           </h3>
         </div>
 
-        {/* DELETE BUTTON */}
         <button
           onClick={onDelete}
           className="text-red-500 text-xs hover:underline"
@@ -40,13 +55,38 @@ export default function PostCard({
         </button>
       </div>
 
-      <p className="text-gray-700 mb-2">
-        {post.description}
-      </p>
+      {/* ================= BUYER POST ================= */}
+      {post.post_type === "buyer" && post.buyer_name ? (
+        <div className="text-sm text-gray-700 space-y-1">
+          <p><strong>Buyer:</strong> {post.buyer_name}</p>
 
-      {post.location && <p className="text-sm">📍 {post.location}</p>}
-      {post.budget && <p className="text-sm">💰 ₹{post.budget}</p>}
+          {post.buyer_requirement && (
+            <p><strong>Requirement:</strong> {post.buyer_requirement}</p>
+          )}
 
+          {post.buyer_location && (
+            <p>📍 {post.buyer_location}</p>
+          )}
+
+          {(post.buyer_budget_min || post.buyer_budget_max) && (
+            <p>
+              💰 ₹{post.buyer_budget_min ?? "—"} – ₹{post.buyer_budget_max ?? "—"}
+            </p>
+          )}
+        </div>
+      ) : (
+        /* ================= NORMAL POST ================= */
+        <>
+          {post.description && (
+            <p className="text-gray-700 mb-2">{post.description}</p>
+          )}
+
+          {post.location && <p className="text-sm">📍 {post.location}</p>}
+          {post.budget && <p className="text-sm">💰 ₹{post.budget}</p>}
+        </>
+      )}
+
+      {/* FOOTER */}
       <div className="flex justify-between items-center mt-3 text-sm text-gray-600">
         <span>Posted by {post.author_name}</span>
 
