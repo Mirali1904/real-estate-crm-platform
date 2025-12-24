@@ -15,6 +15,7 @@ export interface UserData {
   email: string;
   role: string;
   password: string;
+   agency_id: number | null;
 }
 
 // create tenant + admin user

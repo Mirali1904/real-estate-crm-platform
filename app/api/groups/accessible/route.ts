@@ -3,36 +3,46 @@ import { conn } from "@/lib/db";
 
 export async function GET(req: Request) {
   try {
-    const rawUser = req.headers.get("x-user");
-    if (!rawUser) {
-      return NextResponse.json({ groups: [] });
-    }
+    const tenantId = req.headers.get("x-tenant-id");
+    const userId = req.headers.get("x-user-id");
+    const agencyId = req.headers.get("x-agency-id");
 
-    const user = JSON.parse(rawUser);
-
-    // 🔥 IMPORTANT
-    const tenantId = user.tenantId || user.tenant_id;
-
-    if (!tenantId) {
+    if (!tenantId || !userId || !agencyId) {
       return NextResponse.json({ groups: [] });
     }
 
     const [rows]: any = await conn.execute(
       `
-      SELECT DISTINCT g.id, g.name
+      SELECT DISTINCT
+        g.id,
+        g.name,
+        g.description,
+        g.created_by,
+        g.created_at,
+        CASE
+          WHEN g.created_by = ? THEN 'admin'
+          ELSE 'member'
+        END AS user_role
       FROM groups g
-      LEFT JOIN group_agencies ga ON ga.group_id = g.id
-      WHERE 
+      LEFT JOIN group_agencies ga
+        ON ga.group_id = g.id
+        AND ga.agency_id = ?
+        AND ga.status = 'active'
+      WHERE
         g.tenant_id = ?
-        OR ga.agency_id = ?
+        AND (
+          g.created_by = ?
+          OR ga.agency_id IS NOT NULL
+        )
       ORDER BY g.created_at DESC
       `,
-      [tenantId, tenantId]
+      [userId, agencyId, tenantId, userId]
     );
 
     return NextResponse.json({ groups: rows });
+
   } catch (err) {
-    console.error("accessible groups error", err);
+    console.error("GROUP FETCH ERROR", err);
     return NextResponse.json({ groups: [] });
   }
 }

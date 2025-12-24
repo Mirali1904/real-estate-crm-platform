@@ -31,6 +31,7 @@ export default function LoginPage() {
           tenantId: data.user.tenantId,
           name: data.user.name,
           email: data.user.email,
+          agencyId: data.user.agencyId,
         })
       );
 

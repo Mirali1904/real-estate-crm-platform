@@ -24,36 +24,46 @@ export default function ShareToGroupModal({
   const [selectedGroups, setSelectedGroups] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
 
+  /* ================= FETCH GROUPS ================= */
+
   useEffect(() => {
     if (!open) return;
 
-  async function fetchGroups() {
-  try {
-    const raw = localStorage.getItem("loggedUser");
-    if (!raw) return;
+    async function fetchGroups() {
+      try {
+        const raw = localStorage.getItem("loggedUser");
+        if (!raw) return;
 
-    const user = JSON.parse(raw);
+        const user = JSON.parse(raw);
 
-    console.log("fetching groups for tenant:", user.tenantId);
+        console.log("fetching groups for", {
+          userId: user.id,
+          agencyId: user.agencyId,
+          tenantId: user.tenantId,
+        });
 
-    const res = await fetch("/api/groups/accessible", {
-      headers: {
-        "x-user": JSON.stringify(user),
-      },
-    });
+        const res = await fetch("/api/groups/accessible", {
+          headers: {
+            "x-user-id": String(user.id),
+            "x-agency-id": String(user.agencyId),
+            "x-tenant-id": String(user.tenantId),
+          },
+        });
 
-    const data = await res.json();
+        const data = await res.json();
+        console.log("groups response:", data);
 
-    console.log("groups response:", data);
-
-    setGroups(data.groups || []);
-  } catch (err) {
-    console.error("Failed to load groups", err);
-  }
-}
+        setGroups(data.groups || []);
+      } catch (err) {
+        console.error("Failed to load groups", err);
+        setGroups([]);
+      }
+    }
 
     fetchGroups();
   }, [open]);
+
+  /* ================= TOGGLE ================= */
 
   function toggleGroup(groupId: number) {
     setSelectedGroups((prev) =>
@@ -63,55 +73,68 @@ export default function ShareToGroupModal({
     );
   }
 
-const handleShare = async () => {
-  const loggedUser = JSON.parse(
-    localStorage.getItem("loggedUser") || "{}"
-  );
+  /* ================= SHARE ================= */
 
-  // 🔴 Safety check
-  if (!loggedUser?.tenantId || !loggedUser?.id) {
-    console.error("❌ loggedUser missing", loggedUser);
-    return;
-  }
+  const handleShare = async () => {
+    const loggedUser = JSON.parse(
+      localStorage.getItem("loggedUser") || "{}"
+    );
 
-  console.log("📦 SHARE PAYLOAD", {
-    entityType,
-    entityId,
-    groupIds: selectedGroups,
-    tenantId: loggedUser.tenantId,
-    userId: loggedUser.id,
-  });
-
-  try {
-    const res = await fetch("/api/groups/share", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        entityType,                 // "buyer"
-        entityId,                   // buyer id
-        groupIds: selectedGroups,   // [26]
-        tenantId: loggedUser.tenantId,
-        userId: loggedUser.id,
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      console.error("❌ Share failed", err);
+    if (
+      !loggedUser?.id ||
+      !loggedUser?.agencyId ||
+      !loggedUser?.tenantId
+    ) {
+      console.error("❌ loggedUser missing fields", loggedUser);
       return;
     }
 
-    console.log("✅ Share success");
-    setSelectedGroups([]);
-    onClose();
-  } catch (err) {
-    console.error("❌ Share error", err);
-  }
-};
+    setLoading(true);
+
+    console.log("📦 SHARE PAYLOAD", {
+      entityType,
+      entityId,
+      groupIds: selectedGroups,
+      userId: loggedUser.id,
+      agencyId: loggedUser.agencyId,
+      tenantId: loggedUser.tenantId,
+    });
+
+    try {
+      const res = await fetch("/api/groups/share", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          entityType,
+          entityId,
+          groupIds: selectedGroups,
+          userId: loggedUser.id,
+          agencyId: loggedUser.agencyId,
+          tenantId: loggedUser.tenantId, // ✅ VERY IMPORTANT
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        console.error("❌ Share failed", err);
+        return;
+      }
+
+      console.log("✅ Share success");
+      setSelectedGroups([]);
+      onClose();
+    } catch (err) {
+      console.error("❌ Share error", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!open) return null;
+
+  /* ================= UI ================= */
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
