@@ -5,99 +5,107 @@ import { useRouter } from "next/navigation";
 import PrimaryButton from "@/components/PrimaryButton";
 import SellerCard from "@/components/sellers/SellerCard";
 import BackButton from "@/components/BackButton";
-import ShareToGroupModal from "@/components/groups/ShareToGroupModal"; // ✅ ADD
+import ShareToGroupModal from "@/components/groups/ShareToGroupModal";
 
 export default function SellersPage() {
-  const [sellers, setSellers] = useState<any[]>([]);
-  const [user, setUser] = useState<any | null>(null);
-
-  // ✅ ADD THIS STATE (VERY IMPORTANT)
-  const [shareSellerId, setShareSellerId] = useState<number | null>(null);
-
   const router = useRouter();
 
+  const [sellers, setSellers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // 🔍 SEARCH STATE
+  const [search, setSearch] = useState("");
+
+  // 🔗 SHARE STATE
+  const [shareSellerId, setShareSellerId] = useState<number | null>(null);
+
   useEffect(() => {
-    const raw =
-      typeof window !== "undefined"
-        ? localStorage.getItem("loggedUser")
-        : null;
-    if (!raw) return;
+    const raw = localStorage.getItem("loggedUser");
+    if (!raw) {
+      setLoading(false);
+      return;
+    }
 
-    const parsed = JSON.parse(raw);
-    setUser(parsed);
+    const user = JSON.parse(raw);
 
-    fetch(`/api/sellers/tenant/${parsed.tenantId}`)
+    fetch(`/api/sellers/tenant/${user.tenantId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data && data.success) setSellers(data.sellers || []);
+        if (data?.success) setSellers(data.sellers || []);
         else if (Array.isArray(data)) setSellers(data);
         else setSellers([]);
       })
-      .catch((err) => {
-        console.error("fetch sellers", err);
-        setSellers([]);
-      });
+      .catch(() => setSellers([]))
+      .finally(() => setLoading(false));
   }, []);
 
+  // ✅ ✅ ✅ SEARCH LOGIC — YAHI CHALTA HAI
+  const filteredSellers = sellers.filter((seller) => {
+    const q = search.toLowerCase();
+
+    return (
+      (seller.name ?? "").toLowerCase().includes(q) ||
+      (seller.property_address ?? "").toLowerCase().includes(q) ||
+      (seller.property_type ?? "").toLowerCase().includes(q)
+    );
+  });
+
   const handleDelete = async (id: number) => {
-    if (!user) return;
-    try {
-      await fetch(`/api/sellers/${id}`, { method: "DELETE" });
-      setSellers((prev) => prev.filter((s) => s.id !== id));
-    } catch (err) {
-      console.error("delete seller error", err);
-    }
+    if (!confirm("Delete this property?")) return;
+    await fetch(`/api/sellers/${id}`, { method: "DELETE" });
+    setSellers((prev) => prev.filter((s) => s.id !== id));
   };
 
-  const openSeller = (id: number) => {
-    router.push(`/sellers/${id}`);
-  };
+  if (loading) return <p className="p-6">Loading...</p>;
 
   return (
     <div className="w-full p-6">
-      {/* BACK BUTTON */}
+      {/* BACK */}
       <div className="mb-4">
         <BackButton />
       </div>
 
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Sellers / Properties</h1>
-        <a href="/sellers/new">
-          <PrimaryButton>+ Add Property</PrimaryButton>
-        </a>
+        <PrimaryButton onClick={() => router.push("/sellers/new")}>
+          + Add Property
+        </PrimaryButton>
+      </div>
+
+      {/* 🔍 SEARCH BAR */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search seller name or property type..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full px-4 py-2 border rounded-lg"
+        />
       </div>
 
       {/* LIST */}
-      <div className="space-y-3 w-full">
-        {sellers.map((seller) => (
+      <div className="space-y-3">
+        {filteredSellers.map((seller) => (
           <div
             key={seller.id}
-            role="button"
-            tabIndex={0}
-            onClick={() => openSeller(seller.id)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ")
-                openSeller(seller.id);
-            }}
+            onClick={() => router.push(`/sellers/${seller.id}`)}
             className="cursor-pointer"
           >
             <SellerCard
               seller={seller}
               onDelete={handleDelete}
-              onShare={(id) => setShareSellerId(id)} // ✅ FIXED
+              onShare={(id) => setShareSellerId(id)}
             />
           </div>
         ))}
 
-        {sellers.length === 0 && (
-          <p className="text-sm text-gray-500">
-            No properties yet.
-          </p>
+        {filteredSellers.length === 0 && (
+          <p className="text-gray-500 text-sm">No sellers found.</p>
         )}
       </div>
 
-      {/* ✅ SHARE MODAL (SAME AS BUYER) */}
+      {/* SHARE MODAL */}
       {shareSellerId !== null && (
         <ShareToGroupModal
           open={true}

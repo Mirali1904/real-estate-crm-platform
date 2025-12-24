@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 interface Agent {
   id: number;
   name: string;
@@ -17,14 +21,28 @@ export default function AddMemberModal({
   agents,
   onAddMember,
 }: AddMemberModalProps) {
+  // 🔍 SEARCH STATE
+  const [search, setSearch] = useState("");
+
   if (!isOpen) return null;
+
+  // ✅ SAME LOGIC AS BUYER / SELLER
+  const filteredAgents = agents.filter((agent) => {
+    const q = search.toLowerCase();
+    return (
+      agent.name.toLowerCase().includes(q) ||
+      agent.email.toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
         {/* HEADER */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Add Member</h2>
+          <h2 className="text-lg font-semibold text-gray-800">
+            Add Member
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
@@ -33,14 +51,25 @@ export default function AddMemberModal({
           </button>
         </div>
 
+        {/* 🔍 SEARCH BAR */}
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Search by name or email..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full px-3 py-2 border rounded-lg"
+          />
+        </div>
+
         {/* BODY */}
         <div className="max-h-80 overflow-y-auto space-y-3">
-          {!agents || agents.length === 0 ? (
+          {filteredAgents.length === 0 ? (
             <div className="text-center py-10 text-gray-500">
-              No available admins to add
+              No users found
             </div>
           ) : (
-            agents.map((agent) => (
+            filteredAgents.map((agent) => (
               <div
                 key={agent.id}
                 className="flex items-center justify-between border border-gray-200 rounded-lg p-3 hover:bg-gray-50"

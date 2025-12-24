@@ -26,13 +26,13 @@ export async function GET(req: Request) {
       FROM groups g
       LEFT JOIN group_agencies ga
         ON ga.group_id = g.id
-        AND ga.agency_id = ?
+        AND ga.tenant_id = ?
         AND ga.status = 'active'
       WHERE
         g.tenant_id = ?
         AND (
           g.created_by = ?
-          OR ga.agency_id IS NOT NULL
+          OR ga.tenant_id IS NOT NULL
         )
       ORDER BY g.created_at DESC
       `,
