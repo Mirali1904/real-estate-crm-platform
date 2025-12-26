@@ -1,6 +1,9 @@
 // server/service/authService.ts
 import { conn } from "@/lib/db";
-import bcrypt from 'bcryptjs';
+import bcrypt from "bcryptjs";
+
+/* ================= TYPES ================= */
+
 export interface SignupInput {
   tenantName: string;
   name: string;
@@ -15,45 +18,74 @@ export interface UserData {
   email: string;
   role: string;
   password: string;
-   agency_id: number | null;
 }
 
-// create tenant + admin user
+/* ================= SIGNUP ================= */
+
+// create tenant + admin user (SAFE + NO NULL TENANT)
 export async function createTenantWithAdmin(input: SignupInput) {
   const { tenantName, name, email, password } = input;
 
-  // check if email already exists
-  const [existing]: any = await conn.query(
-    "SELECT id FROM users WHERE email = ?",
-    [email]
-  );
-
-  if (existing.length > 0) {
-    throw new Error("EMAIL_EXISTS");
+  // 🔒 VALIDATION (VERY IMPORTANT)
+  if (!tenantName || !name || !email || !password) {
+    throw new Error("MISSING_FIELDS");
   }
 
-  const hashed = await bcrypt.hash(password, 10);
+  const connection = await conn.getConnection();
 
-  // create tenant
-  const [tenantResult]: any = await conn.query(
-    "INSERT INTO tenants (name) VALUES (?)",
-    [tenantName]
-  );
-  const tenantId = tenantResult.insertId;
+  try {
+    // 🔒 START TRANSACTION
+    await connection.beginTransaction();
 
-  // create user
-  const [userResult]: any = await conn.query(
-    "INSERT INTO users (tenant_id, name, email, password, role) VALUES (?, ?, ?, ?, ?)",
-    [tenantId, name, email, hashed, "ADMIN"]
-  );
+    // 1️⃣ Check if email already exists
+    const [existing]: any = await connection.query(
+      "SELECT id FROM users WHERE email = ?",
+      [email]
+    );
 
-  return {
-    tenantId,
-    userId: userResult.insertId,
-  };
+    if (existing.length > 0) {
+      throw new Error("EMAIL_EXISTS");
+    }
+
+    // 2️⃣ Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 3️⃣ Create tenant (NAME WILL NEVER BE NULL)
+    const [tenantResult]: any = await connection.query(
+      "INSERT INTO tenants (name) VALUES (?)",
+      [tenantName.trim()]
+    );
+
+    const tenantId = tenantResult.insertId;
+
+    // 4️⃣ Create ADMIN user
+    const [userResult]: any = await connection.query(
+      `
+      INSERT INTO users (tenant_id, name, email, password, role)
+      VALUES (?, ?, ?, ?, ?)
+      `,
+      [tenantId, name.trim(), email.trim(), hashedPassword, "ADMIN"]
+    );
+
+    // ✅ COMMIT TRANSACTION
+    await connection.commit();
+
+    return {
+      tenantId,
+      userId: userResult.insertId,
+    };
+  } catch (error) {
+    // ❌ ROLLBACK ON ANY ERROR
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
-// get user by email (for login)
+/* ================= LOGIN HELPERS ================= */
+
+// get user by email
 export async function getUserByEmail(email: string): Promise<UserData | null> {
   const [rows]: any = await conn.query(
     "SELECT * FROM users WHERE email = ?",
@@ -64,7 +96,7 @@ export async function getUserByEmail(email: string): Promise<UserData | null> {
   return rows[0] as UserData;
 }
 
-// verify password for login
+// verify password
 export async function verifyPassword(
   plain: string,
   hashed: string
