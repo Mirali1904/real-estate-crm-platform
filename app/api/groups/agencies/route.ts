@@ -41,6 +41,9 @@ export async function GET(req: Request) {
 /* =========================
    ADD AGENCY
 ========================= */
+/* =========================
+   ADD AGENCY (FIXED)
+========================= */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -50,7 +53,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing data" }, { status: 400 });
     }
 
-    // 🔁 if already exists → activate
+    /* 🔍 STEP 1: GET GROUP OWNER TENANT */
+    const [[group]]: any = await conn.execute(
+      `
+      SELECT tenant_id
+      FROM groups
+      WHERE id = ?
+      `,
+      [groupId]
+    );
+
+    if (!group) {
+      return NextResponse.json({ error: "Invalid group" }, { status: 400 });
+    }
+
+    /* 🚫 STEP 2: PREVENT OWNER FROM BEING ADDED */
+    if (group.tenant_id === userId) {
+      return NextResponse.json({
+        success: true,
+        message: "Owner tenant already has access",
+      });
+    }
+
+    /* 🔁 STEP 3: CHECK IF ENTRY EXISTS */
     const [exists]: any = await conn.execute(
       `
       SELECT id FROM group_agencies
@@ -59,6 +84,7 @@ export async function POST(req: Request) {
       [groupId, userId]
     );
 
+    /* ✅ STEP 4: INSERT OR ACTIVATE */
     if (exists.length > 0) {
       await conn.execute(
         `
@@ -85,6 +111,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }
+
 
 /* =========================
    REMOVE AGENCY

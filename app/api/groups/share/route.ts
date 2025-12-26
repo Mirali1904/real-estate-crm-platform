@@ -1,3 +1,4 @@
+// app/api/groups/share/route.ts
 import { NextResponse } from "next/server";
 import { conn } from "@/lib/db";
 
@@ -6,14 +7,12 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     const {
-      entityType,   // "buyer" | "seller"
+      entityType,
       entityId,
       groupIds,
       userId,
-      agencyId
+      tenantId,
     } = body;
-
-    /* ================= VALIDATION ================= */
 
     if (
       !entityType ||
@@ -21,90 +20,105 @@ export async function POST(req: Request) {
       !Array.isArray(groupIds) ||
       groupIds.length === 0 ||
       !userId ||
-      !agencyId
+      !tenantId
     ) {
-      console.error("❌ SHARE VALIDATION FAILED", body);
       return NextResponse.json(
         { error: "Invalid payload" },
         { status: 400 }
       );
     }
 
-    /* ================= GET TENANT FROM USER ================= */
-
-    const [[user]]: any = await conn.execute(
-      `
-      SELECT tenant_id
-      FROM users
-      WHERE id = ?
-      `,
-      [userId]
-    );
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Invalid user" },
-        { status: 400 }
-      );
-    }
-
-    const tenantId = user.tenant_id;
-
-    /* ================= CORE LOGIC ================= */
-
     for (const groupId of groupIds) {
-
-      /* ---------- STEP 1: Ensure agency(user) is group member ---------- */
-      const [existingAgency]: any = await conn.execute(
+      /* Ensure tenant is group member */
+      const [exists]: any = await conn.execute(
         `
         SELECT id
         FROM group_agencies
         WHERE group_id = ?
-          AND agency_id = ?
+          AND tenant_id = ?
           AND status = 'active'
         `,
-        [groupId, agencyId]
+        [groupId, tenantId]
       );
 
-      if (existingAgency.length === 0) {
+      if (exists.length === 0) {
         await conn.execute(
           `
-          INSERT INTO group_agencies
-            (group_id, agency_id, tenant_id, status)
-          VALUES (?, ?, ?, 'active')
+          INSERT INTO group_agencies (group_id, tenant_id, status)
+          VALUES (?, ?, 'active')
           `,
-          [groupId, agencyId, tenantId]
+          [groupId, tenantId]
         );
       }
 
-      /* ---------- STEP 2: Create group post (THIS IS THE SHARE) ---------- */
+      let title = "";
+      let description = "";
+
+      /* ===== BUYER ===== */
+      if (entityType === "buyer") {
+        const [[buyer]]: any = await conn.execute(
+          `
+          SELECT
+            name,
+            budget_min,
+            budget_max,
+            location,
+            status
+          FROM buyers
+          WHERE id = ?
+            AND tenant_id = ?
+          `,
+          [entityId, tenantId]
+        );
+
+        if (!buyer) continue;
+
+        title = buyer.name;
+        description = `Budget: ${buyer.budget_min} - ${buyer.budget_max}
+Location: ${buyer.location}
+Status: ${buyer.status}`;
+      }
+
+      /* ===== SELLER (FIXED) ===== */
+      if (entityType === "seller") {
+        const [[seller]]: any = await conn.execute(
+          `
+          SELECT
+            name,
+            location,
+            price
+          FROM sellers
+          WHERE id = ?
+            AND tenant_id = ?
+          `,
+          [entityId, tenantId]
+        );
+
+        if (!seller) continue;
+
+        title = seller.name;
+        description = `Location: ${seller.location}
+Price: ₹${seller.price}`;
+      }
+
       await conn.execute(
         `
         INSERT INTO group_posts
-          (
-            group_id,
-            user_id,
-            tenant_id,
-            post_type,
-            title,
-            description,
-            status
-          )
+          (group_id, user_id, tenant_id, post_type, title, description, status)
         VALUES (?, ?, ?, ?, ?, ?, 'active')
         `,
         [
           groupId,
           userId,
           tenantId,
-          entityType, // buyer | seller
-          `${entityType.toUpperCase()} SHARED`,
-          `${entityType} id: ${entityId}`
+          entityType,
+          title,
+          description,
         ]
       );
     }
 
     return NextResponse.json({ success: true });
-
   } catch (err) {
     console.error("❌ SHARE ERROR", err);
     return NextResponse.json(

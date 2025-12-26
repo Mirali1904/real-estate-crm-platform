@@ -38,14 +38,11 @@ export default function ShareToGroupModal({
 
         console.log("fetching groups for", {
           userId: user.id,
-          agencyId: user.agencyId,
           tenantId: user.tenantId,
         });
 
         const res = await fetch("/api/groups/accessible", {
           headers: {
-            "x-user-id": String(user.id),
-            "x-agency-id": String(user.agencyId),
             "x-tenant-id": String(user.tenantId),
           },
         });
@@ -80,11 +77,7 @@ export default function ShareToGroupModal({
       localStorage.getItem("loggedUser") || "{}"
     );
 
-    if (
-      !loggedUser?.id ||
-      !loggedUser?.agencyId ||
-      !loggedUser?.tenantId
-    ) {
+    if (!loggedUser?.id || !loggedUser?.tenantId) {
       console.error("❌ loggedUser missing fields", loggedUser);
       return;
     }
@@ -96,7 +89,6 @@ export default function ShareToGroupModal({
       entityId,
       groupIds: selectedGroups,
       userId: loggedUser.id,
-      agencyId: loggedUser.agencyId,
       tenantId: loggedUser.tenantId,
     });
 
@@ -111,8 +103,7 @@ export default function ShareToGroupModal({
           entityId,
           groupIds: selectedGroups,
           userId: loggedUser.id,
-          agencyId: loggedUser.agencyId,
-          tenantId: loggedUser.tenantId, // ✅ VERY IMPORTANT
+          tenantId: loggedUser.tenantId,
         }),
       });
 

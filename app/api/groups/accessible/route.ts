@@ -1,13 +1,12 @@
+// app/api/groups/accessible/route.ts
 import { NextResponse } from "next/server";
 import { conn } from "@/lib/db";
 
 export async function GET(req: Request) {
   try {
     const tenantId = req.headers.get("x-tenant-id");
-    const userId = req.headers.get("x-user-id");
-    const agencyId = req.headers.get("x-agency-id");
 
-    if (!tenantId || !userId || !agencyId) {
+    if (!tenantId) {
       return NextResponse.json({ groups: [] });
     }
 
@@ -16,31 +15,22 @@ export async function GET(req: Request) {
       SELECT DISTINCT
         g.id,
         g.name,
-        g.description,
-        g.created_by,
-        g.created_at,
-        CASE
-          WHEN g.created_by = ? THEN 'admin'
-          ELSE 'member'
-        END AS user_role
+        g.description
       FROM groups g
       LEFT JOIN group_agencies ga
         ON ga.group_id = g.id
-        AND ga.tenant_id = ?
-        AND ga.status = 'active'
-      WHERE
-        g.tenant_id = ?
+       AND ga.status = 'active'
+      WHERE g.status = 'active'
         AND (
-          g.created_by = ?
-          OR ga.tenant_id IS NOT NULL
+          g.tenant_id = ?          -- own groups
+          OR ga.tenant_id = ?      -- shared groups
         )
       ORDER BY g.created_at DESC
       `,
-      [userId, agencyId, tenantId, userId]
+      [tenantId, tenantId]
     );
 
     return NextResponse.json({ groups: rows });
-
   } catch (err) {
     console.error("GROUP FETCH ERROR", err);
     return NextResponse.json({ groups: [] });
