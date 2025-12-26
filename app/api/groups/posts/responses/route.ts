@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { GroupService } from "@/server/service/group.service";
+import { conn } from "@/lib/db";
 
-const groupService = new GroupService();
-
-// GET /api/groups/posts/responses?postId=1
+/* ================= GET RESPONSES ================= */
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -16,17 +14,27 @@ export async function GET(req: Request) {
       );
     }
 
-    const responses = await groupService.getPostResponses(postId);
-    return NextResponse.json(responses);
-  } catch (error: any) {
+    const [rows]: any = await conn.execute(
+      `
+      SELECT r.*, u.name AS author_name
+      FROM group_post_responses r
+      INNER JOIN users u ON u.id = r.user_id
+      WHERE r.post_id = ?
+      ORDER BY r.created_at ASC
+      `,
+      [postId]
+    );
+
+    return NextResponse.json(rows);
+  } catch (error) {
     return NextResponse.json(
-      { error: error.message || "Failed to fetch responses" },
+      { error: "Failed to fetch responses" },
       { status: 500 }
     );
   }
 }
 
-// POST /api/groups/posts/responses
+/* ================= ADD RESPONSE ================= */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -39,21 +47,24 @@ export async function POST(req: Request) {
       );
     }
 
-    const id = await groupService.addPostResponse(postId, userId, message);
+    await conn.execute(
+      `
+      INSERT INTO group_post_responses (post_id, user_id, message, created_at)
+      VALUES (?, ?, ?, NOW())
+      `,
+      [postId, userId, message]
+    );
 
-    return NextResponse.json({
-      message: "Response added successfully",
-      id,
-    });
-  } catch (error: any) {
+    return NextResponse.json({ success: true });
+  } catch (error) {
     return NextResponse.json(
-      { error: error.message || "Failed to add response" },
+      { error: "Failed to add response" },
       { status: 500 }
     );
   }
 }
 
-// DELETE /api/groups/posts/responses?responseId=1
+/* ================= DELETE RESPONSE ================= */
 export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -66,18 +77,19 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // delete response
-    await groupService.deletePostResponse(responseId);
+    await conn.execute(
+      `DELETE FROM group_post_responses WHERE id = ?`,
+      [responseId]
+    );
 
     return NextResponse.json({
       message: "Response deleted successfully",
     });
-  } catch (error: any) {
-    console.error("Error deleting response:", error);
+  } catch (error) {
+    console.error("Delete response error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete response" },
+      { error: "Failed to delete response" },
       { status: 500 }
     );
   }
 }
-

@@ -13,10 +13,21 @@ export async function GET(
       return NextResponse.json({ error: "Invalid group id" }, { status: 400 });
     }
 
-    const [rows]: any = await conn.execute(
-      "SELECT id, name, description, created_by FROM groups WHERE id = ?",
-      [groupId]
-    );
+   const [rows]: any = await conn.execute(
+  `
+  SELECT 
+    g.id,
+    g.name,
+    g.description,
+    g.created_by,
+    u.name AS creator_name
+  FROM groups g
+  LEFT JOIN users u ON g.created_by = u.id
+  WHERE g.id = ?
+  `,
+  [groupId]
+);
+
 
     if (!rows || rows.length === 0) {
       return NextResponse.json({ error: "Group not found" }, { status: 404 });

@@ -41,7 +41,7 @@ export default function AddMemberModal({
         {/* HEADER */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-gray-800">
-            Add Member
+            Add Agency
           </h2>
           <button
             onClick={onClose}

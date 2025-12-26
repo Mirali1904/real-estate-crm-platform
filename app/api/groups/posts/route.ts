@@ -36,12 +36,12 @@ export async function POST(req: Request) {
       groupId,
       userId,
       tenantId,
-      postType,      // "buyer" | "seller"
+      postType,
       title,
       description,
       location,
       budget,
-      referenceId,   // buyer_id | seller_id
+      referenceId,
     } = body;
 
     if (!groupId || !userId || !tenantId || !postType || !title) {
@@ -51,26 +51,19 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ EXACT NAME AS SERVICE FILE
-    const isMember = await groupService.isGroupMember(groupId, userId);
-    if (!isMember) {
-      return NextResponse.json(
-        { error: "Only group members can post" },
-        { status: 403 }
-      );
-    }
+    // ❌ MEMBER CHECK REMOVED (you use group_agencies only)
 
     const postId = await groupService.createPost(
       groupId,
       userId,
       tenantId,
       {
-        postType, // SAME AS SERVICE
+        postType,
         title,
         description,
         location,
         budget: budget ? Number(budget) : undefined,
-        referenceId: referenceId ?? undefined,
+       
       }
     );
 

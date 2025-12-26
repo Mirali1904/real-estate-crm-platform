@@ -1,12 +1,12 @@
-interface Agency {
-  id: number;
-  agency_id: number;
+interface Member {
+  id: number;        // group_members.id
+  user_id: number;   // users.id
   name: string;
   email: string;
 }
 
 interface AgencyCardProps {
-  agency: Agency;
+  agency: Member;
   isCreator: boolean;
   onRemove: () => void;
 }
@@ -20,8 +20,12 @@ export default function AgencyCard({
     <div className="border border-gray-200 rounded-lg p-4 bg-white">
       <div className="flex justify-between items-start">
         <div>
-          <h4 className="font-semibold text-gray-800">{agency.name}</h4>
-          <p className="text-sm text-gray-500">{agency.email}</p>
+          <h4 className="font-semibold text-gray-800">
+            {agency.name}
+          </h4>
+          <p className="text-sm text-gray-500">
+            {agency.email}
+          </p>
         </div>
 
         {isCreator && (

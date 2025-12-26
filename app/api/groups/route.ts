@@ -3,9 +3,9 @@ import { GroupService } from "@/server/service/group.service";
 
 const groupService = new GroupService();
 
-
+// ============================
 // GET /api/groups
-
+// ============================
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -19,8 +19,8 @@ export async function GET(req: Request) {
       );
     }
 
-    // ✅ YE NAYA QUERY USE KARO - YE GROUPS DIKHAYEGA JAHA USER AGENCY HAI
-    const groups = await groupService.getGroupsForUser(userId);
+    // ✅ FIXED: tenant-based groups fetch
+    const groups = await groupService.getGroupsForTenant(tenantId, userId);
 
     return NextResponse.json(groups);
   } catch (error: any) {
@@ -31,8 +31,6 @@ export async function GET(req: Request) {
     );
   }
 }
-
-
 
 // ============================
 // POST /api/groups
