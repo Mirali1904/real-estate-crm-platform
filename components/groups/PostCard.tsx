@@ -35,21 +35,21 @@ export default function PostCard({
   onDelete,
 }: PostCardProps) {
   return (
-    <div className="border border-gray-300 rounded-lg p-4">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
       {/* HEADER */}
-      <div className="mb-2 flex justify-between items-start">
-        <div>
-          <span className="inline-block bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded mr-2">
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 font-medium uppercase">
             {post.post_type}
           </span>
-          <h3 className="text-lg font-semibold inline">
+          <h3 className="text-base font-semibold text-gray-900">
             {post.title}
           </h3>
         </div>
 
         <button
           onClick={onDelete}
-          className="text-red-500 text-xs hover:underline"
+          className="text-xs text-red-500 hover:underline"
         >
           Delete
         </button>
@@ -58,43 +58,62 @@ export default function PostCard({
       {/* ================= BUYER POST ================= */}
       {post.post_type === "buyer" && post.buyer_name ? (
         <div className="text-sm text-gray-700 space-y-1">
-          <p><strong>Buyer:</strong> {post.buyer_name}</p>
+          <p>
+            <span className="font-medium">Buyer:</span>{" "}
+            {post.buyer_name}
+          </p>
 
           {post.buyer_requirement && (
-            <p><strong>Requirement:</strong> {post.buyer_requirement}</p>
+            <p>
+              <span className="font-medium">Requirement:</span>{" "}
+              {post.buyer_requirement}
+            </p>
           )}
 
           {post.buyer_location && (
-            <p>📍 {post.buyer_location}</p>
+            <p className="text-gray-600">
+              📍 {post.buyer_location}
+            </p>
           )}
 
           {(post.buyer_budget_min || post.buyer_budget_max) && (
-            <p>
-              💰 ₹{post.buyer_budget_min ?? "—"} – ₹{post.buyer_budget_max ?? "—"}
+            <p className="text-gray-600">
+              💰 ₹{post.buyer_budget_min ?? "—"} – ₹
+              {post.buyer_budget_max ?? "—"}
             </p>
           )}
         </div>
       ) : (
         /* ================= NORMAL POST ================= */
-        <>
+        <div className="text-sm text-gray-700 space-y-1">
           {post.description && (
-            <p className="text-gray-700 mb-2">{post.description}</p>
+            <p className="text-gray-700">{post.description}</p>
           )}
 
-          {post.location && <p className="text-sm">📍 {post.location}</p>}
-          {post.budget && <p className="text-sm">💰 ₹{post.budget}</p>}
-        </>
+          {post.location && (
+            <p className="text-gray-600">📍 {post.location}</p>
+          )}
+
+          {post.budget && (
+            <p className="text-gray-600">💰 ₹{post.budget}</p>
+          )}
+        </div>
       )}
 
       {/* FOOTER */}
-      <div className="flex justify-between items-center mt-3 text-sm text-gray-600">
-        <span>Posted by {post.author_name}</span>
+      <div className="flex justify-between items-center mt-4 pt-4 border-t text-xs text-gray-500">
+        <span>
+          Posted by{" "}
+          <span className="font-medium text-gray-700">
+            {post.author_name}
+          </span>
+        </span>
 
         <button
           onClick={onViewResponses}
-          className="text-[#c99a2e] hover:underline"
+          className="text-indigo-600 hover:underline font-medium"
         >
-          View / Add Responses ({post.response_count})
+          Responses ({post.response_count})
         </button>
       </div>
     </div>

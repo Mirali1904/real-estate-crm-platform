@@ -14,24 +14,28 @@ export default function GroupCard({ group, onClick }: GroupCardProps) {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer p-6 border border-gray-200"
+      className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition cursor-pointer"
     >
+      {/* HEADER */}
       <div className="flex justify-between items-start mb-3">
-        <h3 className="text-lg font-semibold text-gray-800 line-clamp-1">
+        <h3 className="text-base font-semibold text-gray-800 line-clamp-1">
           {group.name}
         </h3>
+
         {group.user_role === "ADMIN" && (
-          <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded">
+          <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full">
             Admin
           </span>
         )}
       </div>
 
-      <p className="text-gray-600 text-sm line-clamp-2 mb-4 min-h-[40px]">
+      {/* DESCRIPTION */}
+      <p className="text-sm text-gray-600 line-clamp-2 min-h-[40px]">
         {group.description || "No description provided"}
       </p>
 
-      <div className="flex justify-between items-center text-sm text-gray-500 pt-4 border-t">
+      {/* FOOTER */}
+      <div className="flex justify-between items-center text-xs text-gray-500 mt-4 pt-3 border-t">
         <div className="flex items-center gap-1">
           <svg
             className="w-4 h-4"
@@ -48,7 +52,8 @@ export default function GroupCard({ group, onClick }: GroupCardProps) {
           </svg>
           <span>{group.member_count} members</span>
         </div>
-        <div>by {group.creator_name}</div>
+
+        <span>by {group.creator_name}</span>
       </div>
     </div>
   );

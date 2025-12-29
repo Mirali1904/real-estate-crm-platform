@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import PrimaryButton from "@/components/PrimaryButton";
 import SecondaryButton from "@/components/SecondaryButton";
 import BackButton from "@/components/BackButton";
 import ShareToGroupModal from "@/components/groups/ShareToGroupModal";
-
-/* ================= TYPES ================= */
 
 type Buyer = {
   id: number;
@@ -28,14 +27,11 @@ export default function BuyersPage() {
   const [search, setSearch] = useState("");
   const [shareBuyerId, setShareBuyerId] = useState<number | null>(null);
 
-  /* ================= FETCH ALL BUYERS ================= */
+  /* ================= FETCH ================= */
 
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
-    if (!raw) {
-      setLoading(false);
-      return;
-    }
+    if (!raw) return;
 
     const user = JSON.parse(raw);
     const tenantId = user.tenant_id || user.tenantId;
@@ -44,13 +40,12 @@ export default function BuyersPage() {
       .then((res) => res.json())
       .then((data) => {
         setBuyers(data);
-        setDisplayBuyers(data); // default = all buyers
+        setDisplayBuyers(data);
       })
-      .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   }, []);
 
-  /* ================= DEBOUNCED SEARCH (BACKEND ONLY) ================= */
+  /* ================= SEARCH ================= */
 
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
@@ -60,7 +55,6 @@ export default function BuyersPage() {
     const tenantId = user.tenant_id || user.tenantId;
 
     const timer = setTimeout(() => {
-      // 🔹 Search empty → show full list
       if (!search.trim()) {
         setDisplayBuyers(buyers);
         return;
@@ -72,16 +66,11 @@ export default function BuyersPage() {
         )}`
       )
         .then((res) => res.json())
-        .then((data) => {
-          setDisplayBuyers(data.results || []);
-        })
-        .catch(() => setDisplayBuyers([]));
-    }, 400); // ⏳ debounce (VERY IMPORTANT)
+        .then((data) => setDisplayBuyers(data.results || []));
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [search, buyers]);
-
-  /* ================= DELETE ================= */
 
   async function handleDelete(id: number) {
     if (!confirm("Delete this buyer?")) return;
@@ -92,87 +81,140 @@ export default function BuyersPage() {
       body: JSON.stringify({ id }),
     });
 
-    setBuyers((prev) => prev.filter((b) => b.id !== id));
-    setDisplayBuyers((prev) => prev.filter((b) => b.id !== id));
+    setBuyers((p) => p.filter((b) => b.id !== id));
+    setDisplayBuyers((p) => p.filter((b) => b.id !== id));
   }
 
   if (loading) return <p className="p-6">Loading...</p>;
 
   return (
-    <div className="w-full p-6">
-      {/* BACK */}
-      <div className="mb-4">
-        <BackButton />
-      </div>
-
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold">Buyer Leads</h1>
-        <button
-          onClick={() => router.push("/buyers/new")}
-          className="bg-[#c99a2e] text-white px-4 py-2 rounded-full"
-        >
-          + Add Buyer
-        </button>
-      </div>
-
-      {/* 🔍 SEARCH */}
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Search buyers by name, email or phone..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-4 py-2 border rounded-lg"
-        />
-      </div>
-
-      {/* EMPTY STATE */}
-      {displayBuyers.length === 0 && (
-        <p className="text-gray-500">No buyers found.</p>
-      )}
-
-      {/* LIST */}
-      {displayBuyers.map((buyer) => (
-        <div
-          key={buyer.id}
-          className="w-full border rounded-xl p-4 mb-4 flex justify-between items-center cursor-pointer hover:bg-gray-50"
-          onClick={() => router.push(`/buyers/${buyer.id}`)}
-        >
-          <div>
-            <p className="font-semibold">{buyer.name}</p>
-            <p className="text-sm text-gray-600">{buyer.email}</p>
-            <p className="text-sm text-gray-600">{buyer.phone}</p>
-            <p className="text-sm">
-              Budget: {buyer.budget_min} - {buyer.budget_max}
-            </p>
-            <p className="text-sm font-medium">
-              Status: <span className="uppercase">{buyer.status}</span>
-            </p>
-          </div>
-
-          <div
-            className="flex gap-2"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setShareBuyerId(buyer.id)}
-              className="px-3 py-1 text-sm rounded-full border border-[#c99a2e] text-[#c99a2e]"
-            >
-              Share
-            </button>
-
-            <SecondaryButton onClick={() => handleDelete(buyer.id)}>
-              Delete
-            </SecondaryButton>
-          </div>
+    <div className="w-full px-6 pt-3">
+      {/* TOP BAR */}
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <BackButton />
+          <h1 className="text-2xl font-semibold mt-2">Buyer Leads</h1>
         </div>
-      ))}
+
+        <PrimaryButton onClick={() => router.push("/buyers/new")}>
+          + Add Buyer
+        </PrimaryButton>
+      </div>
+
+      {/* SEARCH BAR (PROFESSIONAL SINGLE LINE) */}
+      <div className="mb-4">
+        <div className="relative max-w-xl">
+          <input
+            type="text"
+            placeholder="Search buyers by name, email or phone"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="
+              w-full
+              h-11
+              px-5
+              text-sm
+              rounded-full
+              border
+              border-gray-300
+              bg-white
+              focus:outline-none
+              focus:ring-2
+              focus:ring-[#5b5ce2]
+              focus:border-[#5b5ce2]
+              shadow-sm
+            "
+          />
+        </div>
+      </div>
+
+      {/* TABLE */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-gray-400 border-b">
+              <th className="px-6 py-3 text-left font-medium">Name</th>
+              <th className="px-6 py-3 text-left font-medium">Email</th>
+              <th className="px-6 py-3 text-left font-medium">Phone</th>
+              <th className="px-6 py-3 text-left font-medium">Budget</th>
+              <th className="px-6 py-3 text-left font-medium">Status</th>
+              <th className="px-6 py-3 text-right font-medium">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {displayBuyers.map((buyer) => (
+              <tr
+                key={buyer.id}
+                className="border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer"
+                onClick={() => router.push(`/buyers/${buyer.id}`)}
+              >
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">
+                      {buyer.name[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">
+                        {buyer.name}
+                      </div>
+                      <div className="text-xs text-gray-400">Buyer</div>
+                    </div>
+                  </div>
+                </td>
+
+                <td className="px-6 py-4 text-gray-600">
+                  {buyer.email}
+                </td>
+
+                <td className="px-6 py-4 text-gray-600">
+                  {buyer.phone}
+                </td>
+
+                <td className="px-6 py-4 text-gray-700">
+                  ₹{buyer.budget_min} – ₹{buyer.budget_max}
+                </td>
+
+                <td className="px-6 py-4">
+                  <span
+                    className={`px-3 py-1 text-xs rounded-full font-medium ${
+                      buyer.status === "SITE_VISIT"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {buyer.status}
+                  </span>
+                </td>
+
+                <td
+                  className="px-6 py-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex justify-end gap-2">
+                    <SecondaryButton
+                      onClick={() => setShareBuyerId(buyer.id)}
+                    >
+                      Share
+                    </SecondaryButton>
+
+                    <SecondaryButton
+                      onClick={() => handleDelete(buyer.id)}
+                    >
+                      Delete
+                    </SecondaryButton>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* SHARE MODAL */}
-      {shareBuyerId !== null && (
+      {shareBuyerId && (
         <ShareToGroupModal
-          open={true}
+          open
           onClose={() => setShareBuyerId(null)}
           entityType="buyer"
           entityId={shareBuyerId}

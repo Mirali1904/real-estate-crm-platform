@@ -24,112 +24,126 @@ type UserRow = {
 
 export default function UsersPage() {
   const router = useRouter();
+
   const [currentUser, setCurrentUser] = useState<LoggedUser | null>(null);
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const raw =
-      typeof window !== "undefined"
-        ? localStorage.getItem("loggedUser")
-        : null;
-
+    const raw = localStorage.getItem("loggedUser");
     if (!raw) {
       router.replace("/login");
       return;
     }
 
-    try {
-      const parsed = JSON.parse(raw) as LoggedUser;
-      const tenantId = parsed.tenantId ?? parsed.tenant_id;
+    const parsed = JSON.parse(raw) as LoggedUser;
+    const tenantId = parsed.tenantId ?? parsed.tenant_id;
 
-      if (!tenantId) {
-        router.replace("/login");
-        return;
-      }
-
-      setCurrentUser({ ...parsed, tenantId });
-
-      fetch(`/api/users/${tenantId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            setUsers(data.users || []);
-          }
-        })
-        .finally(() => setLoading(false));
-    } catch (err) {
-      console.error(err);
+    if (!tenantId) {
       router.replace("/login");
+      return;
     }
+
+    setCurrentUser({ ...parsed, tenantId });
+
+    fetch(`/api/users/${tenantId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setUsers(data.users || []);
+      })
+      .finally(() => setLoading(false));
   }, [router]);
 
-  if (!currentUser) {
+  /* 🔍 SEARCH FILTER (buyer jaisa) */
+  const filteredUsers = users.filter((u) => {
+    const q = search.toLowerCase();
     return (
-      <div className="p-6">
-        <p className="text-sm text-gray-500">Checking session...</p>
-      </div>
+      u.name.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q) ||
+      u.role.toLowerCase().includes(q)
     );
-  }
+  });
+
+  if (!currentUser) return null;
 
   return (
-    <div className="w-full p-6">
-      {/* BACK BUTTON */}
-      <div className="mb-4">
-        <BackButton />
-      </div>
+    <div className="w-full px-6 pt-2 space-y-6">
+
+      {/* BACK */}
+      <BackButton />
 
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Team Members</h1>
-          <p className="text-xs text-gray-500 mt-1">
+          <h1 className="text-xl font-semibold">Team Members</h1>
+          <p className="text-xs text-gray-500">
             Users in your agency (tenant_id {currentUser.tenantId})
           </p>
         </div>
 
         <Link href="/users/new">
-          <button className="bg-[#c89a3b] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#b4882f] transition">
-            + Add User
-          </button>
-        </Link>
+  <button
+    className="
+      bg-indigo-600
+      text-white
+      px-5
+      py-2.5
+      rounded-full
+      text-sm
+      font-medium
+      hover:bg-indigo-700
+      transition
+    "
+  >
+    + Add User
+  </button>
+</Link>
+
       </div>
 
-      {/* CONTENT */}
+      {/* SEARCH BAR (buyer jaisa) */}
+      <input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search by name, email or role"
+        className="w-full max-w-md border rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+      />
+
+      {/* LIST */}
       {loading ? (
         <p className="text-sm text-gray-500">Loading users...</p>
-      ) : users.length === 0 ? (
-        <p className="text-sm text-gray-500">
-          No users yet. Use &quot;Add User&quot; to invite your team.
-        </p>
+      ) : filteredUsers.length === 0 ? (
+        <p className="text-sm text-gray-500">No users found</p>
       ) : (
-        <div className="w-full bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs uppercase text-gray-500">
-              <tr>
-                <th className="text-left px-4 py-3">Name</th>
-                <th className="text-left px-4 py-3">Email</th>
-                <th className="text-left px-4 py-3">Role</th>
-                <th className="text-left px-4 py-3">Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id} className="border-t border-gray-100">
-                  <td className="px-4 py-3">{u.name}</td>
-                  <td className="px-4 py-3 text-xs text-gray-600">
-                    {u.email}
-                  </td>
-                  <td className="px-4 py-3 text-xs uppercase tracking-[0.15em] text-gray-500">
-                    {u.role}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-gray-400">
-                    {new Date(u.created_at).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-3">
+          {filteredUsers.map((u) => (
+            <div
+              key={u.id}
+              className="bg-white rounded-xl shadow-sm p-4 flex justify-between items-center"
+            >
+              <div className="flex gap-4 items-center">
+                {/* AVATAR */}
+                <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">
+                  {u.name[0].toUpperCase()}
+                </div>
+
+                <div>
+                  <p className="font-medium text-sm">{u.name}</p>
+                  <p className="text-xs text-gray-500">{u.email}</p>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <p className="text-xs uppercase tracking-wider text-gray-500">
+                  {u.role}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {new Date(u.created_at).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

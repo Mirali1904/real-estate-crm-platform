@@ -13,14 +13,14 @@ export default function PageSearch({ placeholder, api, onResults }: Props) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!q) {
+    if (!q.trim()) {
       onResults([]);
       return;
     }
 
     const timer = setTimeout(async () => {
       setLoading(true);
-      const res = await fetch(`${api}?q=${q}`);
+      const res = await fetch(`${api}?q=${encodeURIComponent(q)}`);
       const data = await res.json();
       onResults(data.results || []);
       setLoading(false);
@@ -30,16 +30,34 @@ export default function PageSearch({ placeholder, api, onResults }: Props) {
   }, [q]);
 
   return (
-    <div className="mb-4">
-      <input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder={placeholder}
-        className="w-full max-w-md px-4 py-2 border rounded-lg"
-      />
-      {loading && (
-        <p className="text-sm text-gray-500 mt-1">Searching...</p>
-      )}
+    <div className="mb-6">
+      <div className="relative w-full">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder={placeholder}
+          className="
+            w-full
+            h-11
+            px-5
+            text-sm
+            border
+            border-gray-300
+            rounded-full
+            bg-white
+            focus:outline-none
+            focus:ring-2
+            focus:ring-[#5b5ce2]
+            focus:border-[#5b5ce2]
+          "
+        />
+
+        {loading && (
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+            …
+          </span>
+        )}
+      </div>
     </div>
   );
 }

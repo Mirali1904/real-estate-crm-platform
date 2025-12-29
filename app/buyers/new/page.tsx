@@ -10,10 +10,7 @@ function useDebounce(value: string, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
     return () => clearTimeout(timer);
   }, [value, delay]);
 
@@ -70,13 +67,10 @@ export default function AddBuyerPage() {
           `/api/location/search?q=${encodeURIComponent(debouncedLocation)}`,
           { signal: controller.signal }
         );
-
         const data = await res.json();
         setSuggestions(data);
       } catch (err: any) {
-        if (err.name !== "AbortError") {
-          console.error("Location error", err);
-        }
+        if (err.name !== "AbortError") console.error(err);
       } finally {
         setLoadingLocation(false);
       }
@@ -98,18 +92,11 @@ export default function AddBuyerPage() {
 
   async function handleSubmit() {
     const raw = localStorage.getItem("loggedUser");
-    if (!raw) {
-      alert("Not logged in");
-      return;
-    }
+    if (!raw) return alert("Not logged in");
 
     const user = JSON.parse(raw);
     const tenantId = user.tenant_id ?? user.tenantId;
-
-    if (!tenantId) {
-      alert("Tenant not found");
-      return;
-    }
+    if (!tenantId) return alert("Tenant not found");
 
     const res = await fetch("/api/buyers/create", {
       method: "POST",
@@ -120,47 +107,56 @@ export default function AddBuyerPage() {
       body: JSON.stringify(form),
     });
 
-    if (res.ok) {
-      router.push("/buyers");
-    } else {
+    if (res.ok) router.push("/buyers");
+    else {
       const err = await res.json();
       alert(err.error || "Failed");
     }
   }
 
   return (
-    <div className="w-full">
-      <div className="max-w-5xl mx-auto p-6">
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-4xl mx-auto px-6 py-8">
         <BackButton />
 
-        <div className="bg-white rounded-2xl shadow-lg p-8 mt-4">
-          <h1 className="text-2xl font-semibold mb-6">Add Buyer</h1>
+        {/* CARD */}
+        <div className="bg-white rounded-2xl shadow-sm p-8 mt-4">
+          <h1 className="text-xl font-semibold mb-6">
+            Add Buyer
+          </h1>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
             <Input label="Name" name="name" onChange={handleChange} />
             <Input label="Phone" name="phone" onChange={handleChange} />
+
             <Input label="Email" name="email" onChange={handleChange} />
             <Input label="Requirement" name="requirement" onChange={handleChange} />
 
-            <div className="col-span-2 relative">
-              <label className="text-sm mb-1 block">Location</label>
+            {/* LOCATION */}
+            <div className="md:col-span-2 relative">
+              <label className="text-sm text-gray-700 mb-1 block">
+                Location
+              </label>
               <input
                 value={form.location}
                 onChange={handleLocationChange}
-                className="w-full border rounded-lg px-3 py-2"
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none"
               />
 
               {loadingLocation && (
-                <p className="text-xs text-gray-500 mt-1">Searching...</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Searching...
+                </p>
               )}
 
               {suggestions.length > 0 && (
-                <div className="absolute z-10 bg-white border w-full rounded-lg max-h-48 overflow-auto">
+                <div className="absolute z-10 bg-white border border-gray-200 w-full rounded-lg mt-1 max-h-48 overflow-auto">
                   {suggestions.map((place, i) => (
                     <div
                       key={i}
                       onClick={() => selectLocation(place)}
-                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
                     >
                       {place.display_name}
                     </div>
@@ -171,13 +167,15 @@ export default function AddBuyerPage() {
 
             <Input label="Latitude" value={form.lat} readOnly />
             <Input label="Longitude" value={form.lng} readOnly />
+
             <Input label="Radius (km)" name="radius_km" onChange={handleChange} />
             <Input label="Budget Min" name="budget_min" onChange={handleChange} />
+
             <Input label="Budget Max" name="budget_max" onChange={handleChange} />
             <Input label="Bedrooms" name="bedrooms" onChange={handleChange} />
           </div>
 
-          <div className="flex justify-end mt-6">
+          <div className="flex justify-end mt-8">
             <PrimaryButton onClick={handleSubmit}>
               Save Buyer
             </PrimaryButton>
@@ -192,13 +190,25 @@ export default function AddBuyerPage() {
 function Input({ label, name, onChange, value, readOnly = false }: any) {
   return (
     <div>
-      <label className="block text-sm mb-1">{label}</label>
+      <label className="block text-sm text-gray-700 mb-1">
+        {label}
+      </label>
       <input
         name={name}
         value={value}
         readOnly={readOnly}
         onChange={onChange}
-        className="w-full border rounded-lg px-3 py-2"
+        className="
+          w-full
+          bg-gray-50
+          border border-gray-200
+          rounded-lg
+          px-4 py-2.5
+          text-sm
+          focus:outline-none
+          focus:ring-2
+          focus:ring-indigo-500
+        "
       />
     </div>
   );

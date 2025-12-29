@@ -16,58 +16,81 @@ export default function Sidebar() {
     router.push("/login");
   }
 
-  const itemClass = (path: string) =>
-    `block text-sm text-gray-700 rounded-md px-4 py-2 transition ${
-      pathname === path ? "bg-gray-100 font-semibold" : "hover:bg-gray-50"
+  const iconClass = (path: string) =>
+    `w-11 h-11 flex items-center justify-center rounded-full transition ${
+      pathname === path
+        ? "bg-indigo-600 text-white"
+        : "bg-white text-gray-500 hover:bg-gray-100"
     }`;
 
   return (
-    <aside className="fixed top-0 left-0 h-screen w-64 bg-white border-r z-50">
-      <div className="h-full flex flex-col p-6">
+    <aside className="fixed top-0 left-0 h-screen w-20 bg-[#f8fafc] border-r border-slate-200 z-50">
+      <div className="h-full flex flex-col items-center py-6">
 
-        {/* TOP */}
-        <div>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-md bg-[#c89a3b]" />
-            <div>
-              <div className="font-semibold text-gray-800">
-                RealEstate<span className="text-[#c89a3b]">CRM</span>
-              </div>
-              <div className="text-xs text-gray-400">Admin</div>
-            </div>
-          </div>
-
-          <h3 className="text-xs text-gray-500 uppercase tracking-widest mb-3">
-            Menu
-          </h3>
-
-          <nav className="flex flex-col gap-2">
-            <Link href="/buyers" className={itemClass("/buyers")}>
-              Buyers
-            </Link>
-
-            <Link href="/sellers" className={itemClass("/sellers")}>
-              Sellers / Properties
-            </Link>
-
-            <Link href="/groups" className={itemClass("/groups")}>
-              Groups
-            </Link>
-
-            <Link href="/users" className={itemClass("/users")}>
-              Users / Team
-            </Link>
-          </nav>
+        {/* LOGO */}
+        <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold mb-8">
+          R
         </div>
 
-        {/* LOGOUT — ALWAYS BOTTOM */}
-        <div className="mt-auto pt-4">
+        {/* NAV ICONS */}
+        <nav className="flex flex-col gap-4 flex-1">
+
+          {/* DASHBOARD */}
+          <Link
+            href="/dashboard"
+            className={iconClass("/dashboard")}
+            title="Dashboard"
+          >
+            📊
+          </Link>
+
+          {/* BUYERS */}
+          <Link
+            href="/buyers"
+            className={iconClass("/buyers")}
+            title="Buyers"
+          >
+            🧍
+          </Link>
+
+          {/* SELLERS / PROPERTIES */}
+          <Link
+            href="/sellers"
+            className={iconClass("/sellers")}
+            title="Sellers"
+          >
+            🏠
+          </Link>
+
+          {/* GROUPS */}
+          <Link
+            href="/groups"
+            className={iconClass("/groups")}
+            title="Groups"
+          >
+            👥
+          </Link>
+
+          {/* USERS */}
+          <Link
+            href="/users"
+            className={iconClass("/users")}
+            title="Users"
+          >
+            ⚙️
+          </Link>
+
+        </nav>
+
+        {/* LOGOUT */}
+        <div className="pb-4">
           <button
             onClick={handleLogout}
-            className="w-full text-sm rounded-md py-2 bg-white border border-gray-200 hover:bg-gray-50"
+            className="w-11 h-11 rounded-full bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center"
             type="button"
+            title="Logout"
           >
-            Logout
+            ⏻
           </button>
         </div>
 
@@ -75,4 +98,3 @@ export default function Sidebar() {
     </aside>
   );
 }
-  

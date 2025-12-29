@@ -25,21 +25,15 @@ export default function NewUserPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const raw =
-      typeof window !== "undefined"
-        ? localStorage.getItem("loggedUser")
-        : null;
-
+    const raw = localStorage.getItem("loggedUser");
     if (!raw) {
       router.replace("/login");
       return;
     }
 
     try {
-      const parsed = JSON.parse(raw) as LoggedUser;
-      setCurrentUser(parsed);
-    } catch (err) {
-      console.error(err);
+      setCurrentUser(JSON.parse(raw));
+    } catch {
       router.replace("/login");
     }
   }, [router]);
@@ -74,114 +68,133 @@ export default function NewUserPage() {
       if (!res.ok) {
         setMessage(data.message || "Failed to create user");
       } else {
-        setMessage("User created successfully!");
-        setName("");
-        setEmail("");
-        setPassword("");
-        setRole("AGENT");
+        router.push("/users");
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       setMessage("Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!currentUser) {
-    return (
-      <div className="p-6">
-        <p className="text-sm text-gray-500">Checking session...</p>
-      </div>
-    );
-  }
+  if (!currentUser) return null;
 
   return (
-    <div className="w-full">
-      {/* CENTER CONTAINER */}
-      <div className="max-w-5xl mx-auto p-6">
-        {/* BACK BUTTON */}
-        <div className="mb-4">
-          <BackButton />
-        </div>
+    <div className="w-full px-6 pt-2 space-y-6">
+      <BackButton />
 
-        {/* FORM CARD */}
-        <div className="max-w-md mx-auto bg-white rounded-3xl shadow-md border border-gray-100 p-8">
-          <h1 className="text-2xl font-bold mb-2">
-            Add <span className="text-[#c89a3b]">User / Agent</span>
-          </h1>
-          <p className="text-xs text-gray-500 mb-6">
-            New user will be created inside your agency (tenant_id{" "}
-            {currentUser.tenantId ?? currentUser.tenant_id}).
-          </p>
+      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
+        <h1 className="text-lg font-semibold mb-1">
+          Add <span className="text-indigo-600">User</span>
+        </h1>
 
-          <form onSubmit={handleSubmit} className="space-y-4 text-sm">
+        <p className="text-xs text-gray-500 mb-6">
+          User will be added to your agency (tenant_id{" "}
+          {currentUser.tenantId ?? currentUser.tenant_id})
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-6 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Name"
+              value={name}
+              onChange={(e: any) => setName(e.target.value)}
+              placeholder="Agent name"
+              required
+            />
+
+            <Input
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e: any) => setEmail(e.target.value)}
+              placeholder="agent@example.com"
+              required
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e: any) => setPassword(e.target.value)}
+              placeholder="••••••"
+              required
+            />
+
             <div>
-              <label className="block mb-1 text-gray-600">
-                Name <span className="text-red-500">*</span>
+              <label className="block text-sm text-gray-600 mb-1">
+                Role
               </label>
-              <input
-                className="border rounded-xl px-3 py-2 w-full focus:outline-none focus:ring-1 focus:ring-[#c89a3b]"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Agent name"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1 text-gray-600">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                className="border rounded-xl px-3 py-2 w-full focus:outline-none focus:ring-1 focus:ring-[#c89a3b]"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="agent@example.com"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1 text-gray-600">
-                Password <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="password"
-                className="border rounded-xl px-3 py-2 w-full focus:outline-none focus:ring-1 focus:ring-[#c89a3b]"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="******"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1 text-gray-600">Role</label>
               <select
-                className="border rounded-xl px-3 py-2 w-full focus:outline-none focus:ring-1 focus:ring-[#c89a3b]"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
+                className="
+                  w-full rounded-xl border px-4 py-3 text-sm
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500
+                "
               >
                 <option value="AGENT">Agent</option>
                 <option value="ADMIN">Admin</option>
               </select>
             </div>
+          </div>
 
+          {/* 🔥 BUTTON — SAME AS ADD BUYER */}
+          <div className="flex justify-end pt-2">
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#c89a3b] text-white py-2.5 rounded-full text-sm font-medium hover:bg-[#b4882f] transition disabled:opacity-60"
+              className="
+                bg-indigo-600
+                text-white
+                px-6
+                py-2.5
+                rounded-full
+                text-sm
+                font-medium
+                hover:bg-indigo-700
+                transition
+                disabled:opacity-60
+              "
             >
               {loading ? "Creating..." : "Create User"}
             </button>
-          </form>
+          </div>
 
           {message && (
-            <p className="mt-4 text-center text-xs text-gray-600">
+            <p className="text-center text-xs text-gray-500">
               {message}
             </p>
           )}
-        </div>
+        </form>
       </div>
+    </div>
+  );
+}
+
+function Input({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+  required = false,
+}: any) {
+  return (
+    <div>
+      <label className="block text-sm text-gray-600 mb-1">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="
+          w-full rounded-xl border px-4 py-3 text-sm
+          focus:outline-none focus:ring-2 focus:ring-indigo-500
+        "
+      />
     </div>
   );
 }

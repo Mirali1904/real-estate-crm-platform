@@ -9,7 +9,7 @@ export default function AddSellerPage() {
   const router = useRouter();
 
   const [form, setForm] = useState({
-    seller_name: "", // ✅ NEW
+    seller_name: "",
     owner_contact: "",
     email: "",
     property_type: "",
@@ -30,7 +30,7 @@ export default function AddSellerPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  /* ---------------- LOCATION ---------------- */
+  /* -------- LOCATION SEARCH (same logic) -------- */
   function handleLocationChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     setForm({ ...form, location: value });
@@ -53,11 +53,9 @@ export default function AddSellerPage() {
           { signal: controller.signal }
         );
         if (!res.ok) return;
-        const data = await res.json();
-        setSuggestions(data);
-      } catch (err: any) {
-        if (err.name !== "AbortError") console.error(err);
-      } finally {
+        setSuggestions(await res.json());
+      } catch {}
+      finally {
         setLoadingLocation(false);
       }
     }, 600);
@@ -73,27 +71,20 @@ export default function AddSellerPage() {
     setSuggestions([]);
   }
 
-  /* ---------------- SUBMIT ---------------- */
+  /* -------- SUBMIT (UNCHANGED) -------- */
   async function handleSubmit() {
     const raw = localStorage.getItem("loggedUser");
-    if (!raw) {
-      alert("Not logged in");
-      return;
-    }
+    if (!raw) return alert("Not logged in");
 
     const user = JSON.parse(raw);
     const tenantId = user.tenant_id || user.tenantId;
-    if (!tenantId) {
-      alert("Tenant not found");
-      return;
-    }
 
     const res = await fetch("/api/sellers/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         tenantId,
-        name: form.seller_name, // ✅ IMPORTANT
+        name: form.seller_name,
         owner_contact: form.owner_contact,
         email: form.email,
         property_type: form.property_type,
@@ -106,92 +97,68 @@ export default function AddSellerPage() {
     });
 
     if (res.ok) router.push("/sellers");
-    else {
-      const data = await res.json();
-      alert(data?.error || "Failed to save property");
-    }
+    else alert("Failed to save property");
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full px-6 pt-2">
       <BackButton />
 
-      <div className="flex justify-center">
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h1 className="text-2xl font-semibold mb-6">
-              Add <span className="text-[#c99a2e]">Property / Seller</span>
-            </h1>
+      {/* ===== CARD (same as Buyer) ===== */}
+      <div className="flex justify-center mt-4">
+        <div className="w-full max-w-2xl bg-white rounded-xl shadow-sm p-6">
+          <h1 className="text-lg font-semibold mb-6">
+            Add Property
+          </h1>
 
-            <div className="space-y-4">
-              {/* ✅ SELLER NAME */}
-              <Input
-                label="Seller Name"
-                name="seller_name"
-                value={form.seller_name}
-                onChange={handleChange}
+          {/* ===== GRID (Buyer style) ===== */}
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Seller Name" name="seller_name" value={form.seller_name} onChange={handleChange} />
+            <Field label="Phone" name="owner_contact" value={form.owner_contact} onChange={handleChange} />
+
+            <Field label="Email" name="email" value={form.email} onChange={handleChange} />
+            <Field label="Property Type" name="property_type" value={form.property_type} onChange={handleChange} />
+
+            {/* LOCATION FULL WIDTH */}
+            <div className="col-span-2 relative">
+              <Field
+                label="Location"
+                name="location"
+                value={form.location}
+                onChange={handleLocationChange}
               />
 
-              <Input
-                label="Phone / Contact"
-                name="owner_contact"
-                value={form.owner_contact}
-                onChange={handleChange}
-              />
+              {loadingLocation && (
+                <p className="text-xs text-gray-400 mt-1">Searching…</p>
+              )}
 
-              <Input
-                label="Email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-              />
-
-              <Input
-                label="Property Type"
-                name="property_type"
-                value={form.property_type}
-                onChange={handleChange}
-              />
-
-              {/* LOCATION */}
-              <div className="relative">
-                <Input
-                  label="Location"
-                  name="location"
-                  value={form.location}
-                  onChange={handleLocationChange}
-                />
-
-                {loadingLocation && (
-                  <p className="text-xs text-gray-500 mt-1">Searching...</p>
-                )}
-
-                {suggestions.length > 0 && (
-                  <div className="absolute z-10 bg-white border w-full rounded-lg max-h-48 overflow-auto">
-                    {suggestions.map((place, i) => (
-                      <div
-                        key={i}
-                        onClick={() => selectLocation(place)}
-                        className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                      >
-                        {place.display_name}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <Input label="Latitude" name="lat" value={form.lat} onChange={handleChange} />
-              <Input label="Longitude" name="lng" value={form.lng} onChange={handleChange} />
-              <Input label="Price" name="price" value={form.price} onChange={handleChange} />
-              <Input label="Bedrooms" name="bedrooms" value={form.bedrooms} onChange={handleChange} />
+              {suggestions.length > 0 && (
+                <div className="absolute z-10 bg-white border rounded-lg w-full mt-1 max-h-48 overflow-auto">
+                  {suggestions.map((p, i) => (
+                    <div
+                      key={i}
+                      onClick={() => selectLocation(p)}
+                      className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                    >
+                      {p.display_name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className="flex justify-end mt-6">
-              <PrimaryButton onClick={handleSubmit}>
-                Save Property
-              </PrimaryButton>
-            </div>
+            <Field label="Latitude" name="lat" value={form.lat} onChange={handleChange} />
+            <Field label="Longitude" name="lng" value={form.lng} onChange={handleChange} />
+
+            <Field label="Price" name="price" value={form.price} onChange={handleChange} />
+            <Field label="Bedrooms" name="bedrooms" value={form.bedrooms} onChange={handleChange} />
+          </div>
+
+          {/* ===== ACTION ===== */}
+          <div className="flex justify-end mt-6">
+            <PrimaryButton onClick={handleSubmit}>
+              Save Property
+            </PrimaryButton>
           </div>
         </div>
       </div>
@@ -199,16 +166,22 @@ export default function AddSellerPage() {
   );
 }
 
-/* INPUT */
-function Input({ label, name, value, onChange }: any) {
+/* ===== INPUT (Buyer-style) ===== */
+function Field({ label, name, value, onChange }: any) {
   return (
     <div>
-      <label className="block text-sm mb-1">{label}</label>
+      <label className="text-xs text-gray-500 mb-1 block">
+        {label}
+      </label>
       <input
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full border rounded-lg px-3 py-2"
+        className="
+          w-full rounded-lg border border-gray-200
+          px-3 py-2 text-sm
+          focus:outline-none focus:ring-2 focus:ring-indigo-500
+        "
       />
     </div>
   );

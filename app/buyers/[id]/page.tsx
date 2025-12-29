@@ -10,14 +10,11 @@ export default function BuyerDetailPage() {
   const [buyer, setBuyer] = useState<any>(null);
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // 🔥 Only for user-changed values
   const [statusMap, setStatusMap] = useState<Record<number, string>>({});
 
-  /* 🔥 FIX HERE: Contacted option was missing */
   const STATUS_OPTIONS = [
     "New",
-    "Contacted",          // ✅ VERY IMPORTANT FIX
+    "Contacted",
     "Interested",
     "Site Visit Planned",
     "Deal Closed",
@@ -35,15 +32,11 @@ export default function BuyerDetailPage() {
         const user = JSON.parse(raw);
         const tenantId = user.tenant_id ?? user.tenantId;
 
-        /* Fetch buyer details */
         const buyerRes = await fetch(`/api/buyers/${buyerId}`, {
           headers: { "x-tenant-id": String(tenantId) },
         });
-        if (buyerRes.ok) {
-          setBuyer(await buyerRes.json());
-        }
+        if (buyerRes.ok) setBuyer(await buyerRes.json());
 
-        /* Fetch matched properties (includes buyer_property_status) */
         const matchRes = await fetch(`/api/buyers/${buyerId}/matches`, {
           headers: { "x-tenant-id": String(tenantId) },
         });
@@ -52,14 +45,13 @@ export default function BuyerDetailPage() {
           const sellers = (await matchRes.json()).matches || [];
           setMatches(sellers);
 
-          // 🔥 Initialize statusMap from backend status
-          const initialStatusMap: Record<number, string> = {};
+          const map: Record<number, string> = {};
           sellers.forEach((s: any) => {
             if (s.buyer_property_status) {
-              initialStatusMap[s.id] = s.buyer_property_status;
+              map[s.id] = s.buyer_property_status;
             }
           });
-          setStatusMap(initialStatusMap);
+          setStatusMap(map);
         }
       } finally {
         setLoading(false);
@@ -69,57 +61,66 @@ export default function BuyerDetailPage() {
     loadData();
   }, [buyerId]);
 
-  function getCardStyle(status: string) {
+  function statusBadge(status: string) {
     switch (status) {
       case "Interested":
-        return "border-green-400 bg-green-50";
+        return "bg-green-100 text-green-700";
       case "Site Visit Planned":
-        return "border-yellow-400 bg-yellow-50";
+        return "bg-blue-100 text-blue-700";
       case "Deal Closed":
-        return "border-green-700 bg-green-200";
+        return "bg-purple-100 text-purple-700";
       case "Discarded":
-        return "border-gray-300 bg-gray-100 opacity-60";
+        return "bg-gray-200 text-gray-500";
       default:
-        return "border-gray-200 bg-white";
+        return "bg-gray-100 text-gray-600";
     }
   }
 
-  if (loading) return <div className="p-6">Loading...</div>;
-  if (!buyer) return <div className="p-6">Buyer not found</div>;
+  if (loading) return <div className="px-6 pt-4">Loading...</div>;
+  if (!buyer) return <div className="px-6 pt-4">Buyer not found</div>;
 
   return (
-    <div className="w-full p-6 space-y-6">
-      {/* Buyer Details */}
-      <div className="w-full border rounded-xl p-6 bg-white">
-        <h1 className="text-xl font-semibold">{buyer.name}</h1>
-        <p className="text-sm text-gray-600">{buyer.email}</p>
-        <p className="text-sm text-gray-600">{buyer.phone}</p>
+    <div className="w-full px-6 pt-2 space-y-6">
 
-        <div className="mt-4 text-sm space-y-1">
-          <p>
-            <strong>Requirement:</strong> {buyer.requirement}
-          </p>
-          <p>
-            <strong>Budget:</strong> ₹{buyer.budget_min} – ₹{buyer.budget_max}
-          </p>
-          <p>
-            <strong>Bedrooms:</strong> {buyer.bedrooms}
-          </p>
-          <p>
-            <strong>Radius:</strong> {buyer.radius_km} km
-          </p>
-          <p>
-            <strong>Status:</strong>{" "}
-            <span className="text-orange-600 font-medium">
-              {buyer.status}
-            </span>
-          </p>
+      {/* ===== BUYER HEADER CARD ===== */}
+      <div className="bg-white rounded-xl shadow-sm p-6 flex justify-between">
+        <div className="flex gap-4">
+          <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">
+            {buyer.name[0].toUpperCase()}
+          </div>
+
+          <div>
+            <h1 className="text-lg font-semibold">{buyer.name}</h1>
+            <p className="text-sm text-gray-500">{buyer.email}</p>
+            <p className="text-sm text-gray-500">{buyer.phone}</p>
+          </div>
         </div>
+
+        <span
+          className={`h-fit px-3 py-1 text-xs rounded-full font-medium ${statusBadge(
+            buyer.status
+          )}`}
+        >
+          {buyer.status}
+        </span>
       </div>
 
-      {/* Matched Properties */}
-      <div className="w-full">
-        <h2 className="text-lg font-semibold mb-3">Matched Properties</h2>
+      {/* ===== BUYER META ===== */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Info label="Requirement" value={buyer.requirement} />
+        <Info
+          label="Budget"
+          value={`₹${buyer.budget_min} – ₹${buyer.budget_max}`}
+        />
+        <Info label="Bedrooms" value={buyer.bedrooms} />
+        <Info label="Radius" value={`${buyer.radius_km} km`} />
+      </div>
+
+      {/* ===== MATCHED PROPERTIES ===== */}
+      <div>
+        <h2 className="text-lg font-semibold mb-3">
+          Matched Properties
+        </h2>
 
         <div className="space-y-4">
           {matches.map((seller) => {
@@ -133,11 +134,11 @@ export default function BuyerDetailPage() {
             return (
               <div
                 key={seller.id}
-                className={`w-full border rounded-xl p-4 flex justify-between items-center ${getCardStyle(
-                  status
-                )} ${isDiscarded ? "pointer-events-none opacity-60" : ""}`}
+                className={`bg-white rounded-xl shadow-sm p-5 flex justify-between ${
+                  isDiscarded ? "opacity-60" : ""
+                }`}
               >
-                <div className="text-sm space-y-1">
+                <div className="space-y-1 text-sm">
                   <p className="font-medium">
                     {seller.property_type || "Property"}
                   </p>
@@ -145,13 +146,14 @@ export default function BuyerDetailPage() {
                     ₹{seller.price} • {seller.bedrooms} BHK
                   </p>
 
-                  <p className="font-medium mt-2">
-                    Seller: {seller.seller_name}
+                  <p className="mt-2">
+                    <span className="font-medium">Seller:</span>{" "}
+                    {seller.seller_name}
                   </p>
 
                   {seller.seller_contact && (
                     <p className="text-xs text-gray-500">
-                      Contact: {seller.seller_contact}
+                      {seller.seller_contact}
                     </p>
                   )}
 
@@ -163,7 +165,7 @@ export default function BuyerDetailPage() {
                 </div>
 
                 <div className="flex flex-col">
-                  <label className="text-xs text-gray-500 mb-1">
+                  <label className="text-xs text-gray-400 mb-1">
                     Buyer Action
                   </label>
 
@@ -173,16 +175,16 @@ export default function BuyerDetailPage() {
                     onChange={async (e) => {
                       const newStatus = e.target.value;
 
-                      // UI update instantly
-                      setStatusMap((prev) => ({
-                        ...prev,
+                      setStatusMap((p) => ({
+                        ...p,
                         [seller.id]: newStatus,
                       }));
 
                       const raw = localStorage.getItem("loggedUser");
                       if (!raw) return;
                       const user = JSON.parse(raw);
-                      const tenantId = user.tenant_id ?? user.tenantId;
+                      const tenantId =
+                        user.tenant_id ?? user.tenantId;
 
                       const res = await fetch(
                         `/api/buyers/${buyerId}/property-status`,
@@ -209,12 +211,10 @@ export default function BuyerDetailPage() {
                         }
                       }
                     }}
-                    className="border rounded-md px-2 py-1 text-sm"
+                    className="border rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500"
                   >
                     {STATUS_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
+                      <option key={opt}>{opt}</option>
                     ))}
                   </select>
                 </div>
@@ -223,6 +223,16 @@ export default function BuyerDetailPage() {
           })}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ===== SMALL INFO CARD ===== */
+function Info({ label, value }: any) {
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-4">
+      <p className="text-xs text-gray-400">{label}</p>
+      <p className="text-sm font-medium mt-1">{value}</p>
     </div>
   );
 }

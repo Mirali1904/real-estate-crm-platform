@@ -9,15 +9,15 @@ export default function PrimaryButton({
     <button
       {...props}
       className={`
-        bg-[#c89a3b] 
-        text-white 
-        px-4 
-        py-2 
-        rounded-full 
-        text-sm 
-        font-medium 
-        hover:bg-[#b18332] 
-        transition 
+        bg-indigo-600
+        text-white
+        px-5
+        py-2.5
+        rounded-full
+        text-sm
+        font-medium
+        hover:bg-indigo-700
+        transition
         shadow-sm
         ${className}
       `}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PrimaryButton from "@/components/PrimaryButton";
-import SellerCard from "@/components/sellers/SellerCard";
+import SecondaryButton from "@/components/SecondaryButton";
 import BackButton from "@/components/BackButton";
 import ShareToGroupModal from "@/components/groups/ShareToGroupModal";
 
@@ -12,19 +12,12 @@ export default function SellersPage() {
 
   const [sellers, setSellers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // 🔍 SEARCH STATE
   const [search, setSearch] = useState("");
-
-  // 🔗 SHARE STATE
   const [shareSellerId, setShareSellerId] = useState<number | null>(null);
 
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
-    if (!raw) {
-      setLoading(false);
-      return;
-    }
+    if (!raw) return;
 
     const user = JSON.parse(raw);
 
@@ -35,17 +28,13 @@ export default function SellersPage() {
         else if (Array.isArray(data)) setSellers(data);
         else setSellers([]);
       })
-      .catch(() => setSellers([]))
       .finally(() => setLoading(false));
   }, []);
 
-  // ✅ ✅ ✅ SEARCH LOGIC — YAHI CHALTA HAI
   const filteredSellers = sellers.filter((seller) => {
     const q = search.toLowerCase();
-
     return (
       (seller.name ?? "").toLowerCase().includes(q) ||
-      (seller.property_address ?? "").toLowerCase().includes(q) ||
       (seller.property_type ?? "").toLowerCase().includes(q)
     );
   });
@@ -53,62 +42,113 @@ export default function SellersPage() {
   const handleDelete = async (id: number) => {
     if (!confirm("Delete this property?")) return;
     await fetch(`/api/sellers/${id}`, { method: "DELETE" });
-    setSellers((prev) => prev.filter((s) => s.id !== id));
+    setSellers((p) => p.filter((s) => s.id !== id));
   };
 
-  if (loading) return <p className="p-6">Loading...</p>;
+  if (loading) return <p className="px-6 pt-4">Loading...</p>;
 
   return (
-    <div className="w-full p-6">
-      {/* BACK */}
-      <div className="mb-4">
-        <BackButton />
-      </div>
+    <div className="w-full px-6 pt-2">
+      {/* ===== HEADER ===== */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <BackButton />
+          <h1 className="text-2xl font-semibold mt-3">
+            Sellers / Properties
+          </h1>
+        </div>
 
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Sellers / Properties</h1>
         <PrimaryButton onClick={() => router.push("/sellers/new")}>
           + Add Property
         </PrimaryButton>
       </div>
 
-      {/* 🔍 SEARCH BAR */}
-      <div className="mb-6">
+      {/* ===== SEARCH ===== */}
+      <div className="mb-4">
         <input
           type="text"
-          placeholder="Search seller name or property type..."
+          placeholder="Search sellers by name or property type"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-4 py-2 border rounded-lg"
+          className="w-full max-w-md px-4 py-2 text-sm border rounded-full focus:outline-none"
         />
       </div>
 
-      {/* LIST */}
-      <div className="space-y-3">
-        {filteredSellers.map((seller) => (
-          <div
-            key={seller.id}
-            onClick={() => router.push(`/sellers/${seller.id}`)}
-            className="cursor-pointer"
-          >
-            <SellerCard
-              seller={seller}
-              onDelete={handleDelete}
-              onShare={(id) => setShareSellerId(id)}
-            />
-          </div>
-        ))}
-
-        {filteredSellers.length === 0 && (
-          <p className="text-gray-500 text-sm">No sellers found.</p>
-        )}
+      {/* ===== HEADER ROW (Buyer style) ===== */}
+      <div className="grid grid-cols-12 px-4 py-2 text-xs text-gray-400 border-b border-gray-300">
+        <div className="col-span-4">Name</div>
+        <div className="col-span-3">Property Type</div>
+        <div className="col-span-2">Price</div>
+        <div className="col-span-1">Beds</div>
+        <div className="col-span-2 text-right">Actions</div>
       </div>
 
-      {/* SHARE MODAL */}
+      {/* ===== ROWS (Buyer style) ===== */}
+      {filteredSellers.map((seller) => (
+        <div
+          key={seller.id}
+          onClick={() => router.push(`/sellers/${seller.id}`)}
+          className="grid grid-cols-12 px-4 py-4 items-center text-sm hover:bg-gray-50 cursor-pointer"
+        >
+          {/* NAME */}
+          <div className="col-span-4 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-semibold">
+              {seller.name?.[0]?.toUpperCase() || "S"}
+            </div>
+            <div>
+             <p className="font-medium text-gray-900">
+  {seller.owner_name}
+</p>
+
+              <p className="text-xs text-gray-400">Seller</p>
+            </div>
+          </div>
+
+          {/* PROPERTY TYPE */}
+          <div className="col-span-3 text-gray-700">
+            {seller.property_type || "Property"}
+          </div>
+
+          {/* PRICE */}
+          <div className="col-span-2 text-gray-700">
+            ₹{seller.price}
+          </div>
+
+          {/* BEDROOMS */}
+          <div className="col-span-1 text-gray-700">
+            {seller.bedrooms} BHK
+          </div>
+
+          {/* ACTIONS */}
+          <div
+            className="col-span-2 flex justify-end gap-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <SecondaryButton
+              onClick={() => setShareSellerId(seller.id)}
+            >
+              Share
+            </SecondaryButton>
+
+            <SecondaryButton
+              onClick={() => handleDelete(seller.id)}
+            >
+              Delete
+            </SecondaryButton>
+          </div>
+        </div>
+      ))}
+
+      {filteredSellers.length === 0 && (
+        <p className="px-4 py-6 text-sm text-gray-500">
+          No sellers found.
+        </p>
+      )}
+
+      {/* ===== SHARE MODAL ===== */}
       {shareSellerId !== null && (
         <ShareToGroupModal
-          open={true}
+          open
           onClose={() => setShareSellerId(null)}
           entityType="seller"
           entityId={shareSellerId}

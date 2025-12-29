@@ -86,35 +86,43 @@ export default function PostResponsesModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-lg p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden">
         {/* HEADER */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Responses</h2>
-          <button onClick={onClose}>✕</button>
+        <div className="px-6 py-4 border-b flex justify-between items-center">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Responses
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            ✕
+          </button>
         </div>
 
-        {/* RESPONSES LIST */}
-        <div className="space-y-3 max-h-60 overflow-y-auto mb-4">
+        {/* RESPONSES */}
+        <div className="px-6 py-4 max-h-72 overflow-y-auto space-y-4">
           {responses.length === 0 && (
-            <p className="text-gray-500 text-sm">No responses yet</p>
+            <p className="text-sm text-gray-500 text-center">
+              No responses yet
+            </p>
           )}
 
           {responses.map((r) => (
             <div
               key={r.id}
-              className="border rounded-md p-3 bg-gray-50 relative"
+              className="bg-gray-50 rounded-xl p-4 relative"
             >
-              <p className="text-sm text-gray-800 mb-1">
+              <p className="text-sm text-gray-800 mb-2">
                 {r.message}
               </p>
 
-              <div className="text-xs text-gray-500 flex justify-between">
+              <div className="flex justify-between text-xs text-gray-500">
                 <span>
-                  Response by <b>{r.author_name}</b>
-                  {r.author_email ? ` (${r.author_email})` : ""}
+                  {r.author_name}
+                  {r.author_email ? ` • ${r.author_email}` : ""}
                 </span>
-
                 <span>
                   {new Date(r.created_at).toLocaleString()}
                 </span>
@@ -124,7 +132,7 @@ export default function PostResponsesModal({
               {r.user_id === userId && (
                 <button
                   onClick={() => handleDeleteResponse(r.id)}
-                  className="absolute top-2 right-2 text-red-500 text-xs hover:underline"
+                  className="absolute top-2 right-3 text-xs text-red-500 hover:underline"
                 >
                   Delete
                 </button>
@@ -134,25 +142,28 @@ export default function PostResponsesModal({
         </div>
 
         {/* ADD RESPONSE */}
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Write a response..."
-          className="w-full border rounded p-2 mb-3"
-        />
+        <div className="px-6 py-4 border-t">
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Write a response..."
+            className="w-full border rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none mb-3"
+            rows={3}
+          />
 
-        <div className="flex gap-2">
-          <SecondaryButton onClick={onClose} className="flex-1">
-            Close
-          </SecondaryButton>
+          <div className="flex gap-3">
+            <SecondaryButton onClick={onClose} className="flex-1">
+              Close
+            </SecondaryButton>
 
-          <SecondaryButton
-            onClick={handleAddResponse}
-            disabled={loading}
-            className="flex-1"
-          >
-            Add Response
-          </SecondaryButton>
+            <SecondaryButton
+              onClick={handleAddResponse}
+              disabled={loading}
+              className="flex-1"
+            >
+              {loading ? "Posting..." : "Add Response"}
+            </SecondaryButton>
+          </div>
         </div>
       </div>
     </div>

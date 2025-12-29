@@ -33,12 +33,11 @@ interface Post {
 }
 
 interface Member {
-  id: number;        // group_agencies.id
-  user_id: number;   // tenant_id (AGENCY ID)
+  id: number;
+  user_id: number;
   name: string;
   email: string;
 }
-
 
 /* ================= PAGE ================= */
 
@@ -64,10 +63,8 @@ export default function GroupDetailPage() {
   const safeFetch = async (url: string) => {
     const res = await fetch(url);
     if (!res.ok) return null;
-
     const text = await res.text();
     if (!text) return null;
-
     return JSON.parse(text);
   };
 
@@ -75,7 +72,6 @@ export default function GroupDetailPage() {
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
     if (!raw) return;
-
     const u = JSON.parse(raw);
     setUser(u);
     fetchAll(u.id);
@@ -97,7 +93,6 @@ export default function GroupDetailPage() {
     const p = await safeFetch(`/api/groups/posts?groupId=${groupId}`);
     setPosts(p || []);
 
-    // ✅ MEMBERS (users, not agencies)
     const m = await safeFetch(`/api/groups/agencies?groupId=${groupId}`);
     setMembers(m || []);
 
@@ -133,7 +128,6 @@ export default function GroupDetailPage() {
       `/api/groups/agencies?groupId=${groupId}&userId=${userId}`,
       { method: "DELETE" }
     );
-
     fetchAll(user.id);
   };
 
@@ -168,30 +162,32 @@ export default function GroupDetailPage() {
     setShowCreatePostModal(false);
     fetchAll(user.id);
   };
+
   const handleDeletePost = async (postId: number) => {
-  if (!confirm("Are you sure you want to delete this post?")) return;
+    if (!confirm("Are you sure you want to delete this post?")) return;
 
-  await fetch("/api/groups/posts/delete", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ postId }),
-  });
+    await fetch("/api/groups/posts/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postId }),
+    });
 
-  fetchAll(user.id);
-};
+    fetchAll(user.id);
+  };
 
   /* ================= UI ================= */
+
   if (loading) return <div className="p-6">Loading...</div>;
   if (!group) return <div className="p-6">Group not found</div>;
 
   return (
-    <div className="w-full p-6">
+    <div className="w-full p-6 space-y-6">
       {/* HEADER */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-6 flex justify-between items-start">
+      <div className="bg-white rounded-2xl shadow-sm p-6 flex justify-between items-start">
         <div>
           <button
             onClick={() => router.push("/groups")}
-            className="text-[#c99a2e] mb-2"
+            className="text-indigo-600 text-sm mb-2"
           >
             ← Back to Groups
           </button>
@@ -199,20 +195,23 @@ export default function GroupDetailPage() {
           <h1 className="text-2xl font-semibold">{group.name}</h1>
           <p className="text-gray-600">{group.description}</p>
 
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-400 mt-1">
             Created by {group.creator_name} • {members.length} members
           </p>
         </div>
 
         {isAdmin && (
           <div className="flex gap-2">
-            <SecondaryButton onClick={() => setShowCreatePostModal(true)}>
+            <SecondaryButton
+              onClick={() => setShowCreatePostModal(true)}
+              className="bg-indigo-600 text-white border-none hover:bg-indigo-700"
+            >
               + New Post
             </SecondaryButton>
 
             <SecondaryButton
               onClick={handleDeleteGroup}
-              className="text-red-600 border-red-300 hover:bg-red-100"
+              className="text-red-600 border-red-300 hover:bg-red-50"
             >
               Delete Group
             </SecondaryButton>
@@ -221,13 +220,13 @@ export default function GroupDetailPage() {
       </div>
 
       {/* TABS */}
-      <div className="bg-white rounded-lg shadow-sm">
+      <div className="bg-white rounded-2xl shadow-sm">
         <div className="border-b px-6 flex gap-8">
           <button
             onClick={() => setActiveTab("posts")}
-            className={`py-4 border-b-2 ${
+            className={`py-4 border-b-2 text-sm ${
               activeTab === "posts"
-                ? "border-[#c99a2e] text-[#c99a2e]"
+                ? "border-indigo-600 text-indigo-600"
                 : "border-transparent text-gray-500"
             }`}
           >
@@ -236,9 +235,9 @@ export default function GroupDetailPage() {
 
           <button
             onClick={() => setActiveTab("members")}
-            className={`py-4 border-b-2 ${
+            className={`py-4 border-b-2 text-sm ${
               activeTab === "members"
-                ? "border-[#c99a2e] text-[#c99a2e]"
+                ? "border-indigo-600 text-indigo-600"
                 : "border-transparent text-gray-500"
             }`}
           >
@@ -249,15 +248,14 @@ export default function GroupDetailPage() {
         <div className="p-6">
           {activeTab === "posts" && (
             <div className="space-y-4">
-             {posts.map((post) => (
-  <PostCard
-    key={post.id}
-    post={post}
-    onViewResponses={() => setActivePostId(post.id)}
-    onDelete={() => handleDeletePost(post.id)}
-  />
-))}
-
+              {posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  onViewResponses={() => setActivePostId(post.id)}
+                  onDelete={() => handleDeletePost(post.id)}
+                />
+              ))}
             </div>
           )}
 
@@ -265,7 +263,7 @@ export default function GroupDetailPage() {
             <>
               {isAdmin && (
                 <SecondaryButton
-                  className="mb-4"
+                  className="mb-4 bg-indigo-600 text-white border-none hover:bg-indigo-700"
                   onClick={() => {
                     fetchAvailableUsers();
                     setShowAddMemberModal(true);
@@ -276,17 +274,14 @@ export default function GroupDetailPage() {
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-               {members.map((m) => (
-  <AgencyCard
-    key={`${groupId}-${m.user_id}`}
-    agency={m}
-    isCreator={isAdmin}
-    onRemove={() => handleRemoveUser(m.user_id)}
-  />
-))}
-
-
-
+                {members.map((m) => (
+                  <AgencyCard
+                    key={`${groupId}-${m.user_id}`}
+                    agency={m}
+                    isCreator={isAdmin}
+                    onRemove={() => handleRemoveUser(m.user_id)}
+                  />
+                ))}
               </div>
             </>
           )}

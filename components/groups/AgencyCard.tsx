@@ -17,10 +17,11 @@ export default function AgencyCard({
   onRemove,
 }: AgencyCardProps) {
   return (
-    <div className="border border-gray-200 rounded-lg p-4 bg-white">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition">
       <div className="flex justify-between items-start">
+        {/* INFO */}
         <div>
-          <h4 className="font-semibold text-gray-800">
+          <h4 className="font-semibold text-gray-800 leading-tight">
             {agency.name}
           </h4>
           <p className="text-sm text-gray-500">
@@ -28,10 +29,11 @@ export default function AgencyCard({
           </p>
         </div>
 
+        {/* ACTION */}
         {isCreator && (
           <button
             onClick={onRemove}
-            className="text-sm text-red-600 hover:text-red-700"
+            className="text-sm text-red-600 hover:text-red-700 hover:underline"
           >
             Remove
           </button>

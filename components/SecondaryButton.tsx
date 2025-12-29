@@ -1,3 +1,5 @@
+import React from "react";
+
 export default function SecondaryButton({
   children,
   className = "",
@@ -7,16 +9,17 @@ export default function SecondaryButton({
     <button
       {...props}
       className={`
-        bg-[#f4e5c2]
-        text-[#a87612]
+        bg-[#f3f1ff]
+        text-[#5b5ce2]
         px-4
         py-1.5
         rounded-full
         text-xs
         font-medium
         border
-        border-[#dbb773]
-        hover:bg-[#e9d7aa]
+        border-[#d9d6ff]
+        hover:bg-[#ebe9ff]
+        hover:border-[#bdb8ff]
         transition
         ${className}
       `}

@@ -20,16 +20,23 @@ export default function AppLayout({
   }, [router]);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <aside className="w-64 bg-white border-r">
-        <Sidebar />
-      </aside>
+    <div className="min-h-screen bg-gray-50">
 
-      <div className="flex-1 flex flex-col">
+      {/* SIDEBAR — FIXED & THIN */}
+      <Sidebar />
+
+      {/* MAIN CONTENT — SHIFTED BY SIDEBAR WIDTH */}
+      <div className="ml-20 flex min-h-screen flex-col">
+
+        {/* HEADER */}
         <Header />
-        <main className="flex-1 p-8 overflow-y-auto">
+
+        {/* PAGE CONTENT */}
+       <main className="flex-1 px-6 pt-2 pb-6 overflow-y-auto">
+
           {children}
         </main>
+
       </div>
     </div>
   );

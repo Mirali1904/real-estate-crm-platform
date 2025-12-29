@@ -14,16 +14,9 @@ export default function CreateGroupPage() {
   });
 
   useEffect(() => {
-    const raw =
-      typeof window !== "undefined"
-        ? localStorage.getItem("loggedUser")
-        : null;
-
+    const raw = localStorage.getItem("loggedUser");
     if (raw) {
-      const parsed = JSON.parse(raw);
-      setUser(parsed);
-    } else {
-      setUser({ id: 1, tenantId: 1 });
+      setUser(JSON.parse(raw));
     }
   }, []);
 
@@ -68,79 +61,116 @@ export default function CreateGroupPage() {
   };
 
   return (
-    <div className="w-full">
-      {/* CENTER CONTAINER */}
-      <div className="max-w-5xl mx-auto p-6">
-        {/* BACK BUTTON */}
-        <div className="mb-4">
-          <BackButton />
-        </div>
+    <div className="w-full px-6 pt-2 space-y-6">
+      {/* BACK */}
+      <BackButton />
 
-        {/* FORM CARD */}
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-sm p-6">
-          <h1 className="text-2xl font-semibold">
-            Create New Group
-          </h1>
-          <p className="text-gray-600 mt-1 mb-6">
-            Create a collaboration group for agents
-          </p>
+      {/* FORM CARD — SAME THEME AS BUYER / USER */}
+      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
+        <h1 className="text-xl font-semibold mb-1">
+          Create <span className="text-indigo-600">Group</span>
+        </h1>
+        <p className="text-sm text-gray-500 mb-6">
+          Create a collaboration group for agents
+        </p>
 
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-medium mb-2">
-                Group Name *
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c99a2e]"
-                placeholder="e.g., Vadodara Real Estate Network"
-                required
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6 text-sm">
+          {/* GROUP NAME */}
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">
+              Group Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              placeholder="e.g. Vadodara Real Estate Network"
+              className="
+                w-full
+                border
+                rounded-lg
+                px-3
+                py-2
+                focus:ring-2
+                focus:ring-indigo-500
+                outline-none
+              "
+              required
+            />
+          </div>
 
-            <div className="mb-6">
-              <label className="block text-gray-700 text-sm font-medium mb-2">
-                Description
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    description: e.target.value,
-                  })
-                }
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c99a2e]"
-                placeholder="Describe the purpose of this group..."
-              />
-            </div>
+          {/* DESCRIPTION */}
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">
+              Description
+            </label>
+            <textarea
+              rows={4}
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  description: e.target.value,
+                })
+              }
+              placeholder="Describe the purpose of this group…"
+              className="
+                w-full
+                border
+                rounded-lg
+                px-3
+                py-2
+                focus:ring-2
+                focus:ring-indigo-500
+                outline-none
+                resize-none
+              "
+            />
+          </div>
 
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => router.push("/groups")}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                disabled={loading}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 bg-[#c99a2e] hover:bg-[#b08926] text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-                disabled={loading}
-              >
-                {loading ? "Creating..." : "Create Group"}
-              </button>
-            </div>
-          </form>
-        </div>
+          {/* ACTION BUTTONS */}
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => router.push("/groups")}
+              disabled={loading}
+              className="
+                px-5
+                py-2.5
+                rounded-full
+                border
+                text-sm
+                text-gray-600
+                hover:bg-gray-50
+                transition
+              "
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="
+                bg-indigo-600
+                text-white
+                px-6
+                py-2.5
+                rounded-full
+                text-sm
+                font-medium
+                hover:bg-indigo-700
+                transition
+                disabled:opacity-60
+              "
+            >
+              {loading ? "Creating..." : "Create Group"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
 }
-  
