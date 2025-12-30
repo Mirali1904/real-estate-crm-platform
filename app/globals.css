@@ -26,3 +26,69 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ================= FULLCALENDAR THEME ================= */
+
+.fc {
+  font-family: inherit;
+}
+
+/* Header title */
+.fc-toolbar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827; /* gray-900 */
+}
+
+/* Buttons */
+.fc-button {
+  background-color: #4f46e5 !important; /* indigo-600 */
+  border: none !important;
+  color: white !important;
+  border-radius: 9999px !important;
+  padding: 6px 14px !important;
+  font-size: 0.875rem;
+}
+
+.fc-button:hover {
+  background-color: #4338ca !important; /* indigo-700 */
+}
+
+.fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #312e81 !important; /* indigo-900 */
+}
+
+/* Calendar cells */
+.fc-daygrid-day-frame {
+  padding: 6px;
+}
+
+.fc-daygrid-day-number {
+  font-weight: 500;
+  color: #374151; /* gray-700 */
+}
+
+/* Today highlight */
+.fc-day-today {
+  background-color: #eef2ff !important; /* indigo-50 */
+}
+
+/* Events */
+.fc-event {
+  border-radius: 8px !important;
+  padding: 2px 6px !important;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Hover effect */
+.fc-event:hover {
+  opacity: 0.9;
+  cursor: pointer;
+}
+
+/* Soft grid borders */
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border-color: #e5e7eb; /* gray-200 */
+}
