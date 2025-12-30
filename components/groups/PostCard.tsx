@@ -9,14 +9,14 @@ interface PostCardProps {
     location?: string;
     budget?: number;
 
-    // Buyer-specific (from JOIN)
+    // Buyer-specific (optional / future)
     buyer_name?: string;
     buyer_requirement?: string;
     buyer_location?: string;
     buyer_budget_min?: number;
     buyer_budget_max?: number;
 
-    // Seller-specific (future safe)
+    // Seller-specific (future)
     seller_name?: string;
     seller_price?: number;
     seller_bedrooms?: number;
@@ -56,30 +56,37 @@ export default function PostCard({
       </div>
 
       {/* ================= BUYER POST ================= */}
-      {post.post_type === "buyer" && post.buyer_name ? (
+      {post.post_type === "buyer" ? (
         <div className="text-sm text-gray-700 space-y-1">
           <p>
             <span className="font-medium">Buyer:</span>{" "}
-            {post.buyer_name}
+            {post.buyer_name || post.author_name}
           </p>
 
-          {post.buyer_requirement && (
+          {(post.buyer_requirement || post.description) && (
             <p>
               <span className="font-medium">Requirement:</span>{" "}
-              {post.buyer_requirement}
+              {post.buyer_requirement || post.description}
             </p>
           )}
 
-          {post.buyer_location && (
+          {(post.buyer_location || post.location) && (
             <p className="text-gray-600">
-              📍 {post.buyer_location}
+              📍 {post.buyer_location || post.location}
             </p>
           )}
 
-          {(post.buyer_budget_min || post.buyer_budget_max) && (
+          {(post.buyer_budget_min ||
+            post.buyer_budget_max ||
+            post.budget) && (
             <p className="text-gray-600">
-              💰 ₹{post.buyer_budget_min ?? "—"} – ₹
-              {post.buyer_budget_max ?? "—"}
+              💰 ₹
+              {post.buyer_budget_min ??
+                post.budget ??
+                "—"}
+              {post.buyer_budget_max
+                ? ` – ₹${post.buyer_budget_max}`
+                : ""}
             </p>
           )}
         </div>

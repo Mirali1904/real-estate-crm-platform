@@ -27,14 +27,20 @@ interface Post {
   description: string;
   location?: string;
   budget?: number;
+
+  user_id: number;
+  tenant_id: number;
+
   author_name: string;
+  author_email: string;
+
   response_count: number;
   created_at: string;
 }
 
 interface Member {
   id: number;
-  user_id: number;
+  tenant_id: number;
   name: string;
   email: string;
 }
@@ -91,46 +97,28 @@ export default function GroupDetailPage() {
     setIsAdmin(g.created_by === userId);
 
     const p = await safeFetch(`/api/groups/posts?groupId=${groupId}`);
-    setPosts(p || []);
+    setPosts(Array.isArray(p) ? p : Object.values(p || {}));
 
     const m = await safeFetch(`/api/groups/agencies?groupId=${groupId}`);
     setMembers(m || []);
 
     setLoading(false);
   };
+  /* ================= AVAILABLE AGENCIES ================= */
+const fetchAvailableUsers = async () => {
+  if (!user) return;
 
-  /* ================= AVAILABLE USERS ================= */
-  const fetchAvailableUsers = async () => {
-    if (!user) return;
+  const data = await safeFetch(
+    `/api/groups/available-agencies?groupId=${groupId}&currentUserId=${user.id}`
+  );
 
-    const data = await safeFetch(
-      `/api/groups/available-agencies?groupId=${groupId}&currentUserId=${user.id}`
-    );
+  setAvailableUsers(data || []);
+};
 
-    setAvailableUsers((data || []).filter((u: any) => u.id !== user.id));
-  };
 
   /* ================= ACTIONS ================= */
-  const handleAddUser = async (userId: number) => {
-    await fetch("/api/groups/agencies", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ groupId, userId }),
-    });
 
-    await fetchAll(user.id);
-    await fetchAvailableUsers();
-    setShowAddMemberModal(false);
-  };
-
-  const handleRemoveUser = async (userId: number) => {
-    await fetch(
-      `/api/groups/agencies?groupId=${groupId}&userId=${userId}`,
-      { method: "DELETE" }
-    );
-    fetchAll(user.id);
-  };
-
+  // ✅ ONLY THIS FUNCTION ADDED
   const handleDeleteGroup = async () => {
     if (!confirm("Are you sure you want to delete this group?")) return;
 
@@ -145,6 +133,26 @@ export default function GroupDetailPage() {
     }
 
     router.push("/groups");
+  };
+
+  const handleAddUser = async (tenantId: number) => {
+    await fetch("/api/groups/agencies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ groupId, tenantId }),
+    });
+
+    await fetchAll(user.id);
+    await fetchAvailableUsers();
+    setShowAddMemberModal(false);
+  };
+
+  const handleRemoveUser = async (tenantId: number) => {
+    await fetch(
+      `/api/groups/agencies?groupId=${groupId}&tenantId=${tenantId}`,
+      { method: "DELETE" }
+    );
+    fetchAll(user.id);
   };
 
   const handleCreatePost = async (data: any) => {
@@ -164,8 +172,6 @@ export default function GroupDetailPage() {
   };
 
   const handleDeletePost = async (postId: number) => {
-    if (!confirm("Are you sure you want to delete this post?")) return;
-
     await fetch("/api/groups/posts/delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -200,6 +206,7 @@ export default function GroupDetailPage() {
           </p>
         </div>
 
+        {/* ✅ ONLY DELETE BUTTON ADDED */}
         {isAdmin && (
           <div className="flex gap-2">
             <SecondaryButton
@@ -276,10 +283,10 @@ export default function GroupDetailPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {members.map((m) => (
                   <AgencyCard
-                    key={`${groupId}-${m.user_id}`}
+                    key={`${groupId}-${m.tenant_id}`}
                     agency={m}
                     isCreator={isAdmin}
-                    onRemove={() => handleRemoveUser(m.user_id)}
+                    onRemove={() => handleRemoveUser(m.tenant_id)}
                   />
                 ))}
               </div>

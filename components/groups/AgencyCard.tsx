@@ -1,6 +1,6 @@
 interface Member {
   id: number;        // group_members.id
-  user_id: number;   // users.id
+ tenant_id: number;   // users.id
   name: string;
   email: string;
 }

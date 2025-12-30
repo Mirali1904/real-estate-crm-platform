@@ -42,7 +42,6 @@ export class GroupService {
     return groups;
   }
 
-  // backward compatibility
   async getGroupsForUser(userId: number, tenantId: number) {
     return this.getGroupsForTenant(tenantId, userId);
   }
@@ -87,7 +86,7 @@ export class GroupService {
 
       const groupId = result.insertId;
 
-      // 🔥 creator’s tenant auto-added to group
+      // creator’s tenant auto-added
       await connection.query(
         `
         INSERT INTO group_agencies
@@ -105,6 +104,14 @@ export class GroupService {
     } finally {
       connection.release();
     }
+  }
+
+  /* ======================================
+     ✅ ADD THIS METHOD (NEW)
+     Used by POST /api/groups
+  ====================================== */
+  async addAgencyToGroup(groupId: number, tenantId: number) {
+    return this.addAgency(groupId, tenantId);
   }
 
   /* ======================================
@@ -127,67 +134,59 @@ export class GroupService {
     return result.affectedRows > 0;
   }
 
- /* ======================================
-   DELETE GROUP (HARD DELETE)
-====================================== */
-async deleteGroup(groupId: number, tenantId: number) {
-  const connection = await conn.getConnection();
+  /* ======================================
+     DELETE GROUP (HARD DELETE)
+  ====================================== */
+  async deleteGroup(groupId: number, tenantId: number) {
+    const connection = await conn.getConnection();
+    try {
+      await connection.beginTransaction();
 
-  try {
-    await connection.beginTransaction();
+      await connection.query(
+        `
+        DELETE FROM group_post_responses
+        WHERE post_id IN (
+          SELECT id FROM group_posts WHERE group_id = ?
+        )
+        `,
+        [groupId]
+      );
 
-    // 1️⃣ delete group post responses
-    await connection.query(
-      `
-      DELETE FROM group_post_responses
-      WHERE post_id IN (
-        SELECT id FROM group_posts WHERE group_id = ?
-      )
-      `,
-      [groupId]
-    );
+      await connection.query(
+        `DELETE FROM group_posts WHERE group_id = ?`,
+        [groupId]
+      );
 
-    // 2️⃣ delete group posts
-    await connection.query(
-      `DELETE FROM group_posts WHERE group_id = ?`,
-      [groupId]
-    );
+      await connection.query(
+        `DELETE FROM group_agencies WHERE group_id = ?`,
+        [groupId]
+      );
 
-    // 3️⃣ delete group agencies
-    await connection.query(
-      `DELETE FROM group_agencies WHERE group_id = ?`,
-      [groupId]
-    );
+      await connection.query(
+        `DELETE FROM group_members WHERE group_id = ?`,
+        [groupId]
+      );
 
-    // 4️⃣ delete group members (if table exists)
-    await connection.query(
-      `DELETE FROM group_members WHERE group_id = ?`,
-      [groupId]
-    );
+      const [result] = await connection.query<ResultSetHeader>(
+        `
+        DELETE FROM groups
+        WHERE id = ? AND tenant_id = ?
+        `,
+        [groupId, tenantId]
+      );
 
-    // 5️⃣ finally delete group
-    const [result] = await connection.query<ResultSetHeader>(
-      `
-      DELETE FROM groups
-      WHERE id = ? AND tenant_id = ?
-      `,
-      [groupId, tenantId]
-    );
-
-    await connection.commit();
-    return result.affectedRows > 0;
-
-  } catch (error) {
-    await connection.rollback();
-    throw error;
-  } finally {
-    connection.release();
+      await connection.commit();
+      return result.affectedRows > 0;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   }
-}
-
 
   /* ======================================
-     GET GROUP AGENCIES (TENANTS)
+     GET GROUP AGENCIES
   ====================================== */
   async getGroupAgencies(groupId: number) {
     const [rows] = await conn.query<RowDataPacket[]>(
@@ -271,7 +270,7 @@ async deleteGroup(groupId: number, tenantId: number) {
   }
 
   /* ======================================
-     POSTS (UNCHANGED – USER BASED)
+     POSTS (UNCHANGED)
   ====================================== */
   async createPost(
     groupId: number,

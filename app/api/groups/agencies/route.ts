@@ -17,7 +17,7 @@ export async function GET(req: Request) {
       `
       SELECT
         ga.id,
-        ga.tenant_id AS user_id,
+        ga.tenant_id,
         u.name,
         u.email
       FROM group_agencies ga
@@ -39,21 +39,21 @@ export async function GET(req: Request) {
 }
 
 /* =========================
-   ADD AGENCY
-========================= */
-/* =========================
-   ADD AGENCY (FIXED)
+   ADD AGENCY (TENANT BASED)
 ========================= */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { groupId, userId } = body; // userId == tenant_id
+    const { groupId, tenantId } = body;
 
-    if (!groupId || !userId) {
-      return NextResponse.json({ error: "Missing data" }, { status: 400 });
+    if (!groupId || !tenantId) {
+      return NextResponse.json(
+        { error: "groupId and tenantId required" },
+        { status: 400 }
+      );
     }
 
-    /* 🔍 STEP 1: GET GROUP OWNER TENANT */
+    /* 🔍 CHECK GROUP OWNER TENANT */
     const [[group]]: any = await conn.execute(
       `
       SELECT tenant_id
@@ -67,24 +67,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid group" }, { status: 400 });
     }
 
-    /* 🚫 STEP 2: PREVENT OWNER FROM BEING ADDED */
-    if (group.tenant_id === userId) {
-      return NextResponse.json({
-        success: true,
-        message: "Owner tenant already has access",
-      });
+    /* 🚫 OWNER ALREADY EXISTS */
+    if (group.tenant_id === tenantId) {
+      return NextResponse.json({ success: true });
     }
 
-    /* 🔁 STEP 3: CHECK IF ENTRY EXISTS */
+    /* 🔁 CHECK EXISTING */
     const [exists]: any = await conn.execute(
       `
       SELECT id FROM group_agencies
       WHERE group_id = ? AND tenant_id = ?
       `,
-      [groupId, userId]
+      [groupId, tenantId]
     );
 
-    /* ✅ STEP 4: INSERT OR ACTIVATE */
     if (exists.length > 0) {
       await conn.execute(
         `
@@ -92,7 +88,7 @@ export async function POST(req: Request) {
         SET status = 'active'
         WHERE group_id = ? AND tenant_id = ?
         `,
-        [groupId, userId]
+        [groupId, tenantId]
       );
     } else {
       await conn.execute(
@@ -101,7 +97,7 @@ export async function POST(req: Request) {
           (group_id, tenant_id, status, joined_at)
         VALUES (?, ?, 'active', NOW())
         `,
-        [groupId, userId]
+        [groupId, tenantId]
       );
     }
 
@@ -112,7 +108,6 @@ export async function POST(req: Request) {
   }
 }
 
-
 /* =========================
    REMOVE AGENCY
 ========================= */
@@ -120,10 +115,13 @@ export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const groupId = Number(searchParams.get("groupId"));
-    const userId = Number(searchParams.get("userId")); // tenant_id
+    const tenantId = Number(searchParams.get("tenantId"));
 
-    if (!groupId || !userId) {
-      return NextResponse.json({ error: "Missing" }, { status: 400 });
+    if (!groupId || !tenantId) {
+      return NextResponse.json(
+        { error: "groupId and tenantId required" },
+        { status: 400 }
+      );
     }
 
     await conn.execute(
@@ -132,7 +130,7 @@ export async function DELETE(req: Request) {
       SET status = 'inactive'
       WHERE group_id = ? AND tenant_id = ?
       `,
-      [groupId, userId]
+      [groupId, tenantId]
     );
 
     return NextResponse.json({ success: true });

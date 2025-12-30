@@ -19,9 +19,7 @@ export async function GET(req: Request) {
       );
     }
 
-    // ✅ FIXED: tenant-based groups fetch
     const groups = await groupService.getGroupsForTenant(tenantId, userId);
-
     return NextResponse.json(groups);
   } catch (error: any) {
     console.error("Error fetching groups:", error);
@@ -33,12 +31,18 @@ export async function GET(req: Request) {
 }
 
 // ============================
-// POST /api/groups
+// POST /api/groups  ✅ FIXED
 // ============================
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { tenantId, name, description, createdBy } = body;
+    const {
+      tenantId,
+      name,
+      description,
+      createdBy,
+      selectedTenantIds, // ✅ NEW
+    } = body;
 
     if (!tenantId || !name || !createdBy) {
       return NextResponse.json(
@@ -47,6 +51,7 @@ export async function POST(req: Request) {
       );
     }
 
+    // 1️⃣ Create group
     const groupId = await groupService.createGroup(
       tenantId,
       name,
@@ -54,8 +59,20 @@ export async function POST(req: Request) {
       createdBy
     );
 
+    // 2️⃣ Add creator as member
+    await groupService.addAgencyToGroup(groupId, tenantId);
+
+    // 3️⃣ Add selected agencies
+    if (Array.isArray(selectedTenantIds)) {
+      for (const tid of selectedTenantIds) {
+        if (tid !== tenantId) {
+          await groupService.addAgencyToGroup(groupId, tid);
+        }
+      }
+    }
+
     return NextResponse.json({
-      id: groupId,
+      groupId,
       message: "Group created successfully",
     });
   } catch (error: any) {

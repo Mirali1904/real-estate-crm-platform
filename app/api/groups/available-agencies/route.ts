@@ -1,20 +1,14 @@
 import { NextResponse } from "next/server";
 import { conn } from "@/lib/db";
 
-/*
-  PURPOSE:
-  - Show agencies (tenants) that are NOT already in the group
-  - Exclude current user's tenant
-*/
-
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
 
-    const groupId = Number(searchParams.get("groupId"));
+    const groupId = Number(searchParams.get("groupId")); // optional
     const currentUserId = Number(searchParams.get("currentUserId"));
 
-    if (!groupId || !currentUserId) {
+    if (!currentUserId) {
       return NextResponse.json([]);
     }
 
@@ -31,19 +25,40 @@ export async function GET(req: Request) {
       [currentUserId]
     );
 
-    if (!userRows.length || !userRows[0].tenant_id) {
+    if (!userRows.length) {
       return NextResponse.json([]);
     }
 
     const currentTenantId = userRows[0].tenant_id;
 
     /* -------------------------
-       FETCH AVAILABLE AGENCIES
+       CREATE GROUP MODE (NO groupId)
+    -------------------------- */
+    if (!groupId) {
+      const [rows]: any = await conn.execute(
+        `
+        SELECT DISTINCT
+          u.tenant_id AS id,
+          u.name,
+          u.email
+        FROM users u
+        WHERE u.role = 'ADMIN'
+          AND u.tenant_id != ?
+        ORDER BY u.name ASC
+        `,
+        [currentTenantId]
+      );
+
+      return NextResponse.json(rows);
+    }
+
+    /* -------------------------
+       GROUP DETAIL MODE
     -------------------------- */
     const [rows]: any = await conn.execute(
       `
       SELECT DISTINCT
-        u.tenant_id AS id,     -- 🔥 IMPORTANT: tenant_id as id
+        u.tenant_id AS id,
         u.name,
         u.email
       FROM users u
