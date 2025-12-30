@@ -9,6 +9,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [buyers, setBuyers] = useState<any[]>([]);
   const [properties, setProperties] = useState<any[]>([]);
+  const [nextAppointment, setNextAppointment] = useState<any>(null);
   const [groups, setGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,8 +28,12 @@ export default function DashboardPage() {
       })
         .then((r) => r.json())
         .catch(() => ({ groups: [] })),
+
+      fetch(`/api/appointments/next?tenantId=${user.tenantId}`)
+        .then((r) => r.json())
+        .catch(() => null),
     ])
-      .then(([buyersRes, sellersRes, groupsRes]) => {
+      .then(([buyersRes, sellersRes, groupsRes, appointmentRes]) => {
         setBuyers(Array.isArray(buyersRes) ? buyersRes : []);
 
         if (sellersRes?.success) {
@@ -40,12 +45,14 @@ export default function DashboardPage() {
         }
 
         setGroups(Array.isArray(groupsRes?.groups) ? groupsRes.groups : []);
+        setNextAppointment(appointmentRes || null);
         setLoading(false);
       })
       .catch(() => {
         setBuyers([]);
         setProperties([]);
         setGroups([]);
+        setNextAppointment(null);
         setLoading(false);
       });
   }, []);
@@ -63,30 +70,15 @@ export default function DashboardPage() {
 
       {/* STATS ROW */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Stat
-          label="Customers"
-          value={buyers.length}
-          onClick={() => router.push("/buyers")}
-        />
-        <Stat
-          label="Properties"
-          value={properties.length}
-          onClick={() => router.push("/sellers")}
-        />
-        <Stat
-          label="Groups"
-          value={groups.length}
-          onClick={() => router.push("/groups")}
-        />
+        <Stat label="Customers" value={buyers.length} onClick={() => router.push("/buyers")} />
+        <Stat label="Properties" value={properties.length} onClick={() => router.push("/sellers")} />
+        <Stat label="Groups" value={groups.length} onClick={() => router.push("/groups")} />
 
         {/* CUSTOMERS MINI LIST */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex justify-between mb-4">
             <h3 className="font-semibold">Customers</h3>
-            <span
-              className="text-sm text-indigo-600 cursor-pointer"
-              onClick={() => router.push("/buyers")}
-            >
+            <span className="text-sm text-indigo-600 cursor-pointer" onClick={() => router.push("/buyers")}>
               View All
             </span>
           </div>
@@ -108,19 +100,82 @@ export default function DashboardPage() {
       </div>
 
       {/* APPOINTMENT + RECENT BUYERS */}
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-        <div className="xl:col-span-2 bg-indigo-600 text-white rounded-2xl p-6">
-          <div className="text-sm opacity-80 mb-2">Next Appointment</div>
-          <div className="text-sm opacity-90">No upcoming appointments</div>
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+
+        {/* NEXT APPOINTMENT */}
+      <div
+  onClick={() => router.push("/appointments")}
+  className="
+    bg-indigo-600 text-white
+    rounded-xl shadow-sm p-5
+    cursor-pointer
+    hover:opacity-95
+    transition
+  "
+>
+  <div className="flex items-center justify-between">
+    <h3 className="text-sm font-semibold text-indigo-100">
+      Next Appointment
+    </h3>
+    <span className="h-2 w-2 rounded-full bg-indigo-300"></span>
+  </div>
+
+  {!nextAppointment && (
+    <div className="mt-6 text-sm text-indigo-100">
+      No upcoming appointments
+    </div>
+  )}
+
+  {nextAppointment && (
+    <div className="mt-4 space-y-3">
+      {/* NAME */}
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-full bg-white/20 text-white flex items-center justify-center text-sm font-semibold uppercase">
+          {nextAppointment.customer_name?.[0]}
         </div>
 
+        <div>
+          <div className="font-medium capitalize">
+            {nextAppointment.customer_name}
+          </div>
+          <div className="text-xs text-indigo-100">
+            Upcoming meeting
+          </div>
+        </div>
+      </div>
+
+      {/* DATE & TIME */}
+      <div className="flex items-center gap-2 text-sm text-indigo-100">
+        <span>📅</span>
+        <span>
+          {new Date(nextAppointment.appointment_date).toLocaleDateString()}
+          {" • "}
+          {nextAppointment.appointment_time}
+        </span>
+      </div>
+
+      {/* PURPOSE */}
+      {nextAppointment.purpose && (
+        <div className="text-sm text-indigo-100 line-clamp-2">
+          {nextAppointment.purpose}
+        </div>
+      )}
+
+      {/* CTA */}
+      <div className="pt-2 text-xs text-indigo-100 opacity-90">
+        Click to view all appointments →
+      </div>
+    </div>
+  )}
+</div>
+
+
+
+        {/* RECENT BUYERS */}
         <div className="xl:col-span-3 bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex justify-between mb-4">
             <h3 className="font-semibold">Recent Buyers</h3>
-            <span
-              className="text-sm text-indigo-600 cursor-pointer"
-              onClick={() => router.push("/buyers")}
-            >
+            <span className="text-sm text-indigo-600 cursor-pointer" onClick={() => router.push("/buyers")}>
               View All
             </span>
           </div>
@@ -146,10 +201,7 @@ export default function DashboardPage() {
         <div className="xl:col-span-4 bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex justify-between mb-4">
             <h3 className="font-semibold">Recent Properties</h3>
-            <span
-              className="text-sm text-indigo-600 cursor-pointer"
-              onClick={() => router.push("/sellers")}
-            >
+            <span className="text-sm text-indigo-600 cursor-pointer" onClick={() => router.push("/sellers")}>
               View All
             </span>
           </div>
@@ -170,9 +222,7 @@ export default function DashboardPage() {
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex justify-between mb-4">
             <h3 className="font-semibold">Tasks To Do</h3>
-            <span className="text-sm text-indigo-600 cursor-pointer">
-              View All
-            </span>
+            <span className="text-sm text-indigo-600 cursor-pointer">View All</span>
           </div>
           <div className="text-sm text-gray-400">No tasks for today</div>
         </div>
