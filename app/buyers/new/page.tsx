@@ -32,6 +32,10 @@ export default function AddBuyerPage() {
     budget_min: "",
     budget_max: "",
     bedrooms: "",
+
+    // 🔹 NEW FIELDS
+    brokerage_amount: "",
+    remarks: "",
   });
 
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -40,7 +44,7 @@ export default function AddBuyerPage() {
   const debouncedLocation = useDebounce(form.location, 600);
   const lastSearchedRef = useRef<string>("");
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
@@ -119,19 +123,31 @@ export default function AddBuyerPage() {
       <div className="max-w-4xl mx-auto px-6 py-8">
         <BackButton />
 
-        {/* CARD */}
         <div className="bg-white rounded-2xl shadow-sm p-8 mt-4">
           <h1 className="text-xl font-semibold mb-6">
             Add Buyer
           </h1>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
             <Input label="Name" name="name" onChange={handleChange} />
             <Input label="Phone" name="phone" onChange={handleChange} />
 
             <Input label="Email" name="email" onChange={handleChange} />
             <Input label="Requirement" name="requirement" onChange={handleChange} />
+
+            {/* 🔹 NEW: BROKERAGE */}
+            <Input
+              label="Brokerage Amount (₹ / %)"
+              name="brokerage_amount"
+              onChange={handleChange}
+            />
+
+            {/* 🔹 NEW: REMARKS */}
+            <Textarea
+              label="Buyer Remarks / Notes"
+              name="remarks"
+              onChange={handleChange}
+            />
 
             {/* LOCATION */}
             <div className="md:col-span-2 relative">
@@ -198,17 +214,25 @@ function Input({ label, name, onChange, value, readOnly = false }: any) {
         value={value}
         readOnly={readOnly}
         onChange={onChange}
-        className="
-          w-full
-          bg-gray-50
-          border border-gray-200
-          rounded-lg
-          px-4 py-2.5
-          text-sm
-          focus:outline-none
-          focus:ring-2
-          focus:ring-indigo-500
-        "
+        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500"
+      />
+    </div>
+  );
+}
+
+/* ---------------- TEXTAREA ---------------- */
+function Textarea({ label, name, onChange }: any) {
+  return (
+    <div className="md:col-span-2">
+      <label className="block text-sm text-gray-700 mb-1">
+        {label}
+      </label>
+      <textarea
+        name={name}
+        onChange={onChange}
+        rows={3}
+        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500"
+        placeholder="Example: Wants sea-facing flat, call after 10 Jan"
       />
     </div>
   );

@@ -7,7 +7,7 @@ export default function AddSellerForm({ tenantId }: any) {
   const router = useRouter();
 
   const [form, setForm] = useState({
-    sellerName: "",   // ✅ NEW
+    sellerName: "",
     phone: "",
     email: "",
     propertyType: "",
@@ -15,6 +15,10 @@ export default function AddSellerForm({ tenantId }: any) {
     lng: "",
     price: "",
     bedrooms: "",
+
+    // ✅ NEW
+    brokerage_amount: "",
+    remarks: "",
   });
 
   const handleSubmit = async (e: any) => {
@@ -22,7 +26,6 @@ export default function AddSellerForm({ tenantId }: any) {
     if (!tenantId) return;
 
     const payload = {
-      // ✅ seller name yahin bhej rahe hai
       name: form.sellerName,
       property_address: form.sellerName,
       owner_contact: form.phone || form.email,
@@ -32,6 +35,10 @@ export default function AddSellerForm({ tenantId }: any) {
       price: form.price ? Number(form.price) : 0,
       bedrooms: form.bedrooms ? Number(form.bedrooms) : null,
       property_type: form.propertyType || null,
+
+      // ✅ NEW
+      brokerage_amount: form.brokerage_amount || null,
+      remarks: form.remarks || null,
     };
 
     const res = await fetch(`/api/sellers/${tenantId}`, {
@@ -49,8 +56,7 @@ export default function AddSellerForm({ tenantId }: any) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-
-      {/* ✅ SELLER NAME FIELD */}
+      {/* SELLER NAME */}
       <input
         value={form.sellerName}
         placeholder="Seller Name"
@@ -84,6 +90,7 @@ export default function AddSellerForm({ tenantId }: any) {
         }
       />
 
+      {/* LOCATION */}
       <div className="grid grid-cols-2 gap-2">
         <input
           value={form.lat}
@@ -111,6 +118,27 @@ export default function AddSellerForm({ tenantId }: any) {
         placeholder="Bedrooms"
         className="border rounded-lg p-2 w-full"
         onChange={(e) => setForm({ ...form, bedrooms: e.target.value })}
+      />
+
+      {/* ✅ NEW — BROKERAGE */}
+      <input
+        value={form.brokerage_amount}
+        placeholder="Brokerage (₹ / %)"
+        className="border rounded-lg p-2 w-full"
+        onChange={(e) =>
+          setForm({ ...form, brokerage_amount: e.target.value })
+        }
+      />
+
+      {/* ✅ NEW — REMARKS */}
+      <textarea
+        value={form.remarks}
+        placeholder="Remarks / Notes"
+        className="border rounded-lg p-2 w-full"
+        rows={2}
+        onChange={(e) =>
+          setForm({ ...form, remarks: e.target.value })
+        }
       />
 
       <button className="bg-[#c89a3b] w-full py-2 rounded-full text-white">

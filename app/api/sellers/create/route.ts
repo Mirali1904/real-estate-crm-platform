@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
 
     const {
       tenantId,
-      name,               // 👈 seller name frontend se aa raha hai
+      name,               // seller name
       owner_contact,
       email,
       property_type,
@@ -16,6 +16,10 @@ export async function POST(req: NextRequest) {
       lng,
       price,
       bedrooms,
+
+      // 🔹 NEW (same as buyer)
+      brokerage_amount,
+      remarks,
     } = body;
 
     // ✅ validation
@@ -32,7 +36,7 @@ export async function POST(req: NextRequest) {
       email?.split("@")[0] ||
       "Unknown Seller";
 
-    // ✅ INSERT WITH NAME COLUMN
+    // ✅ INSERT (with brokerage & remarks)
     const query = `
       INSERT INTO sellers (
         tenant_id,
@@ -45,15 +49,19 @@ export async function POST(req: NextRequest) {
         lng,
         price,
         bedrooms,
+
+        brokerage_amount,
+        remarks,
+
         status,
         created_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'LISTED', NOW())
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'LISTED', NOW())
     `;
 
     await conn.execute(query, [
       tenantId,
-      finalName,          // 👈 YAHI MAIN FIX HAI
+      finalName,
       owner_contact || null,
       email || null,
       property_type || null,
@@ -62,6 +70,10 @@ export async function POST(req: NextRequest) {
       lng ?? null,
       price ?? null,
       bedrooms ?? null,
+
+      // 🔹 NEW VALUES
+      brokerage_amount || null,
+      remarks || null,
     ]);
 
     return NextResponse.json({ success: true });

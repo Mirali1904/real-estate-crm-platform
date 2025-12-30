@@ -15,6 +15,10 @@ type Buyer = {
   budget_min: number;
   budget_max: number;
   status: string;
+
+  // 🔹 NEW FIELDS
+  brokerage_amount?: string;
+  remarks?: string;
 };
 
 export default function BuyersPage() {
@@ -101,7 +105,7 @@ export default function BuyersPage() {
         </PrimaryButton>
       </div>
 
-      {/* SEARCH BAR (PROFESSIONAL SINGLE LINE) */}
+      {/* SEARCH */}
       <div className="mb-4">
         <div className="relative max-w-xl">
           <input
@@ -109,21 +113,7 @@ export default function BuyersPage() {
             placeholder="Search buyers by name, email or phone"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="
-              w-full
-              h-11
-              px-5
-              text-sm
-              rounded-full
-              border
-              border-gray-300
-              bg-white
-              focus:outline-none
-              focus:ring-2
-              focus:ring-[#5b5ce2]
-              focus:border-[#5b5ce2]
-              shadow-sm
-            "
+            className="w-full h-11 px-5 text-sm rounded-full border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#5b5ce2]"
           />
         </div>
       </div>
@@ -133,85 +123,96 @@ export default function BuyersPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="text-gray-400 border-b">
-              <th className="px-6 py-3 text-left font-medium">Name</th>
-              <th className="px-6 py-3 text-left font-medium">Email</th>
-              <th className="px-6 py-3 text-left font-medium">Phone</th>
-              <th className="px-6 py-3 text-left font-medium">Budget</th>
-              <th className="px-6 py-3 text-left font-medium">Status</th>
-              <th className="px-6 py-3 text-right font-medium">Actions</th>
+              <th className="px-6 py-3 text-left">Name</th>
+              <th className="px-6 py-3 text-left">Email</th>
+              <th className="px-6 py-3 text-left">Phone</th>
+              <th className="px-6 py-3 text-left">Budget</th>
+
+              {/* 🔹 NEW */}
+              <th className="px-6 py-3 text-left">Brokerage</th>
+              <th className="px-6 py-3 text-left">Remarks</th>
+
+              <th className="px-6 py-3 text-left">Status</th>
+              <th className="px-6 py-3 text-right">Actions</th>
             </tr>
           </thead>
+<tbody>
+  {displayBuyers.map((buyer) => (
+    <tr
+      key={buyer.id}
+      className="border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer"
+      onClick={() => router.push(`/buyers/${buyer.id}`)}
+    >
+      {/* NAME (OLD STYLE RESTORED) */}
+      <td className="px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">
+            {buyer.name[0].toUpperCase()}
+          </div>
+          <div>
+            <div className="font-medium text-gray-900">
+              {buyer.name}
+            </div>
+            <div className="text-xs text-gray-400">
+              Buyer
+            </div>
+          </div>
+        </div>
+      </td>
 
-          <tbody>
-            {displayBuyers.map((buyer) => (
-              <tr
-                key={buyer.id}
-                className="border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer"
-                onClick={() => router.push(`/buyers/${buyer.id}`)}
-              >
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">
-                      {buyer.name[0].toUpperCase()}
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {buyer.name}
-                      </div>
-                      <div className="text-xs text-gray-400">Buyer</div>
-                    </div>
-                  </div>
-                </td>
+      <td className="px-6 py-4 text-gray-600">
+        {buyer.email}
+      </td>
 
-                <td className="px-6 py-4 text-gray-600">
-                  {buyer.email}
-                </td>
+      <td className="px-6 py-4 text-gray-600">
+        {buyer.phone}
+      </td>
 
-                <td className="px-6 py-4 text-gray-600">
-                  {buyer.phone}
-                </td>
+      <td className="px-6 py-4 text-gray-700">
+        ₹{buyer.budget_min} – ₹{buyer.budget_max}
+      </td>
 
-                <td className="px-6 py-4 text-gray-700">
-                  ₹{buyer.budget_min} – ₹{buyer.budget_max}
-                </td>
+      {/* BROKERAGE (SUBTLE) */}
+      <td className="px-6 py-4 text-gray-700">
+        {buyer.brokerage_amount || "—"}
+      </td>
 
-                <td className="px-6 py-4">
-                  <span
-                    className={`px-3 py-1 text-xs rounded-full font-medium ${
-                      buyer.status === "SITE_VISIT"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {buyer.status}
-                  </span>
-                </td>
+      {/* REMARKS (SMALL & CLEAN) */}
+      <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+        {buyer.remarks || "—"}
+      </td>
 
-                <td
-                  className="px-6 py-4"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex justify-end gap-2">
-                    <SecondaryButton
-                      onClick={() => setShareBuyerId(buyer.id)}
-                    >
-                      Share
-                    </SecondaryButton>
+      <td className="px-6 py-4">
+        <span className="px-3 py-1 text-xs rounded-full font-medium bg-gray-100 text-gray-600">
+          {buyer.status}
+        </span>
+      </td>
 
-                    <SecondaryButton
-                      onClick={() => handleDelete(buyer.id)}
-                    >
-                      Delete
-                    </SecondaryButton>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+      <td
+        className="px-6 py-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-end gap-2">
+          <SecondaryButton
+            onClick={() => setShareBuyerId(buyer.id)}
+          >
+            Share
+          </SecondaryButton>
+
+          <SecondaryButton
+            onClick={() => handleDelete(buyer.id)}
+          >
+            Delete
+          </SecondaryButton>
+        </div>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
         </table>
       </div>
 
-      {/* SHARE MODAL */}
       {shareBuyerId && (
         <ShareToGroupModal
           open

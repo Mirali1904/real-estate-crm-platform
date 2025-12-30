@@ -18,6 +18,10 @@ export default function AddSellerPage() {
     lng: "",
     price: "",
     bedrooms: "",
+
+    // 🔹 NEW (same as buyer)
+    brokerage_amount: "",
+    remarks: "",
   });
 
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -26,11 +30,13 @@ export default function AddSellerPage() {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  /* -------- LOCATION SEARCH (same logic) -------- */
+  /* -------- LOCATION SEARCH (UNCHANGED) -------- */
   function handleLocationChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     setForm({ ...form, location: value });
@@ -71,7 +77,7 @@ export default function AddSellerPage() {
     setSuggestions([]);
   }
 
-  /* -------- SUBMIT (UNCHANGED) -------- */
+  /* -------- SUBMIT -------- */
   async function handleSubmit() {
     const raw = localStorage.getItem("loggedUser");
     if (!raw) return alert("Not logged in");
@@ -93,6 +99,10 @@ export default function AddSellerPage() {
         lng: form.lng,
         price: form.price,
         bedrooms: form.bedrooms,
+
+        // 🔹 NEW
+        brokerage_amount: form.brokerage_amount,
+        remarks: form.remarks,
       }),
     });
 
@@ -104,22 +114,58 @@ export default function AddSellerPage() {
     <div className="w-full px-6 pt-2">
       <BackButton />
 
-      {/* ===== CARD (same as Buyer) ===== */}
+      {/* ===== CARD (Buyer-style) ===== */}
       <div className="flex justify-center mt-4">
         <div className="w-full max-w-2xl bg-white rounded-xl shadow-sm p-6">
           <h1 className="text-lg font-semibold mb-6">
             Add Property
           </h1>
 
-          {/* ===== GRID (Buyer style) ===== */}
+          {/* ===== GRID ===== */}
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Seller Name" name="seller_name" value={form.seller_name} onChange={handleChange} />
-            <Field label="Phone" name="owner_contact" value={form.owner_contact} onChange={handleChange} />
+            <Field
+              label="Seller Name"
+              name="seller_name"
+              value={form.seller_name}
+              onChange={handleChange}
+            />
+            <Field
+              label="Phone"
+              name="owner_contact"
+              value={form.owner_contact}
+              onChange={handleChange}
+            />
 
-            <Field label="Email" name="email" value={form.email} onChange={handleChange} />
-            <Field label="Property Type" name="property_type" value={form.property_type} onChange={handleChange} />
+            <Field
+              label="Email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+            />
+            <Field
+              label="Property Type"
+              name="property_type"
+              value={form.property_type}
+              onChange={handleChange}
+            />
 
-            {/* LOCATION FULL WIDTH */}
+            {/* 🔹 BROKERAGE */}
+            <Field
+              label="Brokerage Amount (₹ / %)"
+              name="brokerage_amount"
+              value={form.brokerage_amount}
+              onChange={handleChange}
+            />
+
+            {/* 🔹 REMARKS */}
+            <Textarea
+              label="Seller Remarks / Notes"
+              name="remarks"
+              value={form.remarks}
+              onChange={handleChange}
+            />
+
+            {/* LOCATION */}
             <div className="col-span-2 relative">
               <Field
                 label="Location"
@@ -129,7 +175,9 @@ export default function AddSellerPage() {
               />
 
               {loadingLocation && (
-                <p className="text-xs text-gray-400 mt-1">Searching…</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Searching…
+                </p>
               )}
 
               {suggestions.length > 0 && (
@@ -147,11 +195,31 @@ export default function AddSellerPage() {
               )}
             </div>
 
-            <Field label="Latitude" name="lat" value={form.lat} onChange={handleChange} />
-            <Field label="Longitude" name="lng" value={form.lng} onChange={handleChange} />
+            <Field
+              label="Latitude"
+              name="lat"
+              value={form.lat}
+              onChange={handleChange}
+            />
+            <Field
+              label="Longitude"
+              name="lng"
+              value={form.lng}
+              onChange={handleChange}
+            />
 
-            <Field label="Price" name="price" value={form.price} onChange={handleChange} />
-            <Field label="Bedrooms" name="bedrooms" value={form.bedrooms} onChange={handleChange} />
+            <Field
+              label="Price"
+              name="price"
+              value={form.price}
+              onChange={handleChange}
+            />
+            <Field
+              label="Bedrooms"
+              name="bedrooms"
+              value={form.bedrooms}
+              onChange={handleChange}
+            />
           </div>
 
           {/* ===== ACTION ===== */}
@@ -166,7 +234,7 @@ export default function AddSellerPage() {
   );
 }
 
-/* ===== INPUT (Buyer-style) ===== */
+/* ===== INPUT ===== */
 function Field({ label, name, value, onChange }: any) {
   return (
     <div>
@@ -182,6 +250,29 @@ function Field({ label, name, value, onChange }: any) {
           px-3 py-2 text-sm
           focus:outline-none focus:ring-2 focus:ring-indigo-500
         "
+      />
+    </div>
+  );
+}
+
+/* ===== TEXTAREA ===== */
+function Textarea({ label, name, value, onChange }: any) {
+  return (
+    <div className="col-span-2">
+      <label className="text-xs text-gray-500 mb-1 block">
+        {label}
+      </label>
+      <textarea
+        name={name}
+        value={value}
+        onChange={onChange}
+        rows={3}
+        className="
+          w-full rounded-lg border border-gray-200
+          px-3 py-2 text-sm
+          focus:outline-none focus:ring-2 focus:ring-indigo-500
+        "
+        placeholder="Example: Exclusive seller, price negotiable till 95L"
       />
     </div>
   );

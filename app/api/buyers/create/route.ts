@@ -27,6 +27,10 @@ export async function POST(req: NextRequest) {
       budget_min,
       budget_max,
       bedrooms,
+
+      // 🔹 NEW FIELDS
+      brokerage_amount,
+      remarks,
     } = body;
 
     if (!name || !phone) {
@@ -51,10 +55,12 @@ export async function POST(req: NextRequest) {
         lng,
         radius_km,
         bedrooms,
+        brokerage_amount,
+        remarks,
         status,
         is_deleted
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ENQUIRY', 0)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ENQUIRY', 0)
       `,
       [
         tenantId,
@@ -69,6 +75,10 @@ export async function POST(req: NextRequest) {
         Number(lng) || 0,
         Number(radius_km) || 0,
         bedrooms ? Number(bedrooms) : null,
+
+        // 🔹 NEW VALUES
+        brokerage_amount || null,
+        remarks || null,
       ]
     );
 

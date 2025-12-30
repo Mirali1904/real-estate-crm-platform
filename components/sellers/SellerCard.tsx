@@ -12,6 +12,10 @@ type Seller = {
   location?: string;
   price?: string | number;
   bedrooms?: number | null;
+
+  // ✅ NEW
+  brokerage_amount?: string | null;
+  remarks?: string | null;
 };
 
 export default function SellerCard({
@@ -21,7 +25,7 @@ export default function SellerCard({
 }: {
   seller: Seller;
   onDelete: (id: number) => void;
-  onShare: (id: number) => void; // 🔴 REQUIRED
+  onShare: (id: number) => void;
 }) {
   if (!seller) return null;
 
@@ -51,9 +55,22 @@ export default function SellerCard({
             Bedrooms: {seller.bedrooms}
           </p>
         )}
+
+        {/* ✅ NEW */}
+        {seller.brokerage_amount && (
+          <p className="text-xs text-gray-500">
+            Brokerage: {seller.brokerage_amount}
+          </p>
+        )}
+
+        {seller.remarks && (
+          <p className="text-xs text-gray-400 truncate max-w-xs">
+            {seller.remarks}
+          </p>
+        )}
       </div>
 
-      {/* RIGHT — SAME AS BUYER */}
+      {/* RIGHT */}
       <div
         className="flex gap-2"
         onClick={(e) => e.stopPropagation()}

@@ -17,11 +17,29 @@ export async function GET(
       );
     }
 
-    const [rows] = await conn.execute(
+    const [rows]: any = await conn.execute(
       `
-      SELECT *
+      SELECT
+        id,
+        tenant_id,
+        name,
+        phone,
+        email,
+        requirement,
+        budget_min,
+        budget_max,
+        location,
+        bedrooms,
+
+        -- 🔹 NEW FIELDS (IMPORTANT)
+        brokerage_amount,
+        remarks,
+
+        status,
+        created_at
       FROM buyers
       WHERE tenant_id = ?
+        AND is_deleted = 0
       ORDER BY created_at DESC
       `,
       [tenantIdNum]

@@ -35,6 +35,11 @@ export async function GET(
         lng,
         radius_km,
         bedrooms,
+
+        -- 🔹 NEW FIELDS
+        brokerage_amount,
+        remarks,
+
         status,
         selected_seller_id
       FROM buyers

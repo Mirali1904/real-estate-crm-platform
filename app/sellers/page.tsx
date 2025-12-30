@@ -7,53 +7,77 @@ import SecondaryButton from "@/components/SecondaryButton";
 import BackButton from "@/components/BackButton";
 import ShareToGroupModal from "@/components/groups/ShareToGroupModal";
 
+type Seller = {
+  id: number;
+  owner_name: string;
+  property_type: string;
+  price: number;
+  bedrooms: number;
+  brokerage_amount?: string | null;
+  remarks?: string | null;
+};
+
 export default function SellersPage() {
   const router = useRouter();
 
-  const [sellers, setSellers] = useState<any[]>([]);
+  const [sellers, setSellers] = useState<Seller[]>([]);
+  const [displaySellers, setDisplaySellers] = useState<Seller[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [shareSellerId, setShareSellerId] = useState<number | null>(null);
 
+  /* ================= FETCH ================= */
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
     if (!raw) return;
 
     const user = JSON.parse(raw);
+    const tenantId = user.tenant_id || user.tenantId;
 
-    fetch(`/api/sellers/tenant/${user.tenantId}`)
+    fetch(`/api/sellers/tenant/${tenantId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data?.success) setSellers(data.sellers || []);
-        else if (Array.isArray(data)) setSellers(data);
-        else setSellers([]);
+        if (data?.success) {
+          setSellers(data.sellers);
+          setDisplaySellers(data.sellers);
+        }
       })
       .finally(() => setLoading(false));
   }, []);
 
-  const filteredSellers = sellers.filter((seller) => {
-    const q = search.toLowerCase();
-    return (
-      (seller.name ?? "").toLowerCase().includes(q) ||
-      (seller.property_type ?? "").toLowerCase().includes(q)
-    );
-  });
+  /* ================= SEARCH ================= */
+  useEffect(() => {
+    if (!search.trim()) {
+      setDisplaySellers(sellers);
+      return;
+    }
 
-  const handleDelete = async (id: number) => {
+    const q = search.toLowerCase();
+    setDisplaySellers(
+      sellers.filter(
+        (s) =>
+          s.owner_name?.toLowerCase().includes(q) ||
+          s.property_type?.toLowerCase().includes(q)
+      )
+    );
+  }, [search, sellers]);
+
+  async function handleDelete(id: number) {
     if (!confirm("Delete this property?")) return;
     await fetch(`/api/sellers/${id}`, { method: "DELETE" });
     setSellers((p) => p.filter((s) => s.id !== id));
-  };
+    setDisplaySellers((p) => p.filter((s) => s.id !== id));
+  }
 
-  if (loading) return <p className="px-6 pt-4">Loading...</p>;
+  if (loading) return <p className="p-6">Loading...</p>;
 
   return (
-    <div className="w-full px-6 pt-2">
-      {/* ===== HEADER ===== */}
-      <div className="flex items-center justify-between mb-4">
+    <div className="w-full px-6 pt-3">
+      {/* TOP BAR */}
+      <div className="flex items-center justify-between mb-3">
         <div>
           <BackButton />
-          <h1 className="text-2xl font-semibold mt-3">
+          <h1 className="text-2xl font-semibold mt-2">
             Sellers / Properties
           </h1>
         </div>
@@ -63,90 +87,130 @@ export default function SellersPage() {
         </PrimaryButton>
       </div>
 
-      {/* ===== SEARCH ===== */}
+      {/* SEARCH BAR (SAME AS BUYER) */}
       <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search sellers by name or property type"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-md px-4 py-2 text-sm border rounded-full focus:outline-none"
-        />
-      </div>
-
-      {/* ===== HEADER ROW (Buyer style) ===== */}
-      <div className="grid grid-cols-12 px-4 py-2 text-xs text-gray-400 border-b border-gray-300">
-        <div className="col-span-4">Name</div>
-        <div className="col-span-3">Property Type</div>
-        <div className="col-span-2">Price</div>
-        <div className="col-span-1">Beds</div>
-        <div className="col-span-2 text-right">Actions</div>
-      </div>
-
-      {/* ===== ROWS (Buyer style) ===== */}
-      {filteredSellers.map((seller) => (
-        <div
-          key={seller.id}
-          onClick={() => router.push(`/sellers/${seller.id}`)}
-          className="grid grid-cols-12 px-4 py-4 items-center text-sm hover:bg-gray-50 cursor-pointer"
-        >
-          {/* NAME */}
-          <div className="col-span-4 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-semibold">
-              {seller.name?.[0]?.toUpperCase() || "S"}
-            </div>
-            <div>
-             <p className="font-medium text-gray-900">
-  {seller.owner_name}
-</p>
-
-              <p className="text-xs text-gray-400">Seller</p>
-            </div>
-          </div>
-
-          {/* PROPERTY TYPE */}
-          <div className="col-span-3 text-gray-700">
-            {seller.property_type || "Property"}
-          </div>
-
-          {/* PRICE */}
-          <div className="col-span-2 text-gray-700">
-            ₹{seller.price}
-          </div>
-
-          {/* BEDROOMS */}
-          <div className="col-span-1 text-gray-700">
-            {seller.bedrooms} BHK
-          </div>
-
-          {/* ACTIONS */}
-          <div
-            className="col-span-2 flex justify-end gap-2"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <SecondaryButton
-              onClick={() => setShareSellerId(seller.id)}
-            >
-              Share
-            </SecondaryButton>
-
-            <SecondaryButton
-              onClick={() => handleDelete(seller.id)}
-            >
-              Delete
-            </SecondaryButton>
-          </div>
+        <div className="relative max-w-xl">
+          <input
+            type="text"
+            placeholder="Search sellers by name or property type"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="
+              w-full
+              h-11
+              px-5
+              text-sm
+              rounded-full
+              border
+              border-gray-300
+              bg-white
+              focus:outline-none
+              focus:ring-2
+              focus:ring-[#5b5ce2]
+              focus:border-[#5b5ce2]
+              shadow-sm
+            "
+          />
         </div>
-      ))}
+      </div>
 
-      {filteredSellers.length === 0 && (
-        <p className="px-4 py-6 text-sm text-gray-500">
-          No sellers found.
-        </p>
-      )}
+      {/* TABLE (EXACT BUYER STYLE) */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-gray-400 border-b">
+              <th className="px-6 py-3 text-left font-medium">Name</th>
+              <th className="px-6 py-3 text-left font-medium">
+                Property Type
+              </th>
+              <th className="px-6 py-3 text-left font-medium">Price</th>
+              <th className="px-6 py-3 text-left font-medium">Beds</th>
+              <th className="px-6 py-3 text-left font-medium">
+                Brokerage
+              </th>
+              <th className="px-6 py-3 text-left font-medium">
+                Remarks
+              </th>
+              <th className="px-6 py-3 text-right font-medium">
+                Actions
+              </th>
+            </tr>
+          </thead>
 
-      {/* ===== SHARE MODAL ===== */}
-      {shareSellerId !== null && (
+          <tbody>
+            {displaySellers.map((seller) => (
+              <tr
+                key={seller.id}
+                className="border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer"
+                onClick={() =>
+                  router.push(`/sellers/${seller.id}`)
+                }
+              >
+                {/* NAME */}
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-semibold">
+                      {seller.owner_name[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">
+                        {seller.owner_name}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        Seller
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <td className="px-6 py-4 text-gray-600">
+                  {seller.property_type}
+                </td>
+
+                <td className="px-6 py-4 text-gray-700">
+                  ₹{seller.price}
+                </td>
+
+                <td className="px-6 py-4 text-gray-700">
+                  {seller.bedrooms} BHK
+                </td>
+
+                <td className="px-6 py-4 text-gray-700">
+                  {seller.brokerage_amount || "—"}
+                </td>
+
+                <td className="px-6 py-4 text-gray-500">
+                  {seller.remarks || "—"}
+                </td>
+
+                <td
+                  className="px-6 py-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex justify-end gap-2">
+                    <SecondaryButton
+                      onClick={() =>
+                        setShareSellerId(seller.id)
+                      }
+                    >
+                      Share
+                    </SecondaryButton>
+
+                    <SecondaryButton
+                      onClick={() => handleDelete(seller.id)}
+                    >
+                      Delete
+                    </SecondaryButton>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* SHARE MODAL */}
+      {shareSellerId && (
         <ShareToGroupModal
           open
           onClose={() => setShareSellerId(null)}
