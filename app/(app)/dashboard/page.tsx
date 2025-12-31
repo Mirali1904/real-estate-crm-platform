@@ -31,7 +31,10 @@ const [newTaskDueDate, setNewTaskDueDate] = useState("");
   `/api/buyers/list?tenantId=${user.tenantId}&userId=${user.id}`
 ).then((r) => r.json()),
 
-      fetch(`/api/sellers/tenant/${user.tenantId}`).then((r) => r.json()),
+      fetch(
+  `/api/sellers/list?tenantId=${user.tenantId}&userId=${user.id}`
+).then((r) => r.json()),
+
       fetch("/api/groups/accessible", {
         headers: { "x-tenant-id": String(user.tenantId) },
       })

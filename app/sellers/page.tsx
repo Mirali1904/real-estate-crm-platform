@@ -15,6 +15,10 @@ type Seller = {
   bedrooms: number;
   brokerage_amount?: string | null;
   remarks?: string | null;
+
+  /* ✅ ADDED */
+  agent_id?: number | null;
+  agent_name?: string | null;
 };
 
 export default function SellersPage() {
@@ -26,6 +30,11 @@ export default function SellersPage() {
   const [search, setSearch] = useState("");
   const [shareSellerId, setShareSellerId] = useState<number | null>(null);
 
+  /* ✅ ASSIGN STATES */
+  const [agents, setAgents] = useState<any[]>([]);
+  const [assignSellerId, setAssignSellerId] = useState<number | null>(null);
+  const [selectedAgent, setSelectedAgent] = useState<number | null>(null);
+
   /* ================= FETCH ================= */
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
@@ -34,7 +43,11 @@ export default function SellersPage() {
     const user = JSON.parse(raw);
     const tenantId = user.tenant_id || user.tenantId;
 
-    fetch(`/api/sellers/tenant/${tenantId}`)
+   fetch(
+  `/api/sellers/list?tenantId=${tenantId}&userId=${user.id}`
+)
+
+
       .then((res) => res.json())
       .then((data) => {
         if (data?.success) {
@@ -43,6 +56,18 @@ export default function SellersPage() {
         }
       })
       .finally(() => setLoading(false));
+  }, []);
+
+  /* ✅ FETCH AGENTS */
+  useEffect(() => {
+    const raw = localStorage.getItem("loggedUser");
+    if (!raw) return;
+
+    const user = JSON.parse(raw);
+
+    fetch(`/api/users/agents?tenantId=${user.tenantId}`)
+      .then((res) => res.json())
+      .then((data) => setAgents(data));
   }, []);
 
   /* ================= SEARCH ================= */
@@ -69,6 +94,35 @@ export default function SellersPage() {
     setDisplaySellers((p) => p.filter((s) => s.id !== id));
   }
 
+  /* ✅ ASSIGN SELLER */
+  async function handleAssignSeller() {
+    if (!assignSellerId || !selectedAgent) return;
+
+    const raw = localStorage.getItem("loggedUser");
+    if (!raw) return;
+    const user = JSON.parse(raw);
+
+     console.log("ASSIGN PAYLOAD", {
+    tenantId: user.tenantId,
+    sellerId: assignSellerId,
+    agentId: selectedAgent,
+  });
+
+  await fetch("/api/sellers/assign-agent", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      tenantId: user.tenantId,
+      sellerId: assignSellerId,
+      agentId: selectedAgent,
+    }),
+  });
+
+    setAssignSellerId(null);
+    setSelectedAgent(null);
+    location.reload();
+  }
+
   if (loading) return <p className="p-6">Loading...</p>;
 
   return (
@@ -87,7 +141,7 @@ export default function SellersPage() {
         </PrimaryButton>
       </div>
 
-      {/* SEARCH BAR (SAME AS BUYER) */}
+      {/* SEARCH BAR */}
       <div className="mb-4">
         <div className="relative max-w-xl">
           <input
@@ -95,45 +149,23 @@ export default function SellersPage() {
             placeholder="Search sellers by name or property type"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="
-              w-full
-              h-11
-              px-5
-              text-sm
-              rounded-full
-              border
-              border-gray-300
-              bg-white
-              focus:outline-none
-              focus:ring-2
-              focus:ring-[#5b5ce2]
-              focus:border-[#5b5ce2]
-              shadow-sm
-            "
+            className="w-full h-11 px-5 text-sm rounded-full border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#5b5ce2]"
           />
         </div>
       </div>
 
-      {/* TABLE (EXACT BUYER STYLE) */}
+      {/* TABLE */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-gray-400 border-b">
-              <th className="px-6 py-3 text-left font-medium">Name</th>
-              <th className="px-6 py-3 text-left font-medium">
-                Property Type
-              </th>
-              <th className="px-6 py-3 text-left font-medium">Price</th>
-              <th className="px-6 py-3 text-left font-medium">Beds</th>
-              <th className="px-6 py-3 text-left font-medium">
-                Brokerage
-              </th>
-              <th className="px-6 py-3 text-left font-medium">
-                Remarks
-              </th>
-              <th className="px-6 py-3 text-right font-medium">
-                Actions
-              </th>
+              <th className="px-6 py-3 text-left">Name</th>
+              <th className="px-6 py-3 text-left">Property Type</th>
+              <th className="px-6 py-3 text-left">Price</th>
+              <th className="px-6 py-3 text-left">Beds</th>
+              <th className="px-6 py-3 text-left">Brokerage</th>
+              <th className="px-6 py-3 text-left">Remarks</th>
+              <th className="px-6 py-3 text-right">Actions</th>
             </tr>
           </thead>
 
@@ -142,44 +174,30 @@ export default function SellersPage() {
               <tr
                 key={seller.id}
                 className="border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer"
-                onClick={() =>
-                  router.push(`/sellers/${seller.id}`)
-                }
+                onClick={() => router.push(`/sellers/${seller.id}`)}
               >
-                {/* NAME */}
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-semibold">
-                      {seller.owner_name[0].toUpperCase()}
+                      {seller.owner_name?.[0]?.toUpperCase() || "?"}
+
                     </div>
                     <div>
                       <div className="font-medium text-gray-900">
                         {seller.owner_name}
                       </div>
-                      <div className="text-xs text-gray-400">
-                        Seller
-                      </div>
+                      <div className="text-xs text-gray-400">Seller</div>
                     </div>
                   </div>
                 </td>
 
-                <td className="px-6 py-4 text-gray-600">
-                  {seller.property_type}
-                </td>
-
-                <td className="px-6 py-4 text-gray-700">
-                  ₹{seller.price}
-                </td>
-
-                <td className="px-6 py-4 text-gray-700">
-                  {seller.bedrooms} BHK
-                </td>
-
-                <td className="px-6 py-4 text-gray-700">
+                <td className="px-6 py-4">{seller.property_type}</td>
+                <td className="px-6 py-4">₹{seller.price}</td>
+                <td className="px-6 py-4">{seller.bedrooms} BHK</td>
+                <td className="px-6 py-4">
                   {seller.brokerage_amount || "—"}
                 </td>
-
-                <td className="px-6 py-4 text-gray-500">
+                <td className="px-6 py-4">
                   {seller.remarks || "—"}
                 </td>
 
@@ -189,9 +207,16 @@ export default function SellersPage() {
                 >
                   <div className="flex justify-end gap-2">
                     <SecondaryButton
-                      onClick={() =>
-                        setShareSellerId(seller.id)
-                      }
+                      onClick={() => {
+                        setAssignSellerId(seller.id);
+                        setSelectedAgent(seller.agent_id || null);
+                      }}
+                    >
+                      {seller.agent_id ? "Reassign" : "Assign"}
+                    </SecondaryButton>
+
+                    <SecondaryButton
+                      onClick={() => setShareSellerId(seller.id)}
                     >
                       Share
                     </SecondaryButton>
@@ -208,6 +233,43 @@ export default function SellersPage() {
           </tbody>
         </table>
       </div>
+
+      {/* ASSIGN MODAL */}
+      {assignSellerId && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-[400px]">
+            <h2 className="text-lg font-semibold mb-4">
+              Assign Agent
+            </h2>
+
+            <select
+              className="w-full border rounded-lg px-3 py-2 mb-4"
+              value={selectedAgent || ""}
+              onChange={(e) =>
+                setSelectedAgent(Number(e.target.value))
+              }
+            >
+              <option value="">Select Agent</option>
+              {agents.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+
+            <div className="flex justify-end gap-3">
+              <SecondaryButton
+                onClick={() => setAssignSellerId(null)}
+              >
+                Cancel
+              </SecondaryButton>
+              <PrimaryButton onClick={handleAssignSeller}>
+                Assign
+              </PrimaryButton>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* SHARE MODAL */}
       {shareSellerId && (

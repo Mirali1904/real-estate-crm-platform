@@ -3,7 +3,11 @@ import { NextResponse } from "next/server";
 import { conn } from "@/lib/db";
 
 async function resolveParams(ctx: any) {
-  try { return await ctx.params; } catch { return ctx.params; }
+  try {
+    return await ctx.params;
+  } catch {
+    return ctx.params;
+  }
 }
 
 /* =========================
@@ -21,15 +25,15 @@ export async function GET(_req: Request, ctx: any) {
   }
 
   try {
-    // ⚠️ Mapping preserved + brokerage & remarks added
     const [rows]: any = await conn.execute(
       `
       SELECT
         id,
         tenant_id,
 
-        name AS property_address,
-        name AS owner_name,
+        -- ✅ FIXED: real seller name
+       TRIM(owner_name) AS owner_name,
+
         phone AS owner_contact,
         email AS owner_email,
 
@@ -40,7 +44,6 @@ export async function GET(_req: Request, ctx: any) {
         price,
         bedrooms,
 
-        -- 🔹 NEW (same as buyer)
         brokerage_amount,
         remarks,
 
@@ -48,7 +51,6 @@ export async function GET(_req: Request, ctx: any) {
         created_at
       FROM sellers
       WHERE tenant_id = ?
-      
       ORDER BY created_at DESC
       `,
       [tenantId]
@@ -65,7 +67,7 @@ export async function GET(_req: Request, ctx: any) {
 }
 
 /* =========================
-   CREATE SELLER (COMPAT)
+   CREATE SELLER
 ========================= */
 export async function POST(req: Request, ctx: any) {
   const params = await resolveParams(ctx);
@@ -88,8 +90,14 @@ export async function POST(req: Request, ctx: any) {
     );
   }
 
-  // Accept multiple names for compatibility
-  const propertyAddress = body.property_address ?? body.name ?? null;
+  /* ✅ FIXED: seller name resolution */
+  const ownerName =
+    body.owner_name ??
+    body.ownerName ??
+    body.property_address ??
+    body.name ??
+    null;
+
   const ownerContact = body.owner_contact ?? body.phone ?? null;
   const email = body.email ?? null;
   const propertyType = body.property_type ?? body.propertyType ?? null;
@@ -99,13 +107,12 @@ export async function POST(req: Request, ctx: any) {
   const bedrooms = body.bedrooms ?? null;
   const location = body.location ?? null;
 
-  // 🔹 NEW
   const brokerage_amount = body.brokerage_amount ?? null;
   const remarks = body.remarks ?? null;
 
-  if (!propertyAddress) {
+  if (!ownerName) {
     return NextResponse.json(
-      { success: false, error: "Missing property_address or name" },
+      { success: false, error: "Missing seller name" },
       { status: 400 }
     );
   }
@@ -114,7 +121,7 @@ export async function POST(req: Request, ctx: any) {
     const q = `
       INSERT INTO sellers (
         tenant_id,
-        name,
+        owner_name,
         phone,
         email,
         property_type,
@@ -123,10 +130,8 @@ export async function POST(req: Request, ctx: any) {
         lng,
         price,
         bedrooms,
-
         brokerage_amount,
         remarks,
-
         status,
         created_at
       )
@@ -135,7 +140,7 @@ export async function POST(req: Request, ctx: any) {
 
     const [result]: any = await conn.execute(q, [
       tenantId,
-      propertyAddress,
+      ownerName,
       ownerContact,
       email,
       propertyType,
@@ -144,13 +149,14 @@ export async function POST(req: Request, ctx: any) {
       lng,
       price,
       bedrooms,
-
       brokerage_amount,
       remarks,
     ]);
 
-    const insertId = result?.insertId ?? null;
-    return NextResponse.json({ success: true, id: insertId }, { status: 201 });
+    return NextResponse.json(
+      { success: true, id: result?.insertId ?? null },
+      { status: 201 }
+    );
   } catch (err: any) {
     console.error("POST /api/sellers/tenant/:", err);
     return NextResponse.json(
