@@ -58,7 +58,7 @@ export default function AppointmentsPage() {
   if (!user) return null;
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen space-y-6">
+   <div className="px-6 pt-3 pb-4 bg-gray-50 min-h-screen space-y-3">
 
       {/* BACK */}
       <BackButton />

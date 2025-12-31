@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AppointmentService } from "@/server/service/appointment.service";
+import { conn } from "@/lib/db"; // ✅ ADDED
 
 const service = new AppointmentService();
 
@@ -47,6 +48,17 @@ export async function DELETE(
     );
   }
 
+  /* ✅ STEP 1: DELETE RELATED TASKS */
+  await conn.execute(
+    `
+    DELETE FROM tasks
+    WHERE related_type = 'appointment'
+      AND related_id = ?
+    `,
+    [appointmentId]
+  );
+
+  /* DELETE APPOINTMENT */
   const deleted = await service.deleteAppointment(appointmentId);
 
   if (!deleted) {

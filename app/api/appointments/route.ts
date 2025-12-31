@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { AppointmentService } from "@/server/service/appointment.service";
+import { conn } from "@/lib/db";
 
 const service = new AppointmentService();
 
@@ -47,7 +48,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const id = await service.createAppointment({
+    /* ================= CREATE APPOINTMENT ================= */
+    const appointmentId = await service.createAppointment({
       tenantId,
       userId,
       customerId,
@@ -56,7 +58,34 @@ export async function POST(req: Request) {
       purpose,
     });
 
-    return NextResponse.json({ success: true, id });
+    /* ================= GET CUSTOMER NAME ================= */
+   const [rows]: any = await conn.execute(
+  `SELECT name FROM buyers WHERE id = ?`,
+  [customerId]
+);
+
+const customerName = rows?.[0]?.name || "Customer";
+
+
+    /* ================= AUTO CREATE TASK ================= */
+    await conn.execute(
+      `
+      INSERT INTO tasks
+        (tenant_id, title, related_type, related_id, due_date, priority, status)
+      VALUES
+        (?, ?, 'appointment', ?, ?, 'medium', 'pending')
+      `,
+      [
+        tenantId,
+        `Follow up – ${customerName}${
+          purpose ? ` (${purpose})` : ""
+        }`,
+        appointmentId,
+        `${date} ${time}`,
+      ]
+    );
+
+    return NextResponse.json({ success: true, id: appointmentId });
   } catch (error) {
     console.error("POST appointment error:", error);
     return NextResponse.json({ error: "Failed" }, { status: 500 });
