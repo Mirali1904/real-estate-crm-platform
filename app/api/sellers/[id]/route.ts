@@ -118,6 +118,26 @@ export async function PUT(req: Request, context: any) {
   try {
     await conn.execute(sql, paramsArr);
 
+    /* ===== SELLER REMARK ACTIVITY LOG ===== */
+if (keys.includes("remarks")) {
+  await conn.execute(
+    `
+    INSERT INTO agent_activity_logs
+      (tenant_id, agent_id, action_type, entity_type, entity_id, description)
+    VALUES (?, ?, ?, ?, ?, ?)
+    `,
+    [
+      body.tenantId,              // tenant id
+      body.updatedBy || null,     // agent id
+      "SELLER_REMARK_UPDATED",
+      "seller",
+      id,
+      "Seller remarks updated",
+    ]
+  );
+}
+
+
     const [rows]: any = await conn.execute(
       "SELECT * FROM sellers WHERE id = ?",
       [id]

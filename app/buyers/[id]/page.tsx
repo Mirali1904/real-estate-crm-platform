@@ -11,6 +11,22 @@ export default function BuyerDetailPage() {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusMap, setStatusMap] = useState<Record<number, string>>({});
+  const [activityLogs, setActivityLogs] = useState<any[]>([]);
+
+  const [remarks, setRemarks] = useState("");
+const [savingRemarks, setSavingRemarks] = useState(false);
+
+async function fetchActivityLogs(tenantId: number) {
+  const res = await fetch(
+    `/api/activity-logs?tenantId=${tenantId}&entityType=buyer&entityId=${buyerId}`
+  );
+
+  if (res.ok) {
+    setActivityLogs(await res.json());
+  }
+}
+
+
 
   const STATUS_OPTIONS = [
     "New",
@@ -35,11 +51,24 @@ export default function BuyerDetailPage() {
         const buyerRes = await fetch(`/api/buyers/${buyerId}`, {
           headers: { "x-tenant-id": String(tenantId) },
         });
-        if (buyerRes.ok) setBuyer(await buyerRes.json());
+       if (buyerRes.ok) {
+  const data = await buyerRes.json();
+  setBuyer(data);
+  setRemarks(data.remarks || "");
+}
+
 
         const matchRes = await fetch(`/api/buyers/${buyerId}/matches`, {
           headers: { "x-tenant-id": String(tenantId) },
         });
+
+        const activityRes = await fetch(
+  `/api/activity-logs?tenantId=${tenantId}&entityType=buyer&entityId=${buyerId}`
+);
+
+if (activityRes.ok) {
+  setActivityLogs(await activityRes.json());
+}
 
         if (matchRes.ok) {
           const sellers = (await matchRes.json()).matches || [];
@@ -115,6 +144,88 @@ export default function BuyerDetailPage() {
         <Info label="Bedrooms" value={buyer.bedrooms} />
         <Info label="Radius" value={`${buyer.radius_km} km`} />
       </div>
+
+      {/* ===== BUYER REMARKS ===== */}
+<div className="bg-white rounded-xl shadow-sm p-6">
+  <h2 className="text-sm font-semibold mb-2 text-gray-700">
+    Internal Remarks
+  </h2>
+
+  <textarea
+    value={remarks}
+    onChange={(e) => setRemarks(e.target.value)}
+    rows={3}
+    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+    placeholder="Add internal remarks about this buyer..."
+  />
+
+  <div className="flex justify-end mt-3">
+    <button
+
+     type="button"
+      disabled={savingRemarks}
+      onClick={async () => {
+        setSavingRemarks(true);
+
+        const raw = localStorage.getItem("loggedUser");
+        if (!raw) return;
+        const user = JSON.parse(raw);
+
+        await fetch(`/api/buyers/remarks`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            buyerId,
+            tenantId: user.tenant_id ?? user.tenantId,
+            remarks,
+            updatedBy: user.id,
+          }),
+        });
+
+        setBuyer((prev: any) => ({
+  ...prev,
+  remarks,
+}));
+
+await fetchActivityLogs(user.tenant_id ?? user.tenantId);
+
+
+        setSavingRemarks(false);
+
+   
+      }}
+      className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+    >
+      Save Remarks
+    </button>
+  </div>
+</div>
+
+{/* ===== ACTIVITY LOGS ===== */}
+<div className="bg-white rounded-xl shadow-sm p-6">
+  <h2 className="text-sm font-semibold mb-4 text-gray-700">
+    Activity Timeline
+  </h2>
+
+  {activityLogs.length === 0 ? (
+    <p className="text-sm text-gray-400">No activity yet</p>
+  ) : (
+    <ul className="space-y-3">
+      {activityLogs.map((log, idx) => (
+        <li key={idx} className="text-sm">
+          <div className="text-gray-700">{log.description}</div>
+          <div className="text-xs text-gray-400">
+            {new Date(log.created_at).toLocaleString()}
+          </div>
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
+
+
 
       {/* ===== MATCHED PROPERTIES ===== */}
       <div>

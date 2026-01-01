@@ -9,6 +9,12 @@ export default function SellerDetailPage() {
 
   const [seller, setSeller] = useState<any>(null);
   const [buyers, setBuyers] = useState<any[]>([]);
+  const [remarks, setRemarks] = useState("");
+const [savingRemarks, setSavingRemarks] = useState(false);
+
+const [activityLogs, setActivityLogs] = useState<any[]>([]);
+
+
   const [tenantId, setTenantId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -18,6 +24,17 @@ export default function SellerDetailPage() {
     "Site Visit Done",
     "Dropped",
   ];
+
+  async function fetchActivityLogs(tenantId: number) {
+  const res = await fetch(
+    `/api/activity-logs?tenantId=${tenantId}&entityType=seller&entityId=${sellerId}`
+  );
+
+  if (res.ok) {
+    setActivityLogs(await res.json());
+  }
+}
+
 
   /* LOAD TENANT */
   useEffect(() => {
@@ -29,33 +46,42 @@ export default function SellerDetailPage() {
 
   /* LOAD SELLER + BUYERS */
   useEffect(() => {
-    if (!sellerId || !tenantId) return;
+  if (!sellerId || !tenantId) return;
 
-    async function loadData() {
-      try {
-        const sellerRes = await fetch(`/api/sellers/${sellerId}`);
-        if (sellerRes.ok) {
-          setSeller(await sellerRes.json());
-        }
-
-        const buyersRes = await fetch(
-          `/api/sellers/${sellerId}/buyer-status`,
-          {
-            headers: { "x-tenant-id": String(tenantId) },
-          }
-        );
-
-        if (buyersRes.ok) {
-          const data = await buyersRes.json();
-          setBuyers(data.buyers || []);
-        }
-      } finally {
-        setLoading(false);
+  async function loadData() {
+    try {
+      const sellerRes = await fetch(`/api/sellers/${sellerId}`);
+      if (sellerRes.ok) {
+        const data = await sellerRes.json();
+        setSeller(data);
+        setRemarks(data.remarks || "");
       }
-    }
 
-    loadData();
-  }, [sellerId, tenantId]);
+      const buyersRes = await fetch(
+        `/api/sellers/${sellerId}/buyer-status`,
+        {
+          headers: { "x-tenant-id": String(tenantId) },
+        }
+      );
+
+      if (buyersRes.ok) {
+        const data = await buyersRes.json();
+        setBuyers(data.buyers || []);
+      }
+
+      // ✅ ADD THIS LINE
+    if (tenantId) {
+  await fetchActivityLogs(tenantId);
+}
+
+
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  loadData();
+}, [sellerId, tenantId]);
 
   function statusBadge(status: string) {
     switch (status) {
@@ -117,6 +143,96 @@ export default function SellerDetailPage() {
         <Info label="Contact" value={seller.owner_contact || "-"} />
         <Info label="Status" value={seller.status} />
       </div>
+
+      
+
+
+      {/* ===== SELLER REMARKS ===== */}
+<div className="bg-white rounded-xl shadow-sm p-6">
+  <h2 className="text-sm font-semibold mb-2 text-gray-700">
+    Internal Remarks
+  </h2>
+
+  <textarea
+    value={remarks}
+    onChange={(e) => setRemarks(e.target.value)}
+    rows={3}
+    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+    placeholder="Add internal remarks about this seller..."
+  />
+
+  <div className="flex justify-end mt-3">
+    <button
+  disabled={savingRemarks}
+  onClick={async () => {
+    setSavingRemarks(true);
+
+    const raw = localStorage.getItem("loggedUser");
+    if (!raw) return;
+    const user = JSON.parse(raw);
+
+    const res = await fetch(`/api/sellers/${sellerId}`, {
+  method: "PUT",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    remarks,
+    tenantId,
+    updatedBy: user.id,
+  }),
+});
+
+
+    if (res.ok) {
+      const data = await res.json();
+
+      // ✅ IMPORTANT: update seller state
+      setSeller((prev: any) => ({
+        ...prev,
+        remarks,
+      }));
+
+      if (tenantId) {
+  await fetchActivityLogs(tenantId);
+}
+
+    }
+
+    setSavingRemarks(false);
+  }}
+  className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+>
+  Save Remarks
+</button>
+
+
+  </div>
+</div>
+
+{/* ===== ACTIVITY TIMELINE ===== */}
+<div className="bg-white rounded-xl shadow-sm p-6">
+  <h2 className="text-sm font-semibold mb-4 text-gray-700">
+    Activity Timeline
+  </h2>
+
+  {activityLogs.length === 0 ? (
+    <p className="text-sm text-gray-400">No activity yet</p>
+  ) : (
+    <ul className="space-y-3">
+      {activityLogs.map((log, idx) => (
+        <li key={idx} className="text-sm">
+          <div className="text-gray-700">{log.description}</div>
+          <div className="text-xs text-gray-400">
+            {new Date(log.created_at).toLocaleString()}
+          </div>
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
+
+
 
       {/* ===== BUYERS TABLE (BUYER MATCH STYLE) ===== */}
       <div>

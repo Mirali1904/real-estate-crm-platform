@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { conn } from "@/lib/db";
-
+import { logAgentActivity } from "@/server/service/activityService";
 export async function PUT(req: NextRequest) {
   try {
     const { tenantId, sellerId, agentId } = await req.json();
@@ -17,6 +17,22 @@ export async function PUT(req: NextRequest) {
       `,
       [agentId, sellerId, tenantId]
     );
+
+    await conn.execute(
+  `
+  INSERT INTO agent_activity_logs
+    (tenant_id, agent_id, action_type, entity_type, entity_id, description)
+  VALUES (?, ?, ?, ?, ?, ?)
+  `,
+  [
+    tenantId,
+    agentId,
+    "SELLER_ASSIGNED",
+    "seller",
+    sellerId,
+    `Seller assigned to agent ${agentId}`,
+  ]
+);
 
     return NextResponse.json({ success: true });
   } catch (e) {

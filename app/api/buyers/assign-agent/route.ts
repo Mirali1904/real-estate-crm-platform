@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { conn } from "@/lib/db";
+import { logAgentActivity } from "@/server/service/activityService";
+
 
 /**
  * BODY EXPECTED
@@ -59,6 +61,19 @@ export async function PUT(req: Request) {
       `,
       [agentId, buyerId, tenantId]
     );
+
+    /* ✅ ACTIVITY LOG: BUYER ASSIGNED */
+await logAgentActivity({
+  tenantId: tenantId,
+  agentId: agentId,
+  actionType: previousAgentId ? "BUYER_REASSIGNED" : "BUYER_ASSIGNED",
+  entityType: "buyer",
+  entityId: buyerId,
+  description: previousAgentId
+    ? `Buyer reassigned from agent ${previousAgentId} to ${agentId}`
+    : `Buyer assigned to agent ${agentId}`,
+});
+
 
     /* 🔹 3. If reassigned, save transfer history */
     if (previousAgentId && previousAgentId !== agentId) {

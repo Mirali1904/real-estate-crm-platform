@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUserByEmail, verifyPassword } from "@/server/service/authService";
+import { logAgentActivity } from "@/server/service/activityService";
+
 
 export async function POST(req: Request) {
   try {
@@ -30,6 +32,15 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    if (user.role === "AGENT") {
+  await logAgentActivity({
+    tenantId: user.tenant_id,
+    agentId: user.id,
+    actionType: "LOGIN",
+    description: "Agent logged in",
+  });
+}
 
     return NextResponse.json(
       {
