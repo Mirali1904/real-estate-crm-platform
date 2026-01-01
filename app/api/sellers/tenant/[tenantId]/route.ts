@@ -28,30 +28,37 @@ export async function GET(_req: Request, ctx: any) {
     const [rows]: any = await conn.execute(
       `
       SELECT
-        id,
-        tenant_id,
+        s.id,
+        s.tenant_id,
 
-        -- ✅ FIXED: real seller name
-       TRIM(owner_name) AS owner_name,
+        -- Seller info
+        TRIM(s.owner_name) AS owner_name,
+        s.phone AS owner_contact,
+        s.email AS owner_email,
 
-        phone AS owner_contact,
-        email AS owner_email,
+        s.property_type,
+        s.location,
+        s.lat,
+        s.lng,
+        s.price,
+        s.bedrooms,
 
-        property_type,
-        location,
-        lat,
-        lng,
-        price,
-        bedrooms,
+        s.brokerage_amount,
+        s.remarks,
+        s.status,
+        s.created_at,
 
-        brokerage_amount,
-        remarks,
+        -- ✅ ASSIGNED AGENT (NEW)
+        u.id   AS assigned_agent_id,
+        u.name AS assigned_agent_name
 
-        status,
-        created_at
-      FROM sellers
-      WHERE tenant_id = ?
-      ORDER BY created_at DESC
+      FROM sellers s
+      LEFT JOIN users u
+        ON u.id = s.agent_id
+       AND u.tenant_id = s.tenant_id
+
+      WHERE s.tenant_id = ?
+      ORDER BY s.created_at DESC
       `,
       [tenantId]
     );
@@ -90,7 +97,6 @@ export async function POST(req: Request, ctx: any) {
     );
   }
 
-  /* ✅ FIXED: seller name resolution */
   const ownerName =
     body.owner_name ??
     body.ownerName ??

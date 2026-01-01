@@ -6,7 +6,6 @@ export async function GET(
   { params }: { params: Promise<{ tenantId: string }> }
 ) {
   try {
-    // ✅ MUST await params
     const { tenantId } = await params;
     const tenantIdNum = Number(tenantId);
 
@@ -20,27 +19,35 @@ export async function GET(
     const [rows]: any = await conn.execute(
       `
       SELECT
-        id,
-        tenant_id,
-        name,
-        phone,
-        email,
-        requirement,
-        budget_min,
-        budget_max,
-        location,
-        bedrooms,
+        b.id,
+        b.tenant_id,
+        b.name,
+        b.phone,
+        b.email,
+        b.requirement,
+        b.budget_min,
+        b.budget_max,
+        b.location,
+        b.bedrooms,
 
-        -- 🔹 NEW FIELDS (IMPORTANT)
-        brokerage_amount,
-        remarks,
+        b.brokerage_amount,
+        b.remarks,
+        b.status,
+        b.created_at,
 
-        status,
-        created_at
-      FROM buyers
-      WHERE tenant_id = ?
-        AND is_deleted = 0
-      ORDER BY created_at DESC
+        -- ✅ Assigned Agent
+        u.id   AS assigned_agent_id,
+        u.name AS assigned_agent_name
+
+      FROM buyers b
+      LEFT JOIN users u
+        ON u.id = b.agent_id
+       AND u.tenant_id = b.tenant_id
+
+      WHERE b.tenant_id = ?
+        AND b.is_deleted = 0
+
+      ORDER BY b.created_at DESC
       `,
       [tenantIdNum]
     );

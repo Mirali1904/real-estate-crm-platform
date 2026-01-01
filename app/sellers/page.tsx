@@ -16,9 +16,9 @@ type Seller = {
   brokerage_amount?: string | null;
   remarks?: string | null;
 
-  /* ✅ ADDED */
-  agent_id?: number | null;
-  agent_name?: string | null;
+  /* ✅ BACKEND SYNC */
+  assigned_agent_id?: number | null;
+  assigned_agent_name?: string | null;
 };
 
 export default function SellersPage() {
@@ -30,12 +30,11 @@ export default function SellersPage() {
   const [search, setSearch] = useState("");
   const [shareSellerId, setShareSellerId] = useState<number | null>(null);
 
-  /* ✅ ASSIGN STATES */
   const [agents, setAgents] = useState<any[]>([]);
   const [assignSellerId, setAssignSellerId] = useState<number | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<number | null>(null);
 
-  /* ================= FETCH ================= */
+  /* ================= FETCH SELLERS ================= */
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
     if (!raw) return;
@@ -43,10 +42,7 @@ export default function SellersPage() {
     const user = JSON.parse(raw);
     const tenantId = user.tenant_id || user.tenantId;
 
-   fetch(
-  `/api/sellers/list?tenantId=${tenantId}&userId=${user.id}`
-)
-
+   fetch(`/api/sellers/list?tenantId=${tenantId}&userId=${user.id}`)
 
       .then((res) => res.json())
       .then((data) => {
@@ -58,13 +54,12 @@ export default function SellersPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  /* ✅ FETCH AGENTS */
+  /* ================= FETCH AGENTS ================= */
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
     if (!raw) return;
 
     const user = JSON.parse(raw);
-
     fetch(`/api/users/agents?tenantId=${user.tenantId}`)
       .then((res) => res.json())
       .then((data) => setAgents(data));
@@ -94,7 +89,6 @@ export default function SellersPage() {
     setDisplaySellers((p) => p.filter((s) => s.id !== id));
   }
 
-  /* ✅ ASSIGN SELLER */
   async function handleAssignSeller() {
     if (!assignSellerId || !selectedAgent) return;
 
@@ -102,21 +96,15 @@ export default function SellersPage() {
     if (!raw) return;
     const user = JSON.parse(raw);
 
-     console.log("ASSIGN PAYLOAD", {
-    tenantId: user.tenantId,
-    sellerId: assignSellerId,
-    agentId: selectedAgent,
-  });
-
-  await fetch("/api/sellers/assign-agent", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      tenantId: user.tenantId,
-      sellerId: assignSellerId,
-      agentId: selectedAgent,
-    }),
-  });
+    await fetch("/api/sellers/assign-agent", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tenantId: user.tenantId,
+        sellerId: assignSellerId,
+        agentId: selectedAgent,
+      }),
+    });
 
     setAssignSellerId(null);
     setSelectedAgent(null);
@@ -141,7 +129,7 @@ export default function SellersPage() {
         </PrimaryButton>
       </div>
 
-      {/* SEARCH BAR */}
+      {/* SEARCH */}
       <div className="mb-4">
         <div className="relative max-w-xl">
           <input
@@ -163,6 +151,7 @@ export default function SellersPage() {
               <th className="px-6 py-3 text-left">Property Type</th>
               <th className="px-6 py-3 text-left">Price</th>
               <th className="px-6 py-3 text-left">Beds</th>
+              <th className="px-6 py-3 text-left">Assigned Agent</th>
               <th className="px-6 py-3 text-left">Brokerage</th>
               <th className="px-6 py-3 text-left">Remarks</th>
               <th className="px-6 py-3 text-right">Actions</th>
@@ -179,7 +168,7 @@ export default function SellersPage() {
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-semibold">
-                      {seller.owner_name?.[0]?.toUpperCase() || "?"}
+                      {seller.owner_name?.trim()?.[0]?.toUpperCase() || "?"}
 
                     </div>
                     <div>
@@ -194,6 +183,18 @@ export default function SellersPage() {
                 <td className="px-6 py-4">{seller.property_type}</td>
                 <td className="px-6 py-4">₹{seller.price}</td>
                 <td className="px-6 py-4">{seller.bedrooms} BHK</td>
+
+                {/* ✅ ASSIGNED AGENT */}
+                <td className="px-6 py-4">
+                  {seller.assigned_agent_name ? (
+                    <span className="font-medium text-indigo-600">
+                      {seller.assigned_agent_name}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">Unassigned</span>
+                  )}
+                </td>
+
                 <td className="px-6 py-4">
                   {seller.brokerage_amount || "—"}
                 </td>
@@ -209,10 +210,12 @@ export default function SellersPage() {
                     <SecondaryButton
                       onClick={() => {
                         setAssignSellerId(seller.id);
-                        setSelectedAgent(seller.agent_id || null);
+                        setSelectedAgent(
+                          seller.assigned_agent_id || null
+                        );
                       }}
                     >
-                      {seller.agent_id ? "Reassign" : "Assign"}
+                      {seller.assigned_agent_id ? "Reassign" : "Assign"}
                     </SecondaryButton>
 
                     <SecondaryButton
@@ -271,7 +274,6 @@ export default function SellersPage() {
         </div>
       )}
 
-      {/* SHARE MODAL */}
       {shareSellerId && (
         <ShareToGroupModal
           open

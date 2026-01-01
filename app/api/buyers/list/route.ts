@@ -31,10 +31,19 @@ export async function GET(req: Request) {
     let query = `
       SELECT 
         b.*,
-        u.name AS agent_name
+
+        -- ✅ MATCH FRONTEND EXPECTATION
+        u.id   AS assigned_agent_id,
+        u.name AS assigned_agent_name
+
       FROM buyers b
-      LEFT JOIN users u ON u.id = b.agent_id
+      LEFT JOIN users u 
+        ON u.id = b.agent_id
+       AND u.tenant_id = b.tenant_id
+
       WHERE b.tenant_id = ?
+        AND b.is_deleted = 0
+
       ORDER BY b.created_at DESC
     `;
 
@@ -45,11 +54,19 @@ export async function GET(req: Request) {
       query = `
         SELECT 
           b.*,
-          u.name AS agent_name
+
+          u.id   AS assigned_agent_id,
+          u.name AS assigned_agent_name
+
         FROM buyers b
-        LEFT JOIN users u ON u.id = b.agent_id
+        LEFT JOIN users u 
+          ON u.id = b.agent_id
+         AND u.tenant_id = b.tenant_id
+
         WHERE b.tenant_id = ?
           AND b.agent_id = ?
+          AND b.is_deleted = 0
+
         ORDER BY b.created_at DESC
       `;
       params = [tenantId, userId];

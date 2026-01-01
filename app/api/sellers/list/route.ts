@@ -29,12 +29,19 @@ export async function GET(req: Request) {
     const role = userRows[0].role;
 
     let query = `
-      SELECT
-        s.*,
-         COALESCE(s.owner_name, s.name) AS owner_name,
-        u.name AS agent_name
-      FROM sellers s
-      LEFT JOIN users u ON u.id = s.agent_id
+     SELECT
+  s.*,
+  COALESCE(NULLIF(TRIM(s.owner_name), ''), s.name) AS owner_name,
+
+  -- ✅ REQUIRED FOR FRONTEND
+  u.id   AS assigned_agent_id,
+  u.name AS assigned_agent_name
+
+FROM sellers s
+LEFT JOIN users u 
+  ON u.id = s.agent_id
+ AND u.tenant_id = s.tenant_id
+
       WHERE s.tenant_id = ?
       ORDER BY s.created_at DESC
     `;
@@ -44,14 +51,18 @@ export async function GET(req: Request) {
     /* 🔐 AGENT → ONLY OWN SELLERS */
     if (role === "AGENT") {
       query = `
-        SELECT
-          s.*,
-            COALESCE(s.owner_name, s.name) AS owner_name,
-          u.name AS agent_name
-        FROM sellers s
-        LEFT JOIN users u ON u.id = s.agent_id
-        WHERE s.tenant_id = ?
-          AND s.agent_id = ?
+       SELECT
+  s.*,
+  COALESCE(NULLIF(TRIM(s.owner_name), ''), s.name) AS owner_name,
+  u.id   AS assigned_agent_id,
+  u.name AS assigned_agent_name
+FROM sellers s
+LEFT JOIN users u 
+  ON u.id = s.agent_id
+ AND u.tenant_id = s.tenant_id
+WHERE s.tenant_id = ?
+  AND s.agent_id = ?
+
         ORDER BY s.created_at DESC
       `;
       params = [tenantId, userId];

@@ -16,8 +16,9 @@ type Buyer = {
   budget_max: number;
   status: string;
 
-  agent_id?: number;
-  agent_name?: string;
+  // ✅ NEW (backend se aa raha hai)
+  assigned_agent_id?: number | null;
+  assigned_agent_name?: string | null;
 
   brokerage_amount?: string;
   remarks?: string;
@@ -45,13 +46,9 @@ export default function BuyersPage() {
 
     const user = JSON.parse(raw);
     const tenantId = user.tenant_id || user.tenantId;
-
     const role = user.role || user.user_role || "ADMIN";
 
-fetch(
-  `/api/buyers/list?tenantId=${tenantId}&userId=${user.id}&role=${role}`
-)
-
+    fetch(`/api/buyers/list?tenantId=${tenantId}&userId=${user.id}&role=${role}`)
       .then((res) => res.json())
       .then((data) => {
         setBuyers(data);
@@ -177,6 +174,7 @@ fetch(
               <th className="px-6 py-3 text-left">Email</th>
               <th className="px-6 py-3 text-left">Phone</th>
               <th className="px-6 py-3 text-left">Budget</th>
+              <th className="px-6 py-3 text-left">Assigned Agent</th>
               <th className="px-6 py-3 text-left">Brokerage</th>
               <th className="px-6 py-3 text-left">Remarks</th>
               <th className="px-6 py-3 text-left">Status</th>
@@ -210,6 +208,18 @@ fetch(
                 <td className="px-6 py-4 text-gray-700">
                   ₹{buyer.budget_min} – ₹{buyer.budget_max}
                 </td>
+
+                {/* ✅ ASSIGNED AGENT */}
+                <td className="px-6 py-4 text-gray-700">
+                  {buyer.assigned_agent_name ? (
+                    <span className="font-medium text-indigo-600">
+                      {buyer.assigned_agent_name}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">Unassigned</span>
+                  )}
+                </td>
+
                 <td className="px-6 py-4 text-gray-700">
                   {buyer.brokerage_amount || "—"}
                 </td>
@@ -230,10 +240,10 @@ fetch(
                     <SecondaryButton
                       onClick={() => {
                         setAssignBuyerId(buyer.id);
-                        setSelectedAgent(buyer.agent_id || null);
+                        setSelectedAgent(buyer.assigned_agent_id || null);
                       }}
                     >
-                      {buyer.agent_name ? "Reassign" : "Assign"}
+                      {buyer.assigned_agent_name ? "Reassign" : "Assign"}
                     </SecondaryButton>
 
                     <SecondaryButton
