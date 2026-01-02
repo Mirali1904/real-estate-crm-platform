@@ -12,6 +12,10 @@ export default function BuyerDetailPage() {
   const [loading, setLoading] = useState(true);
   const [statusMap, setStatusMap] = useState<Record<number, string>>({});
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
+  const [sellerPhotos, setSellerPhotos] = useState<Record<number, any[]>>({});
+  const [openImages, setOpenImages] = useState<Record<number, boolean>>({});
+
+
 
   const [remarks, setRemarks] = useState("");
 const [savingRemarks, setSavingRemarks] = useState(false);
@@ -36,6 +40,24 @@ async function fetchActivityLogs(tenantId: number) {
     "Deal Closed",
     "Discarded",
   ];
+
+  async function fetchSellerPhotos(sellerId: number) {
+  if (sellerPhotos[sellerId]) return;
+
+  const res = await fetch(`/api/sellers/${sellerId}/photos`);
+  if (!res.ok) return;
+
+  const data = await res.json(); // 👈 data = ARRAY
+
+  console.log("PHOTOS ARRAY 👉", data);
+
+  setSellerPhotos((prev) => ({
+    ...prev,
+    [sellerId]: Array.isArray(data) ? data : [],
+  }));
+}
+
+
 
   useEffect(() => {
     if (!buyerId) return;
@@ -74,6 +96,13 @@ if (activityRes.ok) {
           const sellers = (await matchRes.json()).matches || [];
           setMatches(sellers);
 
+           sellers.forEach((s: any) => {
+  console.log("MATCH SELLER OBJECT 👉", s);
+  fetchSellerPhotos(s.id);
+});
+
+
+
           const map: Record<number, string> = {};
           sellers.forEach((s: any) => {
             if (s.buyer_property_status) {
@@ -109,240 +138,273 @@ if (activityRes.ok) {
   if (!buyer) return <div className="px-6 pt-4">Buyer not found</div>;
 
   return (
-    <div className="w-full px-6 pt-2 space-y-6">
+  <div className="w-full px-6 pt-2 space-y-6">
 
-      {/* ===== BUYER HEADER CARD ===== */}
-      <div className="bg-white rounded-xl shadow-sm p-6 flex justify-between">
-        <div className="flex gap-4">
-          <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">
-            {buyer.name[0].toUpperCase()}
-          </div>
-
-          <div>
-            <h1 className="text-lg font-semibold">{buyer.name}</h1>
-            <p className="text-sm text-gray-500">{buyer.email}</p>
-            <p className="text-sm text-gray-500">{buyer.phone}</p>
-          </div>
+    {/* ===== BUYER HEADER CARD ===== */}
+    <div className="bg-white rounded-xl shadow-sm p-6 flex justify-between">
+      <div className="flex gap-4">
+        <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">
+          {buyer.name[0].toUpperCase()}
         </div>
 
-        <span
-          className={`h-fit px-3 py-1 text-xs rounded-full font-medium ${statusBadge(
-            buyer.status
-          )}`}
+        <div>
+          <h1 className="text-lg font-semibold">{buyer.name}</h1>
+          <p className="text-sm text-gray-500">{buyer.email}</p>
+          <p className="text-sm text-gray-500">{buyer.phone}</p>
+        </div>
+      </div>
+
+      <span
+        className={`h-fit px-3 py-1 text-xs rounded-full font-medium ${statusBadge(
+          buyer.status
+        )}`}
+      >
+        {buyer.status}
+      </span>
+    </div>
+
+    {/* ===== BUYER META ===== */}
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Info label="Requirement" value={buyer.requirement} />
+      <Info
+        label="Budget"
+        value={`₹${buyer.budget_min} – ₹${buyer.budget_max}`}
+      />
+      <Info label="Bedrooms" value={buyer.bedrooms} />
+      <Info label="Radius" value={`${buyer.radius_km} km`} />
+    </div>
+
+    {/* ===== BUYER REMARKS ===== */}
+    <div className="bg-white rounded-xl shadow-sm p-6">
+      <h2 className="text-sm font-semibold mb-2 text-gray-700">
+        Internal Remarks
+      </h2>
+
+      <textarea
+        value={remarks}
+        onChange={(e) => setRemarks(e.target.value)}
+        rows={3}
+        className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+        placeholder="Add internal remarks about this buyer..."
+      />
+
+      <div className="flex justify-end mt-3">
+        <button
+          type="button"
+          disabled={savingRemarks}
+          onClick={async () => {
+            setSavingRemarks(true);
+
+            const raw = localStorage.getItem("loggedUser");
+            if (!raw) return;
+            const user = JSON.parse(raw);
+
+            await fetch(`/api/buyers/remarks`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                buyerId,
+                tenantId: user.tenant_id ?? user.tenantId,
+                remarks,
+                updatedBy: user.id,
+              }),
+            });
+
+            setBuyer((prev: any) => ({
+              ...prev,
+              remarks,
+            }));
+
+            await fetchActivityLogs(user.tenant_id ?? user.tenantId);
+
+            setSavingRemarks(false);
+          }}
+          className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
         >
-          {buyer.status}
-        </span>
+          Save Remarks
+        </button>
       </div>
-
-      {/* ===== BUYER META ===== */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Info label="Requirement" value={buyer.requirement} />
-        <Info
-          label="Budget"
-          value={`₹${buyer.budget_min} – ₹${buyer.budget_max}`}
-        />
-        <Info label="Bedrooms" value={buyer.bedrooms} />
-        <Info label="Radius" value={`${buyer.radius_km} km`} />
-      </div>
-
-      {/* ===== BUYER REMARKS ===== */}
-<div className="bg-white rounded-xl shadow-sm p-6">
-  <h2 className="text-sm font-semibold mb-2 text-gray-700">
-    Internal Remarks
-  </h2>
-
-  <textarea
-    value={remarks}
-    onChange={(e) => setRemarks(e.target.value)}
-    rows={3}
-    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
-    placeholder="Add internal remarks about this buyer..."
-  />
-
-  <div className="flex justify-end mt-3">
-    <button
-
-     type="button"
-      disabled={savingRemarks}
-      onClick={async () => {
-        setSavingRemarks(true);
-
-        const raw = localStorage.getItem("loggedUser");
-        if (!raw) return;
-        const user = JSON.parse(raw);
-
-        await fetch(`/api/buyers/remarks`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            buyerId,
-            tenantId: user.tenant_id ?? user.tenantId,
-            remarks,
-            updatedBy: user.id,
-          }),
-        });
-
-        setBuyer((prev: any) => ({
-  ...prev,
-  remarks,
-}));
-
-await fetchActivityLogs(user.tenant_id ?? user.tenantId);
-
-
-        setSavingRemarks(false);
-
-   
-      }}
-      className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
-    >
-      Save Remarks
-    </button>
-  </div>
-</div>
-
-{/* ===== ACTIVITY LOGS ===== */}
-<div className="bg-white rounded-xl shadow-sm p-6">
-  <h2 className="text-sm font-semibold mb-4 text-gray-700">
-    Activity Timeline
-  </h2>
-
-  {activityLogs.length === 0 ? (
-    <p className="text-sm text-gray-400">No activity yet</p>
-  ) : (
-    <ul className="space-y-3">
-      {activityLogs.map((log, idx) => (
-  <li key={idx} className="text-sm">
-    <div className="text-gray-700">{log.description}</div>
-
-    <div className="text-xs text-gray-400">
-      by {log.performed_by_name ?? "System"}{" "}
-      {log.performed_by_role ? `(${log.performed_by_role})` : ""}
-      {" • "}
-      {new Date(log.created_at).toLocaleString()}
     </div>
-  </li>
-))}
 
-    </ul>
-  )}
-</div>
+    {/* ===== ACTIVITY LOGS ===== */}
+    <div className="bg-white rounded-xl shadow-sm p-6">
+      <h2 className="text-sm font-semibold mb-4 text-gray-700">
+        Activity Timeline
+      </h2>
 
-
-
-      {/* ===== MATCHED PROPERTIES ===== */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">
-          Matched Properties
-        </h2>
-
-        <div className="space-y-4">
-          {matches.map((seller) => {
-            const status =
-              statusMap[seller.id] ??
-              seller.buyer_property_status ??
-              "New";
-
-            const isDiscarded = status === "Discarded";
-
-            return (
-              <div
-                key={seller.id}
-                className={`bg-white rounded-xl shadow-sm p-5 flex justify-between ${
-                  isDiscarded ? "opacity-60" : ""
-                }`}
-              >
-                <div className="space-y-1 text-sm">
-                  <p className="font-medium">
-                    {seller.property_type || "Property"}
-                  </p>
-                  <p className="text-gray-600">
-                    ₹{seller.price} • {seller.bedrooms} BHK
-                  </p>
-
-                  <p className="mt-2">
-                    <span className="font-medium">Seller:</span>{" "}
-                    {seller.seller_name}
-                  </p>
-
-                  {seller.seller_contact && (
-                    <p className="text-xs text-gray-500">
-                      {seller.seller_contact}
-                    </p>
-                  )}
-
-                  {seller.seller_email && (
-                    <p className="text-xs text-gray-500">
-                      {seller.seller_email}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex flex-col">
-                  <label className="text-xs text-gray-400 mb-1">
-                    Buyer Action
-                  </label>
-
-                  <select
-                    value={status}
-                    disabled={isDiscarded}
-                    onChange={async (e) => {
-                      const newStatus = e.target.value;
-
-                      setStatusMap((p) => ({
-                        ...p,
-                        [seller.id]: newStatus,
-                      }));
-
-                      const raw = localStorage.getItem("loggedUser");
-                      if (!raw) return;
-                      const user = JSON.parse(raw);
-                      const tenantId =
-                        user.tenant_id ?? user.tenantId;
-
-                      const res = await fetch(
-                        `/api/buyers/${buyerId}/property-status`,
-                        {
-                          method: "POST",
-                          headers: {
-                            "Content-Type": "application/json",
-                            "x-tenant-id": String(tenantId),
-                          },
-                          body: JSON.stringify({
-                            sellerId: seller.id,
-                            status: newStatus,
-                          }),
-                        }
-                      );
-
-                      if (res.ok) {
-                        const data = await res.json();
-                        if (data?.buyerStatus) {
-                          setBuyer((prev: any) => ({
-                            ...prev,
-                            status: data.buyerStatus,
-                          }));
-                        }
-                      }
-                    }}
-                    className="border rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500"
-                  >
-                    {STATUS_OPTIONS.map((opt) => (
-                      <option key={opt}>{opt}</option>
-                    ))}
-                  </select>
-                </div>
+      {activityLogs.length === 0 ? (
+        <p className="text-sm text-gray-400">No activity yet</p>
+      ) : (
+        <ul className="space-y-3">
+          {activityLogs.map((log, idx) => (
+            <li key={idx} className="text-sm">
+              <div className="text-gray-700">{log.description}</div>
+              <div className="text-xs text-gray-400">
+                by {log.performed_by_name ?? "System"}{" "}
+                {log.performed_by_role ? `(${log.performed_by_role})` : ""}
+                {" • "}
+                {new Date(log.created_at).toLocaleString()}
               </div>
-            );
-          })}
-        </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+
+    {/* ===== MATCHED PROPERTIES ===== */}
+    <div>
+      <h2 className="text-lg font-semibold mb-3">
+        Matched Properties
+      </h2>
+
+      <div className="space-y-4">
+        {matches.map((seller) => {
+          const status =
+            statusMap[seller.id] ??
+            seller.buyer_property_status ??
+            "New";
+
+          const isDiscarded = status === "Discarded";
+
+          return (
+            <div
+              key={seller.id}
+              className={`bg-white rounded-xl shadow-sm p-5 flex justify-between ${
+                isDiscarded ? "opacity-60" : ""
+              }`}
+            >
+
+  
+
+              <div className="space-y-1 text-sm">
+
+                {/* SHOW / HIDE IMAGES */}
+<button
+  onClick={() =>
+    setOpenImages((prev) => ({
+      ...prev,
+      [seller.id]: !prev[seller.id],
+    }))
+  }
+  className="text-xs text-indigo-600 underline mb-2"
+>
+  {openImages[seller.id] ? "Hide Images" : "Show Images"}
+</button>
+
+{/* IMAGES SECTION */}
+{openImages[seller.id] && sellerPhotos[seller.id]?.length > 0 && (
+  <div className="mt-3 space-y-2">
+
+    {/* MAIN IMAGE */}
+    <img
+      src={sellerPhotos[seller.id][0].photo_url}
+      alt="property"
+      className="w-56 h-36 object-cover rounded-lg border"
+    />
+
+    {/* THUMBNAILS */}
+    <div className="flex gap-2">
+      {sellerPhotos[seller.id].slice(1, 4).map((p: any) => (
+        <img
+          key={p.id}
+          src={p.photo_url}
+          alt="thumb"
+          className="w-16 h-12 object-cover rounded-md border"
+        />
+      ))}
+    </div>
+  </div>
+)}
+
+                <p className="font-medium">
+                  {seller.property_type || "Property"}
+                </p>
+
+                <p className="text-gray-600">
+                  ₹{seller.price} • {seller.bedrooms} BHK
+                </p>
+
+                <p className="mt-2">
+                  <span className="font-medium">Seller:</span>{" "}
+                  {seller.seller_name}
+                </p>
+
+                {seller.seller_contact && (
+                  <p className="text-xs text-gray-500">
+                    {seller.seller_contact}
+                  </p>
+                )}
+
+                {seller.seller_email && (
+                  <p className="text-xs text-gray-500">
+                    {seller.seller_email}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-xs text-gray-400 mb-1">
+                  Buyer Action
+                </label>
+
+                <select
+                  value={status}
+                  disabled={isDiscarded}
+                  onChange={async (e) => {
+                    const newStatus = e.target.value;
+
+                    setStatusMap((p) => ({
+                      ...p,
+                      [seller.id]: newStatus,
+                    }));
+
+                    const raw = localStorage.getItem("loggedUser");
+                    if (!raw) return;
+                    const user = JSON.parse(raw);
+                    const tenantId =
+                      user.tenant_id ?? user.tenantId;
+
+                    const res = await fetch(
+                      `/api/buyers/${buyerId}/property-status`,
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          "x-tenant-id": String(tenantId),
+                        },
+                        body: JSON.stringify({
+                          sellerId: seller.id,
+                          status: newStatus,
+                        }),
+                      }
+                    );
+
+                    if (res.ok) {
+                      const data = await res.json();
+                      if (data?.buyerStatus) {
+                        setBuyer((prev: any) => ({
+                          ...prev,
+                          status: data.buyerStatus,
+                        }));
+                      }
+                    }
+                  }}
+                  className="border rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500"
+                >
+                  {STATUS_OPTIONS.map((opt) => (
+                    <option key={opt}>{opt}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
-  );
-}
 
+  </div>
+);
+}
 /* ===== SMALL INFO CARD ===== */
 function Info({ label, value }: any) {
   return (
