@@ -220,14 +220,19 @@ const [activityLogs, setActivityLogs] = useState<any[]>([]);
     <p className="text-sm text-gray-400">No activity yet</p>
   ) : (
     <ul className="space-y-3">
-      {activityLogs.map((log, idx) => (
-        <li key={idx} className="text-sm">
-          <div className="text-gray-700">{log.description}</div>
-          <div className="text-xs text-gray-400">
-            {new Date(log.created_at).toLocaleString()}
-          </div>
-        </li>
-      ))}
+     {activityLogs.map((log, idx) => (
+  <li key={idx} className="text-sm">
+    <div className="text-gray-700">{log.description}</div>
+
+    <div className="text-xs text-gray-400">
+      by {log.performed_by_name ?? "System"}{" "}
+      {log.performed_by_role ? `(${log.performed_by_role})` : ""}
+      {" • "}
+      {new Date(log.created_at).toLocaleString()}
+    </div>
+  </li>
+))}
+
     </ul>
   )}
 </div>

@@ -14,20 +14,23 @@ export async function GET(req: Request) {
     }
 
     const [rows]: any = await conn.execute(
-  `
-  SELECT
-    action_type,
-    description,
-    created_at
-  FROM agent_activity_logs
-  WHERE tenant_id = ?
-    AND entity_type = ?
-    AND entity_id = CAST(? AS CHAR)
-  ORDER BY created_at DESC
-  `,
-  [tenantId, entityType, entityId]
-);
-
+      `
+      SELECT
+        aal.id,
+        aal.action_type,
+        aal.description,
+        aal.created_at,
+        u.name AS performed_by_name,
+        u.role AS performed_by_role
+      FROM agent_activity_logs aal
+      LEFT JOIN users u ON u.id = aal.agent_id
+      WHERE aal.tenant_id = ?
+        AND aal.entity_type = ?
+        AND aal.entity_id = CAST(? AS CHAR)
+      ORDER BY aal.created_at DESC
+      `,
+      [tenantId, entityType, entityId]
+    );
 
     return NextResponse.json(rows);
   } catch (err) {
