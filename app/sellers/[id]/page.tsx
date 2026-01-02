@@ -13,6 +13,9 @@ export default function SellerDetailPage() {
 const [savingRemarks, setSavingRemarks] = useState(false);
 
 const [activityLogs, setActivityLogs] = useState<any[]>([]);
+const [photos, setPhotos] = useState<any[]>([]);
+const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+
 
 
   const [tenantId, setTenantId] = useState<number | null>(null);
@@ -24,6 +27,36 @@ const [activityLogs, setActivityLogs] = useState<any[]>([]);
     "Site Visit Done",
     "Dropped",
   ];
+
+  async function uploadPhotos() {
+
+      console.log("UPLOAD CLICKED", selectedFiles);
+  if (!selectedFiles || selectedFiles.length === 0) return;
+
+  const formData = new FormData();
+
+  Array.from(selectedFiles).forEach((file) => {
+    formData.append("photos", file);
+  });
+
+  const res = await fetch(`/api/sellers/${sellerId}/photos`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (res.ok) {
+    // re-fetch photos after upload
+    const photosRes = await fetch(`/api/sellers/${sellerId}/photos`);
+    if (photosRes.ok) {
+      const data = await photosRes.json();
+      setPhotos(data || []);
+    }
+
+    // reset file input
+    setSelectedFiles(null);
+  }
+}
+
 
   async function fetchActivityLogs(tenantId: number) {
   const res = await fetch(
@@ -68,6 +101,17 @@ const [activityLogs, setActivityLogs] = useState<any[]>([]);
         const data = await buyersRes.json();
         setBuyers(data.buyers || []);
       }
+
+            /* ===== LOAD PROPERTY PHOTOS ===== */
+      const photosRes = await fetch(
+        `/api/sellers/${sellerId}/photos`
+      );
+
+      if (photosRes.ok) {
+        const data = await photosRes.json();
+        setPhotos(data || []);
+      }
+
 
       // ✅ ADD THIS LINE
     if (tenantId) {
@@ -209,6 +253,49 @@ const [activityLogs, setActivityLogs] = useState<any[]>([]);
 
   </div>
 </div>
+
+{/* ===== PROPERTY PHOTOS ===== */}
+<div className="bg-white rounded-xl shadow-sm p-6">
+  <h2 className="text-sm font-semibold mb-3 text-gray-700">
+    Property Photos
+  </h2>
+
+  {/* UPLOAD PHOTOS */}
+<div className="mb-4 flex items-center gap-3">
+  <input
+    type="file"
+    multiple
+    onChange={(e) => setSelectedFiles(e.target.files)}
+    className="text-sm"
+  />
+
+  <button
+    onClick={uploadPhotos}
+    className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+  >
+    Upload Photos
+  </button>
+</div>
+
+
+  {photos.length === 0 ? (
+    <p className="text-sm text-gray-400">
+      No photos uploaded yet
+    </p>
+  ) : (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {photos.map((photo: any) => (
+        <img
+          key={photo.id}
+          src={photo.photo_url}
+          alt="Property"
+          className="h-32 w-full object-cover rounded-lg border"
+        />
+      ))}
+    </div>
+  )}
+</div>
+
 
 {/* ===== ACTIVITY TIMELINE ===== */}
 <div className="bg-white rounded-xl shadow-sm p-6">
