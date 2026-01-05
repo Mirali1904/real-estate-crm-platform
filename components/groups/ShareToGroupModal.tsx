@@ -78,12 +78,16 @@ export default function ShareToGroupModal({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          entityType,
-          entityId,
-          groupIds: selectedGroups,
-          userId: loggedUser.id,
-          tenantId: loggedUser.tenantId,
-        }),
+  entityType,
+  entityId,
+  groupIds: selectedGroups,
+  userId: loggedUser.id,
+  tenantId: loggedUser.tenantId,
+
+  // ✅ ADD THIS ONLY FOR SELLER
+  sellerId: entityType === "seller" ? entityId : null,
+}),
+
       });
 
       if (!res.ok) return;

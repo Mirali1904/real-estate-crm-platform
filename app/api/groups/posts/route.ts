@@ -42,9 +42,18 @@ export async function POST(req: Request) {
       location,
       budget,
       referenceId,
+      sellerId,
     } = body;
 
-    if (!groupId || !userId || !tenantId || !postType || !title) {
+    if (
+  !groupId ||
+  !userId ||
+  !tenantId ||
+  !postType ||
+  !title ||
+  (postType === "seller" && !sellerId)
+) {
+
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -54,18 +63,19 @@ export async function POST(req: Request) {
     // ❌ MEMBER CHECK REMOVED (you use group_agencies only)
 
     const postId = await groupService.createPost(
-      groupId,
-      userId,
-      tenantId,
-      {
-        postType,
-        title,
-        description,
-        location,
-        budget: budget ? Number(budget) : undefined,
-       
-      }
-    );
+  groupId,
+  userId,
+  tenantId,
+  {
+    postType,
+    title,
+    description,
+    location,
+    budget: budget ? Number(budget) : undefined,
+    sellerId: postType === "seller" ? sellerId : null, // ✅ ADD
+  }
+);
+
 
     return NextResponse.json({
       success: true,

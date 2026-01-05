@@ -272,42 +272,59 @@ export class GroupService {
   /* ======================================
      POSTS (UNCHANGED)
   ====================================== */
-  async createPost(
-    groupId: number,
-    userId: number,
-    tenantId: number,
-    postData: {
-      postType: string;
-      title: string;
-      description: string;
-      location?: string;
-      budget?: number;
-    }
-  ) {
-    const [result] = await conn.query<ResultSetHeader>(
-      `
-      INSERT INTO group_posts
-        (group_id, user_id, tenant_id, post_type, title, description, location, budget, status, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW())
-      `,
-      [
-        groupId,
-        userId,
-        tenantId,
-        postData.postType,
-        postData.title,
-        postData.description,
-        postData.location || null,
-        postData.budget || null,
-      ]
-    );
-    return result.insertId;
+ async createPost(
+  groupId: number,
+  userId: number,
+  tenantId: number,
+  postData: {
+    postType: string;
+    title: string;
+    description: string;
+    location?: string;
+    budget?: number;
+    sellerId?: number;
   }
+) {
+  const [result] = await conn.query<ResultSetHeader>(
+  `
+  INSERT INTO group_posts
+    (
+      group_id,
+      user_id,
+      tenant_id,
+      post_type,
+      title,
+      description,
+      location,
+      budget,
+      status,
+      seller_id,
+      created_at
+    )
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, NOW())
+  `,
+  [
+    groupId,
+    userId,
+    tenantId,
+    postData.postType,
+    postData.title,
+    postData.description,
+    postData.location || null,
+    postData.budget || null,
+    postData.sellerId || null, // ✅ NOW WILL SAVE
+  ]
+);
+
+
+  return result.insertId;
+}
+
 
   async getGroupPosts(groupId: number) {
     const [posts] = await conn.query<RowDataPacket[]>(
       `
-      SELECT gp.*, u.name AS author_name, u.email AS author_email,
+      SELECT gp.*, gp.seller_id,   u.name AS author_name, u.email AS author_email,
       (SELECT COUNT(*) FROM group_post_responses WHERE post_id = gp.id) AS response_count
       FROM group_posts gp
       INNER JOIN users u ON gp.user_id = u.id

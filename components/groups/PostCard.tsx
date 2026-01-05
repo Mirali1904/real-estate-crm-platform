@@ -1,7 +1,12 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 interface PostCardProps {
   post: {
     id: number;
     post_type: string;
+    seller_id?: number;
     title: string;
     description?: string;
 
@@ -9,14 +14,14 @@ interface PostCardProps {
     location?: string;
     budget?: number;
 
-    // Buyer-specific (optional / future)
+    // Buyer-specific
     buyer_name?: string;
     buyer_requirement?: string;
     buyer_location?: string;
     buyer_budget_min?: number;
     buyer_budget_max?: number;
 
-    // Seller-specific (future)
+    // Seller-specific
     seller_name?: string;
     seller_price?: number;
     seller_bedrooms?: number;
@@ -34,9 +39,35 @@ export default function PostCard({
   onViewResponses,
   onDelete,
 }: PostCardProps) {
+  /* ================= SELLER IMAGES STATE ================= */
+  const [photos, setPhotos] = useState<any[]>([]);
+  const [showPhotos, setShowPhotos] = useState(false);
+
+  /* ================= LOAD SELLER PHOTOS ================= */
+  useEffect(() => {
+  if (post.post_type !== "seller") return;
+  if (!post.seller_id) return;
+
+  async function loadSellerPhotos() {
+    try {
+      const res = await fetch(`/api/groups/seller-photos?sellerId=${post.seller_id}`);
+
+
+      if (res.ok) {
+        const data = await res.json();
+        setPhotos(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error("Failed to load seller photos", err);
+    }
+  }
+
+  loadSellerPhotos();
+}, [post.post_type, post.seller_id]);
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
-      {/* HEADER */}
+      {/* ================= HEADER ================= */}
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 font-medium uppercase">
@@ -81,9 +112,7 @@ export default function PostCard({
             post.budget) && (
             <p className="text-gray-600">
               💰 ₹
-              {post.buyer_budget_min ??
-                post.budget ??
-                "—"}
+              {post.buyer_budget_min ?? post.budget ?? "—"}
               {post.buyer_budget_max
                 ? ` – ₹${post.buyer_budget_max}`
                 : ""}
@@ -91,7 +120,7 @@ export default function PostCard({
           )}
         </div>
       ) : (
-        /* ================= NORMAL POST ================= */
+        /* ================= SELLER / NORMAL POST ================= */
         <div className="text-sm text-gray-700 space-y-1">
           {post.description && (
             <p className="text-gray-700">{post.description}</p>
@@ -104,10 +133,34 @@ export default function PostCard({
           {post.budget && (
             <p className="text-gray-600">💰 ₹{post.budget}</p>
           )}
+
+          {/* ===== SHOW IMAGES BUTTON ===== */}
+          {post.post_type === "seller" && photos.length > 0 && (
+            <button
+              onClick={() => setShowPhotos(!showPhotos)}
+              className="text-xs text-indigo-600 underline mt-2"
+            >
+              {showPhotos ? "Hide Images" : "Show Images"}
+            </button>
+          )}
+
+          {/* ===== SELLER IMAGES GRID ===== */}
+          {showPhotos && photos.length > 0 && (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {photos.slice(0, 4).map((photo) => (
+                <img
+                  key={photo.id}
+                  src={photo.photo_url}
+                  alt="property"
+                  className="h-28 w-full object-cover rounded-lg border"
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* FOOTER */}
+      {/* ================= FOOTER ================= */}
       <div className="flex justify-between items-center mt-4 pt-4 border-t text-xs text-gray-500">
         <span>
           Posted by{" "}

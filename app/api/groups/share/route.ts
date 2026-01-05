@@ -103,18 +103,30 @@ Price: ₹${seller.price}`;
 
       await conn.execute(
         `
-        INSERT INTO group_posts
-          (group_id, user_id, tenant_id, post_type, title, description, status)
-        VALUES (?, ?, ?, ?, ?, ?, 'active')
+       INSERT INTO group_posts
+  (
+    group_id,
+    user_id,
+    tenant_id,
+    post_type,
+    title,
+    description,
+    status,
+    seller_id
+  )
+VALUES (?, ?, ?, ?, ?, ?, 'active', ?)
+
         `,
         [
-          groupId,
-          userId,
-          tenantId,
-          entityType,
-          title,
-          description,
-        ]
+  groupId,
+  userId,
+  tenantId,
+  entityType,
+  title,
+  description,
+  entityType === "seller" ? entityId : null, // ✅ FINAL FIX
+]
+
       );
     }
 
