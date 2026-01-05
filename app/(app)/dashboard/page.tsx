@@ -118,13 +118,17 @@ const createManualTask = async () => {
   };
 
   return (
-    <div className="space-y-6">
+   <div className="space-y-6  rounded-3xl p-6 min-h-full">
+
       {/* HEADER */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500">
-          Welcome back, {user.name}
-        </p>
+       <h1 className="text-3xl font-semibold text-gray-900 tracking-tight">
+  Dashboard
+</h1>
+<p className="text-sm text-gray-500 mt-1">
+  Welcome back, {user.name}
+</p>
+
       </div>
           {showTaskModal && (
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -184,7 +188,7 @@ const createManualTask = async () => {
         />
 
         {/* CUSTOMERS MINI LIST */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <div className="bg-white rounded-3xl p-6 shadow-sm">
           <div className="flex justify-between mb-4">
             <h3 className="font-semibold">Customers</h3>
             <span
@@ -273,7 +277,7 @@ const createManualTask = async () => {
 
         {/* RECENT BUYERS — UNCHANGED */}
        {/* RECENT BUYERS */}
-<div className="xl:col-span-3 bg-white rounded-2xl p-6 shadow-sm">
+<div className="xl:col-span-3 bg-white rounded-3xl p-6 shadow-sm">
   <div className="flex justify-between mb-4">
     <h3 className="font-semibold">Recent Buyers</h3>
     <span
@@ -288,7 +292,8 @@ const createManualTask = async () => {
     {buyers.slice(0, 2).map((b) => (
       <div
         key={b.id}
-        className="border rounded-xl p-4 hover:shadow-sm transition"
+       className="bg-[#f9faf9] rounded-2xl p-4 hover:shadow-sm transition"
+
       >
         <div className="font-medium">{b.name}</div>
         <div className="text-sm text-gray-500">{b.email}</div>
@@ -307,7 +312,7 @@ const createManualTask = async () => {
 
       {/* PROPERTIES + TASKS */}
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-        <div className="xl:col-span-4 bg-white rounded-2xl p-6 shadow-sm">
+        <div className="xl:col-span-4 bg-white rounded-3xl p-6 shadow-sm">
           <div className="flex justify-between mb-4">
             <h3 className="font-semibold">Recent Properties</h3>
             <span
@@ -332,7 +337,7 @@ const createManualTask = async () => {
         </div>
 
         {/* ✅ TASKS TO DO — IMPLEMENTED */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <div className="bg-white rounded-3xl p-6 shadow-sm">
          <div className="flex justify-between items-center mb-4">
   <h3 className="font-semibold">Tasks To Do</h3>
   <button
@@ -379,10 +384,19 @@ function Stat({ label, value, onClick }: any) {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-2xl p-6 shadow-sm cursor-pointer hover:shadow-md transition"
+     className="
+  bg-white
+  rounded-3xl
+  p-6
+  shadow-sm
+  hover:shadow-md
+  transition
+  cursor-pointer
+"
+
     >
       <div className="text-sm text-gray-500">{label}</div>
-      <div className="text-2xl font-bold mt-2">{value}</div>
+      <div className="text-3xl font-bold mt-2">{value}</div>
     </div>
   );
 }   
