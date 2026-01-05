@@ -4,8 +4,15 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
 export default function SellerDetailPage() {
-  const params = useParams();
-  const sellerId = Number(params?.id);
+ const params = useParams();
+
+/* ✅ SAFE sellerId extraction */
+const sellerId =
+  typeof params?.id === "string" ? Number(params.id) : null;
+
+/* 🔥 DEBUG (temporary) */
+console.log("FINAL sellerId 👉", sellerId);
+
 
   const [seller, setSeller] = useState<any>(null);
   const [buyers, setBuyers] = useState<any[]>([]);
@@ -206,49 +213,78 @@ const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   />
 
   <div className="flex justify-end mt-3">
-    <button
+<button
+
+
   disabled={savingRemarks}
+  
   onClick={async () => {
-    setSavingRemarks(true);
+    try {
 
-    const raw = localStorage.getItem("loggedUser");
-    if (!raw) return;
-    const user = JSON.parse(raw);
+      if (!sellerId) {
+  alert("Seller ID not found");
+  return;
+}
 
-    const res = await fetch(`/api/sellers/${sellerId}`, {
-  method: "PUT",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    remarks,
-    tenantId,
-    updatedBy: user.id,
-  }),
-});
+if (!tenantId) {
+      alert("Tenant not loaded yet");
+      return;
+    }
 
+      setSavingRemarks(true);
 
-    if (res.ok) {
-      const data = await res.json();
+      const raw = localStorage.getItem("loggedUser");
+      if (!raw) {
+        alert("Not logged in");
+        return;
+      }
 
-      // ✅ IMPORTANT: update seller state
+      const user = JSON.parse(raw);
+      if (!tenantId) {
+        alert("Tenant not loaded");
+        return;
+      }
+
+      const res = await fetch("/api/sellers/remarks", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sellerId,
+          tenantId,
+          remarks,
+          updatedBy: user.id,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || "Failed to save remarks");
+        return;
+      }
+
+      // ✅ update UI
       setSeller((prev: any) => ({
         ...prev,
         remarks,
       }));
 
-      if (tenantId) {
-  await fetchActivityLogs(tenantId);
-}
-
+      // ✅ reload timeline
+      await fetchActivityLogs(tenantId);
+    } catch (err) {
+      console.error("Save remarks error", err);
+      alert("Something went wrong");
+    } finally {
+      // 🔥 MOST IMPORTANT
+      setSavingRemarks(false);
     }
-
-    setSavingRemarks(false);
   }}
-  className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+  className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
 >
-  Save Remarks
+  {savingRemarks ? "Saving..." : "Save Remarks"}
 </button>
+
 
 
   </div>

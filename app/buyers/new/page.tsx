@@ -36,6 +36,7 @@ export default function AddBuyerPage() {
     // 🔹 NEW FIELDS
     brokerage_amount: "",
     remarks: "",
+     agentId: null,
   });
 
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -100,6 +101,8 @@ export default function AddBuyerPage() {
 
     const user = JSON.parse(raw);
     const tenantId = user.tenant_id ?? user.tenantId;
+    form.agentId = user.id; // ✅ LOGGED-IN AGENT AUTO ASSIGN
+
     if (!tenantId) return alert("Tenant not found");
 
     const res = await fetch("/api/buyers/create", {

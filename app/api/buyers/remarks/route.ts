@@ -12,7 +12,15 @@ export async function PUT(req: Request) {
       );
     }
 
-    // ✅ 1. UPDATE BUYER REMARKS (THIS WAS MISSING)
+    // 🔹 1. GET PREVIOUS REMARK
+    const [prevRows]: any = await conn.execute(
+      `SELECT remarks FROM buyers WHERE id = ? AND tenant_id = ?`,
+      [buyerId, tenantId]
+    );
+
+    const previousRemark = prevRows?.[0]?.remarks || "";
+
+    // 🔹 2. UPDATE BUYER
     await conn.execute(
       `
       UPDATE buyers
@@ -22,7 +30,14 @@ export async function PUT(req: Request) {
       [remarks, buyerId, tenantId]
     );
 
-    // ✅ 2. ACTIVITY LOG (OPTIONAL BUT GOOD)
+    // 🔹 3. ACTIVITY DESCRIPTION
+    const description = previousRemark
+      ? `Buyer remarks updated
+From: ${previousRemark}
+To: ${remarks}`
+      : `Buyer remarks added: ${remarks}`;
+
+    // 🔹 4. ACTIVITY LOG
     await conn.execute(
       `
       INSERT INTO agent_activity_logs
@@ -31,11 +46,11 @@ export async function PUT(req: Request) {
       `,
       [
         tenantId,
-        updatedBy,
+        updatedBy || null,
         "BUYER_REMARK_UPDATED",
         "buyer",
         buyerId,
-        `Buyer remarks updated`,
+        description,
       ]
     );
 

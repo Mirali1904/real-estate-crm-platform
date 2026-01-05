@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       // 🔹 NEW FIELDS
       brokerage_amount,
       remarks,
+       agentId,
     } = body;
 
     if (!name || !phone) {
@@ -44,6 +45,7 @@ export async function POST(req: NextRequest) {
       `
       INSERT INTO buyers (
         tenant_id,
+         agent_id,  
         name,
         phone,
         email,
@@ -60,10 +62,12 @@ export async function POST(req: NextRequest) {
         status,
         is_deleted
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ENQUIRY', 0)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ENQUIRY', 0)
+
       `,
       [
         tenantId,
+        agentId || null, 
         name,
         phone,
         email || null,

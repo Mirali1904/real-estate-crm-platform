@@ -5,14 +5,23 @@ export async function PUT(req: Request) {
   try {
     const { sellerId, tenantId, remarks, updatedBy } = await req.json();
 
-    if (!sellerId || !tenantId || !updatedBy) {
+    // ✅ FIXED VALIDATION
+    if (sellerId == null || tenantId == null || updatedBy == null) {
       return NextResponse.json(
         { error: "Missing fields" },
         { status: 400 }
       );
     }
 
-    // 1️⃣ UPDATE seller remarks
+    // 1️⃣ get previous remark
+    const [prevRows]: any = await conn.execute(
+      `SELECT remarks FROM sellers WHERE id = ? AND tenant_id = ?`,
+      [sellerId, tenantId]
+    );
+
+    const previousRemark = prevRows?.[0]?.remarks || "";
+
+    // 2️⃣ update seller
     await conn.execute(
       `
       UPDATE sellers
@@ -22,7 +31,12 @@ export async function PUT(req: Request) {
       [remarks || null, sellerId, tenantId]
     );
 
-    // 2️⃣ ACTIVITY LOG
+    // 3️⃣ activity description
+    const description = previousRemark
+      ? `Seller remarks updated\nFrom: ${previousRemark}\nTo: ${remarks}`
+      : `Seller remarks added: ${remarks}`;
+
+    // 4️⃣ activity log
     await conn.execute(
       `
       INSERT INTO agent_activity_logs
@@ -35,7 +49,7 @@ export async function PUT(req: Request) {
         "SELLER_REMARK_UPDATED",
         "seller",
         sellerId,
-        "Seller remarks updated",
+        description,
       ]
     );
 

@@ -22,6 +22,7 @@ export default function AddSellerPage() {
     // 🔹 NEW (same as buyer)
     brokerage_amount: "",
     remarks: "",
+     agentId: null,
   });
 
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -85,11 +86,15 @@ export default function AddSellerPage() {
     const user = JSON.parse(raw);
     const tenantId = user.tenant_id || user.tenantId;
 
+    form.agentId = user.id; // ✅ LOGGED-IN AGENT AUTO ASSIGN
+
+
     const res = await fetch("/api/sellers/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         tenantId,
+         agentId: form.agentId,
         name: form.seller_name,
         owner_contact: form.owner_contact,
         email: form.email,

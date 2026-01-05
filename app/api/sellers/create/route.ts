@@ -7,6 +7,7 @@ export async function POST(req: NextRequest) {
 
     const {
       tenantId,
+      agentId, 
       name,               // seller name
       owner_contact,
       email,
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest) {
     const query = `
       INSERT INTO sellers (
         tenant_id,
+         agent_id,  
         name,
         owner_contact,
         email,
@@ -56,11 +58,12 @@ export async function POST(req: NextRequest) {
         status,
         created_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'LISTED', NOW())
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'LISTED', NOW())
     `;
 
     await conn.execute(query, [
       tenantId,
+      agentId || null, 
       finalName,
       owner_contact || null,
       email || null,
