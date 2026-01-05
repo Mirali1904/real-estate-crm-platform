@@ -159,6 +159,7 @@ if (keys.includes("remarks")) {
 export async function DELETE(_req: Request, context: any) {
   const params = await resolveParams(context);
   const id = Number(params?.id || 0);
+
   if (!id) {
     return NextResponse.json(
       { success: false, error: "missing id" },
@@ -167,13 +168,25 @@ export async function DELETE(_req: Request, context: any) {
   }
 
   try {
-    await conn.execute("DELETE FROM sellers WHERE id = ?", [id]);
+    // 1️⃣ First delete property photos
+    await conn.execute(
+      "DELETE FROM property_photos WHERE seller_id = ?",
+      [id]
+    );
+
+    // 2️⃣ Then delete seller
+    await conn.execute(
+      "DELETE FROM sellers WHERE id = ?",
+      [id]
+    );
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error("DELETE /api/sellers/[id]", err);
     return NextResponse.json(
-      { success: false, error: String(err?.message || err) },
+      { success: false, error: err.message },
       { status: 500 }
     );
   }
 }
+

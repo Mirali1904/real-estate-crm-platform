@@ -25,7 +25,9 @@ export default function Header() {
   }
 
   return (
-    <header className="h-16 bg-[#f8fafc] border-b border-slate-200">
+   <header className="h-16 bg-[#f8fafc] border-b border-slate-200">
+
+
       <div className="h-full flex items-center justify-between px-6">
 
         {/* LEFT — LOGO */}

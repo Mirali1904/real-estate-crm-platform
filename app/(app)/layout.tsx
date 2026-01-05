@@ -26,13 +26,17 @@ export default function AppLayout({
       <Sidebar />
 
       {/* MAIN CONTENT — SHIFTED BY SIDEBAR WIDTH */}
-      <div className="ml-20 flex min-h-screen flex-col">
+      <div className="flex min-h-screen flex-col ml-56">
 
         {/* HEADER */}
         <Header />
 
         {/* PAGE CONTENT */}
-       <main className="flex-1 px-6 pt-2 pb-6 overflow-y-auto">
+     <main className="flex-1 pr-6 pt-4 pb-6 overflow-y-auto">
+
+
+
+
 
           {children}
         </main>

@@ -385,4 +385,4 @@ function Stat({ label, value, onClick }: any) {
       <div className="text-2xl font-bold mt-2">{value}</div>
     </div>
   );
-}
+}   
