@@ -45,20 +45,13 @@ export async function POST(req: Request) {
       sellerId,
     } = body;
 
-    if (
-  !groupId ||
-  !userId ||
-  !tenantId ||
-  !postType ||
-  !title ||
-  (postType === "seller" && !sellerId)
-) {
+if (!groupId || !userId || !tenantId || !postType || !title) {
+  return NextResponse.json(
+    { error: "Missing required fields" },
+    { status: 400 }
+  );
+}
 
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
 
     // ❌ MEMBER CHECK REMOVED (you use group_agencies only)
 

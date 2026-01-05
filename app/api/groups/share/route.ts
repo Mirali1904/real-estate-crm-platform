@@ -100,34 +100,32 @@ Status: ${buyer.status}`;
         description = `Location: ${seller.location}
 Price: ₹${seller.price}`;
       }
-
-      await conn.execute(
-        `
-       INSERT INTO group_posts
-  (
-    group_id,
-    user_id,
-    tenant_id,
-    post_type,
+await conn.execute(
+  `
+  INSERT INTO group_posts
+    (
+      group_id,
+      user_id,
+      tenant_id,
+      post_type,
+      title,
+      description,
+      seller_id,
+      status
+    )
+  VALUES (?, ?, ?, ?, ?, ?, ?, 'active')
+  `,
+  [
+    groupId,
+    userId,
+    tenantId,
+    entityType,
     title,
     description,
-    status,
-    seller_id
-  )
-VALUES (?, ?, ?, ?, ?, ?, 'active', ?)
+    entityType === "seller" ? entityId : null, // ✅ VERY IMPORTANT
+  ]
+);
 
-        `,
-        [
-  groupId,
-  userId,
-  tenantId,
-  entityType,
-  title,
-  description,
-  entityType === "seller" ? entityId : null, // ✅ FINAL FIX
-]
-
-      );
     }
 
     return NextResponse.json({ success: true });
