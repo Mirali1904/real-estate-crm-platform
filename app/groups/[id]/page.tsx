@@ -10,6 +10,11 @@ import PostCard from "@/components/groups/PostCard";
 import SecondaryButton from "@/components/SecondaryButton";
 import PostResponsesModal from "@/components/groups/PostResponsesModal";
 
+import GroupChat from "@/components/groups/GroupChat";
+
+
+
+
 /* ================= TYPES ================= */
 
 interface Group {
@@ -48,16 +53,24 @@ interface Member {
 /* ================= PAGE ================= */
 
 export default function GroupDetailPage() {
-  const params = useParams();
+  const params = useParams<{ id: string }>();
   const router = useRouter();
+
+  if (!params?.id) {
+    return <div className="p-6">Invalid group</div>;
+  }
+
   const groupId = Number(params.id);
+
 
   const [user, setUser] = useState<any>(null);
   const [group, setGroup] = useState<Group | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [availableUsers, setAvailableUsers] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<"posts" | "members">("posts");
+ const [activeTab, setActiveTab] =
+  useState<"posts" | "members" | "chat">("posts");
+
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -82,6 +95,8 @@ export default function GroupDetailPage() {
     setUser(u);
     fetchAll(u.id);
   }, [groupId]);
+
+  
 
   /* ================= FETCH ALL ================= */
   const fetchAll = async (userId: number) => {
@@ -250,6 +265,17 @@ const fetchAvailableUsers = async () => {
           >
             Members ({members.length})
           </button>
+
+          <button
+  onClick={() => setActiveTab("chat")}
+  className={`py-4 border-b-2 text-sm ${
+    activeTab === "chat"
+      ? "border-indigo-600 text-indigo-600"
+      : "border-transparent text-gray-500"
+  }`}
+>
+  Chat
+</button>
         </div>
 
         <div className="p-6">
@@ -292,6 +318,14 @@ const fetchAvailableUsers = async () => {
               </div>
             </>
           )}
+
+          {activeTab === "chat" && (
+  <GroupChat
+    groupId={groupId}
+    tenantId={user.tenantId}
+    userId={user.id}
+  />
+)}
         </div>
       </div>
 
@@ -308,6 +342,8 @@ const fetchAvailableUsers = async () => {
         onClose={() => setShowCreatePostModal(false)}
         onSubmit={handleCreatePost}
       />
+
+      
 
       <PostResponsesModal
         isOpen={activePostId !== null}
