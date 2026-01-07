@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSocket } from "@/lib/socket-context";
 
 interface Message {
   id: number;
@@ -21,11 +20,11 @@ export default function GroupChat({ groupId, tenantId, userId }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
 
-  const { socket } = useSocket(); // ✅ ONLY SOCKET
-
-  // 🔹 Fetch existing messages
+  // 🔹 Fetch existing messages (HTTP – DB)
   const fetchMessages = async () => {
     const res = await fetch(
       `/api/groups/messages?groupId=${groupId}&tenantId=${tenantId}`
@@ -43,71 +42,93 @@ export default function GroupChat({ groupId, tenantId, userId }: Props) {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 🔹 Join socket group
+  // 🔹 WebSocket connect
   useEffect(() => {
-    if (!socket || !groupId) return;
+    if (!groupId || !tenantId) return;
 
-    socket.emit("join_group", groupId);
-    console.log("🟢 joined socket group:", groupId);
+    const ws = new WebSocket("ws://localhost:3000/api/ws");
+    wsRef.current = ws;
 
-    socket.on("new_message", (msg: Message) => {
-  // ❗ apna hi message dobara add mat karo
-  if (msg.sender_tenant_id === tenantId) return;
+    ws.onopen = () => {
+      console.log("🟢 WS connected");
 
-  setMessages((prev) => [...prev, msg]);
-});
+      // register user + group
+      ws.send(
+        JSON.stringify({
+          type: "register",
+          userId,
+          tenantId,
+          groupId,
+        })
+      );
+    };
+
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+
+      // ❗ apna hi message dobara mat add karo
+      if (msg.sender_tenant_id === tenantId) return;
+
+      setMessages((prev) => [...prev, msg]);
+    };
+
+    ws.onclose = () => {
+      console.log("🔴 WS disconnected");
+    };
+
+    ws.onerror = (err) => {
+      console.error("❌ WS error", err);
+    };
 
     return () => {
-      socket.off("new_message");
+      ws.close();
     };
-  }, [socket, groupId]);
+  }, [groupId, tenantId, userId]);
 
   // 🔹 Send message
-const sendMessage = async () => {
-  if (!text.trim() || !socket) return;
+  const sendMessage = async () => {
+    if (!text.trim() || !wsRef.current) return;
 
-  setSending(true);
+    setSending(true);
 
-  const apiPayload = {
-    groupId,
-    tenantId,
-    userId,
-    message: text,
-  };
-
-  // 1️⃣ Optimistic UI
-  setMessages((prev) => [
-    ...prev,
-    {
-      id: Date.now(),
+    const payload = {
+      groupId,
+      tenantId,
+      userId,
       message: text,
       sender_name: "You",
       sender_tenant_id: tenantId,
       created_at: new Date().toISOString(),
-    },
-  ]);
+    };
 
-  setText("");
+    // 1️⃣ Optimistic UI
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        ...payload,
+      },
+    ]);
 
-  // 2️⃣ Save to DB
-  await fetch("/api/groups/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(apiPayload),
-  });
+    setText("");
 
-  // 3️⃣ Emit realtime
-  socket.emit("send_message", {
-    ...apiPayload,
-    sender_name: "You",
-    sender_tenant_id: tenantId,
-    created_at: new Date().toISOString(),
-  });
+    // 2️⃣ Save to DB
+    await fetch("/api/groups/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-  setSending(false);
-};
+    // 3️⃣ Send realtime
+    wsRef.current.send(
+      JSON.stringify({
+        type: "message",
+        ...payload,
+      })
+    );
 
-
+    setSending(false);
+  };
 
   return (
     <div className="flex flex-col h-[500px] bg-white rounded-2xl border shadow-sm">
@@ -120,10 +141,19 @@ const sendMessage = async () => {
           const isMine = m.sender_tenant_id === tenantId;
 
           return (
-            <div key={m.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+            <div
+              key={m.id}
+              className={`flex ${
+                isMine ? "justify-end" : "justify-start"
+              }`}
+            >
               <div
                 className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm shadow-sm
-                ${isMine ? "bg-indigo-600 text-white" : "bg-white border"}`}
+                ${
+                  isMine
+                    ? "bg-indigo-600 text-white"
+                    : "bg-white border"
+                }`}
               >
                 {!isMine && (
                   <div className="text-xs text-gray-500 mb-1">
