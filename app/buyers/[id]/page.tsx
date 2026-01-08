@@ -3,6 +3,9 @@
   import { useEffect, useState } from "react";
   import { useParams } from "next/navigation";
 
+  import DocumentSection from "@/components/DocumentSection";
+
+
 
 
   const LOAN_CARD_STYLE: Record<string, string> = {
@@ -339,6 +342,13 @@
             </button>
           </div>
         </div>
+
+        {/* ===== BUYER DOCUMENTS ===== */}
+<DocumentSection
+  entityType="buyer"
+  entityId={buyerId}
+/>
+
 
         {/* ===== BUYER LOANS ===== */}
         {/* ===== BUYER LOANS ===== */}
@@ -863,6 +873,8 @@
             </div>
           </div>
         )}
+
+        
 
 
 

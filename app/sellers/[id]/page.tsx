@@ -3,6 +3,8 @@
 import { useEffect, useState, useRef } from "react";
 
 import { useParams } from "next/navigation";
+import DocumentSection from "@/components/DocumentSection";
+
 
 
 const LOAN_CARD_STYLE: Record<string, string> = {
@@ -338,6 +340,13 @@ export default function SellerDetailPage() {
         </div>
       </div>
 
+      {/* ===== SELLER DOCUMENTS ===== */}
+      <DocumentSection
+        entityType="seller"
+        entityId={sellerId!}
+      />
+
+
       {/* ===== PROPERTY PHOTOS ===== */}
       <div className="bg-white rounded-xl shadow-sm p-6">
         <h2 className="text-sm font-semibold mb-3 text-gray-700">
@@ -479,14 +488,14 @@ export default function SellerDetailPage() {
                   )}
 
                   <button
-  onClick={() => {
-    setUploadLoanId(loan.id);
-    loanFileInputRef.current?.click();
-  }}
-  className="text-indigo-600 underline"
->
-  Upload
-</button>
+                    onClick={() => {
+                      setUploadLoanId(loan.id);
+                      loanFileInputRef.current?.click();
+                    }}
+                    className="text-indigo-600 underline"
+                  >
+                    Upload
+                  </button>
 
                 </div>
 
@@ -679,7 +688,7 @@ export default function SellerDetailPage() {
               className="w-full border rounded-lg px-3 py-2 text-sm"
             />
 
-            
+
 
             <input
               type="number"
@@ -690,7 +699,7 @@ export default function SellerDetailPage() {
             />
 
             <div className="flex gap-2">
-              <input  
+              <input
                 type="number"
                 placeholder="Interest Rate %"
                 value={interestRate}
@@ -771,28 +780,28 @@ export default function SellerDetailPage() {
       )}
 
       <input
-  type="file"
-  ref={loanFileInputRef}
-  className="hidden"
-  onChange={async (e) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    if (!uploadLoanId) return;
+        type="file"
+        ref={loanFileInputRef}
+        className="hidden"
+        onChange={async (e) => {
+          if (!e.target.files || e.target.files.length === 0) return;
+          if (!uploadLoanId) return;
 
-    const file = e.target.files[0];
+          const file = e.target.files[0];
 
-    const formData = new FormData();
-    formData.append("file", file);
+          const formData = new FormData();
+          formData.append("file", file);
 
-    await fetch(`/api/loans/${uploadLoanId}/documents`, {
-      method: "POST",
-      body: formData,
-    });
+          await fetch(`/api/loans/${uploadLoanId}/documents`, {
+            method: "POST",
+            body: formData,
+          });
 
-    e.target.value = "";
-    setUploadLoanId(null);
-    fetchLoans();
-  }}
-/>
+          e.target.value = "";
+          setUploadLoanId(null);
+          fetchLoans();
+        }}
+      />
 
 
 
