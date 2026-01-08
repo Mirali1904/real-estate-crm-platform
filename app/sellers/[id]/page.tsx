@@ -5,6 +5,15 @@ import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import DocumentSection from "@/components/DocumentSection";
 
+import dynamic from "next/dynamic";
+
+const PropertyMap = dynamic(
+  () => import("@/components/PropertyMap"),
+  { ssr: false }
+);
+
+
+
 
 
 const LOAN_CARD_STYLE: Record<string, string> = {
@@ -390,6 +399,22 @@ export default function SellerDetailPage() {
 
         )}
       </div>
+
+      {/* ===== PROPERTY LOCATION MAP ===== */}
+{seller.lat && seller.lng && (
+  <div className="bg-white rounded-xl shadow-sm p-6">
+    <h2 className="text-sm font-semibold mb-3 text-gray-700">
+      Property Location
+    </h2>
+
+    <PropertyMap
+      lat={Number(seller.lat)}
+      lng={Number(seller.lng)}
+      label={seller.location || "Property Location"}
+    />
+  </div>
+)}
+
 
       {/* ===== SELLER LOANS ===== */}
       <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">

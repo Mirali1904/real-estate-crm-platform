@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation";
 import PrimaryButton from "@/components/PrimaryButton";
 import BackButton from "@/components/BackButton";
 
+
+import SellerLocationMap from "@/components/SellerLocationMap";
+
+
+
+
 export default function AddSellerPage() {
   const router = useRouter();
 
@@ -179,6 +185,24 @@ export default function AddSellerPage() {
                 onChange={handleLocationChange}
               />
 
+              {/* ===== PROPERTY LOCATION MAP ===== */}
+{form.lat && form.lng && (
+  <div className="col-span-2 mt-4">
+    <SellerLocationMap
+      lat={Number(form.lat)}
+      lng={Number(form.lng)}
+      onChange={(newLat, newLng) => {
+        setForm({
+          ...form,
+          lat: String(newLat),
+          lng: String(newLng),
+        });
+      }}
+    />
+  </div>
+)}
+
+
               {loadingLocation && (
                 <p className="text-xs text-gray-400 mt-1">
                   Searching…
@@ -200,18 +224,9 @@ export default function AddSellerPage() {
               )}
             </div>
 
-            <Field
-              label="Latitude"
-              name="lat"
-              value={form.lat}
-              onChange={handleChange}
-            />
-            <Field
-              label="Longitude"
-              name="lng"
-              value={form.lng}
-              onChange={handleChange}
-            />
+           <Field label="Latitude" name="lat" value={form.lat} onChange={handleChange} />
+<Field label="Longitude" name="lng" value={form.lng} onChange={handleChange} />
+
 
             <Field
               label="Price"
