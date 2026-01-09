@@ -4,6 +4,8 @@ import { useEffect, useState, useRef } from "react";
 
 import { useParams } from "next/navigation";
 import DocumentSection from "@/components/DocumentSection";
+import FollowUpForm from "@/components/follow-ups/FollowUpForm";
+
 
 import dynamic from "next/dynamic";
 
@@ -67,6 +69,10 @@ export default function SellerDetailPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const loanFileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const [sellerFollowUps, setSellerFollowUps] = useState<any[]>([]);
+const [showFollowUpModal, setShowFollowUpModal] = useState(false);
+
+
 
 
   const STATUS_OPTIONS = [
@@ -84,6 +90,28 @@ export default function SellerDetailPage() {
     const data = await res.json();
     setLoans(data || []);
   };
+
+  async function fetchSellerFollowUps() {
+  const res = await fetch(`/api/follow-ups?sellerId=${sellerId}`);
+  if (res.ok) {
+    setSellerFollowUps(await res.json());
+  }
+}
+async function markSellerFollowUpDone(id: number) {
+  await fetch(`/api/follow-ups/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "DONE" }),
+  });
+
+  setSellerFollowUps((prev) =>
+    prev.map((f) =>
+      f.id === id ? { ...f, status: "DONE" } : f
+    )
+  );
+}
+
+
 
 
   async function uploadPhotos() {
@@ -192,6 +220,13 @@ export default function SellerDetailPage() {
     }
   }, [sellerId]);
 
+  useEffect(() => {
+  if (sellerId) {
+    fetchSellerFollowUps();
+  }
+}, [sellerId]);
+
+
 
   function statusBadge(status: string) {
     switch (status) {
@@ -237,13 +272,23 @@ export default function SellerDetailPage() {
           </div>
         </div>
 
-        <span
-          className={`h-fit px-3 py-1 text-xs rounded-full font-medium ${statusBadge(
-            seller.status
-          )}`}
-        >
-          {seller.status}
-        </span>
+        <div className="flex items-center gap-3">
+  <span
+    className={`h-fit px-3 py-1 text-xs rounded-full font-medium ${statusBadge(
+      seller.status
+    )}`}
+  >
+    {seller.status}
+  </span>
+
+  <button
+    onClick={() => setShowFollowUpModal(true)}
+    className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-lg"
+  >
+    ➕ Follow-up
+  </button>
+</div>
+
       </div>
 
       {/* ===== SELLER META (GRID LIKE BUYER) ===== */}
@@ -354,6 +399,66 @@ export default function SellerDetailPage() {
         entityType="seller"
         entityId={sellerId!}
       />
+
+      {/* ===== SELLER FOLLOW-UPS LIST ===== */}
+<div className="bg-white rounded-xl shadow-sm p-6">
+  <h2 className="text-sm font-semibold mb-4 text-gray-700">
+    Follow-ups
+  </h2>
+
+  {sellerFollowUps.length === 0 ? (
+    <p className="text-sm text-gray-400">No follow-ups yet</p>
+  ) : (
+    <div className="space-y-3">
+      {sellerFollowUps.map((fu) => (
+        <div
+          key={fu.id}
+          className="flex justify-between items-center border rounded-lg p-4"
+        >
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+                {fu.follow_up_type}
+              </span>
+
+              <span className="text-xs text-gray-500">
+                {new Date(fu.follow_up_date).toDateString()}
+              </span>
+            </div>
+
+            {fu.note && (
+              <p className="text-sm text-gray-600 mt-1">
+                {fu.note}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span
+              className={`text-xs px-3 py-1 rounded-full font-semibold ${
+                fu.status === "DONE"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-yellow-100 text-yellow-700"
+              }`}
+            >
+              {fu.status}
+            </span>
+
+            {fu.status === "PENDING" && (
+              <button
+                onClick={() => markSellerFollowUpDone(fu.id)}
+                className="text-xs text-indigo-600 hover:underline"
+              >
+                ✔ Mark as Done
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
 
 
       {/* ===== PROPERTY PHOTOS ===== */}
@@ -827,6 +932,31 @@ export default function SellerDetailPage() {
           fetchLoans();
         }}
       />
+
+      {/* ===== SELLER FOLLOW-UP MODAL ===== */}
+{showFollowUpModal && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl w-[420px] p-6 relative">
+      <button
+        onClick={() => setShowFollowUpModal(false)}
+        className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+      >
+        ✕
+      </button>
+
+      <FollowUpForm
+        tenantId={tenantId!}
+        sellerId={sellerId!}
+        agentId={JSON.parse(localStorage.getItem("loggedUser")!).id}
+        onSuccess={() => {
+          setShowFollowUpModal(false);
+          fetchSellerFollowUps();
+        }}
+      />
+    </div>
+  </div>
+)}
+
 
 
 

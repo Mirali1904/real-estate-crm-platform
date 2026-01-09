@@ -2,10 +2,15 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
 
 export default function Sidebar() {
+    const [pendingCount, setPendingCount] = useState(0);
+
   const router = useRouter();
   const pathname = usePathname() || "";
+  
 
   async function handleLogout() {
     try {
@@ -22,6 +27,22 @@ export default function Sidebar() {
       ? "bg-indigo-600 text-white"
       : "text-gray-600 hover:bg-gray-100"
   }`;
+    useEffect(() => {
+    const raw = localStorage.getItem("loggedUser");
+    if (!raw) return;
+
+    const user = JSON.parse(raw);
+
+    fetch(
+      `/api/follow-ups/pending-count?agentId=${user.id}&tenantId=${user.tenant_id ?? user.tenantId}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setPendingCount(data.count ?? 0);
+      })
+      .catch(() => {});
+  }, []);
+
 
 
   return (
@@ -59,6 +80,32 @@ export default function Sidebar() {
   <span className="text-lg">🏠</span>
   <span className="text-sm font-medium">Sellers</span>
 </Link>
+
+<Link href="/follow-ups" className={iconClass("/follow-ups")}>
+  <span className="text-lg">🔔</span>
+
+  <div className="flex items-center justify-between w-full">
+    <span className="text-sm font-medium">Follow-ups</span>
+
+    {pendingCount > 0 && (
+      <span
+        className="
+          ml-2
+          text-xs font-semibold
+          bg-red-500 text-white
+          px-2 py-0.5
+          rounded-full
+          min-w-[20px]
+          text-center
+        "
+      >
+        {pendingCount}
+      </span>
+    )}
+  </div>
+</Link>
+
+
 
 
           {/* GROUPS */}

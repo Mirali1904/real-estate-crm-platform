@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
+import FollowUpForm from "@/components/follow-ups/FollowUpForm";
+import FollowUpList from "@/components/follow-ups/FollowUpList";
+
+
+
 import DocumentSection from "@/components/DocumentSection";
 import dynamic from "next/dynamic";
 
@@ -10,6 +15,8 @@ const PropertyMap = dynamic(
   () => import("@/components/PropertyMap"),
   { ssr: false }
 );
+
+
 
 
 
@@ -29,6 +36,17 @@ const LOAN_CARD_STYLE: Record<string, string> = {
 export default function BuyerDetailPage() {
   const params = useParams();
   const buyerId = Number(params?.id);
+
+    const rawUser =
+    typeof window !== "undefined"
+      ? localStorage.getItem("loggedUser")
+      : null;
+
+  const loggedUser = rawUser ? JSON.parse(rawUser) : null;
+
+  const tenantId = loggedUser?.tenant_id ?? loggedUser?.tenantId;
+  const agentId = loggedUser?.id;
+
 
   const [buyer, setBuyer] = useState<any>(null);
   const [matches, setMatches] = useState<any[]>([]);
@@ -66,6 +84,12 @@ export default function BuyerDetailPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
 
   const [openMap, setOpenMap] = useState<Record<number, boolean>>({});
+
+
+
+  const [showFollowUpModal, setShowFollowUpModal] = useState(false);
+
+
 
 
 
@@ -282,13 +306,23 @@ export default function BuyerDetailPage() {
           </div>
         </div>
 
-        <span
-          className={`h-fit px-3 py-1 text-xs rounded-full font-medium ${statusBadge(
-            buyer.status
-          )}`}
-        >
-          {buyer.status}
-        </span>
+        <div className="flex items-center gap-3">
+  <span
+    className={`px-3 py-1 text-xs rounded-full font-medium ${statusBadge(
+      buyer.status
+    )}`}
+  >
+    {buyer.status}
+  </span>
+
+  <button
+    onClick={() => setShowFollowUpModal(true)}
+    className="px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+  >
+    ➕ Follow-up
+  </button>
+</div>
+
       </div>
 
       {/* ===== BUYER META ===== */}
@@ -353,6 +387,10 @@ export default function BuyerDetailPage() {
           </button>
         </div>
       </div>
+
+      
+
+
 
       {/* ===== BUYER DOCUMENTS ===== */}
       <DocumentSection
@@ -561,69 +599,69 @@ export default function BuyerDetailPage() {
 
                 <div className="space-y-1 text-sm">
 
-                 {/* IMAGE + MAP TOGGLES */}
-<div className="flex gap-4 mb-2">
-  {/* SHOW / HIDE IMAGES */}
-  <button
-    onClick={() =>
-      setOpenImages((prev) => ({
-        ...prev,
-        [seller.id]: !prev[seller.id],
-      }))
-    }
-    className="text-xs text-indigo-600 underline"
-  >
-    {openImages[seller.id] ? "Hide Images" : "Show Images"}
-  </button>
+                  {/* IMAGE + MAP TOGGLES */}
+                  <div className="flex gap-4 mb-2">
+                    {/* SHOW / HIDE IMAGES */}
+                    <button
+                      onClick={() =>
+                        setOpenImages((prev) => ({
+                          ...prev,
+                          [seller.id]: !prev[seller.id],
+                        }))
+                      }
+                      className="text-xs text-indigo-600 underline"
+                    >
+                      {openImages[seller.id] ? "Hide Images" : "Show Images"}
+                    </button>
 
-  {/* SHOW / HIDE MAP */}
-  <button
-    onClick={() =>
-      setOpenMap((prev) => ({
-        ...prev,
-        [seller.id]: !prev[seller.id],
-      }))
-    }
-    className="text-xs text-indigo-600 underline"
-  >
-    {openMap[seller.id] ? "Hide Map" : "Show Map"}
-  </button>
-</div>
+                    {/* SHOW / HIDE MAP */}
+                    <button
+                      onClick={() =>
+                        setOpenMap((prev) => ({
+                          ...prev,
+                          [seller.id]: !prev[seller.id],
+                        }))
+                      }
+                      className="text-xs text-indigo-600 underline"
+                    >
+                      {openMap[seller.id] ? "Hide Map" : "Show Map"}
+                    </button>
+                  </div>
 
-{/* IMAGES SECTION */}
-{openImages[seller.id] && sellerPhotos[seller.id]?.length > 0 && (
-  <div className="mt-3 space-y-2">
-    {/* MAIN IMAGE */}
-    <img
-      src={sellerPhotos[seller.id][0].photo_url}
-      alt="property"
-      className="w-56 h-36 object-cover rounded-lg border"
-    />
+                  {/* IMAGES SECTION */}
+                  {openImages[seller.id] && sellerPhotos[seller.id]?.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {/* MAIN IMAGE */}
+                      <img
+                        src={sellerPhotos[seller.id][0].photo_url}
+                        alt="property"
+                        className="w-56 h-36 object-cover rounded-lg border"
+                      />
 
-    {/* THUMBNAILS */}
-    <div className="flex gap-2">
-      {sellerPhotos[seller.id].slice(1, 4).map((p: any) => (
-        <img
-          key={p.id}
-          src={p.photo_url}
-          alt="thumb"
-          className="w-16 h-12 object-cover rounded-md border"
-        />
-      ))}
-    </div>
-  </div>
-)}
+                      {/* THUMBNAILS */}
+                      <div className="flex gap-2">
+                        {sellerPhotos[seller.id].slice(1, 4).map((p: any) => (
+                          <img
+                            key={p.id}
+                            src={p.photo_url}
+                            alt="thumb"
+                            className="w-16 h-12 object-cover rounded-md border"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-{/* MAP SECTION */}
-{openMap[seller.id] && lat && lng && (
-  <div className="mt-3 h-[240px] rounded-lg overflow-hidden border">
-    <PropertyMap
-      lat={Number(lat)}
-      lng={Number(lng)}
-      label={seller.location}
-    />
-  </div>
-)}
+                  {/* MAP SECTION */}
+                  {openMap[seller.id] && lat && lng && (
+                    <div className="mt-3 h-[240px] rounded-lg overflow-hidden border">
+                      <PropertyMap
+                        lat={Number(lat)}
+                        lng={Number(lng)}
+                        label={seller.location}
+                      />
+                    </div>
+                  )}
 
 
                   <div className="bg-white rounded-xl shadow-sm p-6">
@@ -911,6 +949,45 @@ export default function BuyerDetailPage() {
           </div>
         </div>
       )}
+
+
+      {showFollowUpModal && tenantId && agentId && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl p-6 w-[420px] space-y-5 shadow-xl border border-slate-200">
+
+      <div className="flex justify-between items-center">
+        <h3 className="text-base font-semibold text-indigo-600">
+  Add Follow-up
+</h3>
+
+        <button
+          onClick={() => setShowFollowUpModal(false)}
+          className="text-gray-500 hover:text-black"
+        >
+          ✕
+        </button>
+      </div>
+
+      <FollowUpForm
+        tenantId={tenantId}
+        buyerId={buyerId}
+        agentId={agentId}
+        onSuccess={() => setShowFollowUpModal(false)}
+      />
+    </div>
+  </div>
+)}
+
+{/* ===== FOLLOW-UP LIST ===== */}
+<div className="bg-white rounded-xl shadow-sm p-6">
+  <h2 className="text-sm font-semibold mb-4 text-gray-700">
+    Follow-ups
+  </h2>
+
+  <FollowUpList buyerId={buyerId} />
+</div>
+
+
 
 
 
