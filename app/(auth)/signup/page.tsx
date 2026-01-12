@@ -2,6 +2,9 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Building2 } from "lucide-react";
+import Link from "next/link";
+
 
 export default function SignupPage() {
   const router = useRouter();
@@ -13,6 +16,7 @@ export default function SignupPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,162 +45,152 @@ export default function SignupPage() {
   }
 
   return (
-    <div
-      className="
-        min-h-screen
-        w-full
-        flex items-center justify-center
-        px-4
-        bg-indigo-50
-      "
-    >
-      {/* CARD */}
-      <div
-        className="
-          w-full
-          max-w-md
-          bg-white
-          rounded-2xl
-          shadow-lg
-          p-8
-        "
-      >
-        {/* TITLE */}
-        <h2 className="text-2xl font-semibold text-gray-900 text-center">
-          Create your account
-        </h2>
-        <p className="text-sm text-gray-500 text-center mt-1 mb-6">
-          Start managing buyers, sellers and deals
-        </p>
+   <div className="min-h-screen w-full bg-gradient-to-br from-indigo-50 via-indigo-100 to-blue-100 flex items-center justify-center px-4">
 
-        {error && (
-          <p className="text-red-500 text-sm text-center mb-4">
-            {error}
-          </p>
-        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+     
 
-          <Field
-            label="Agency Name"
-            value={agencyName}
-            onChange={setAgencyName}
-            placeholder="Dream Homes Realtors"
-          />
+      {/* Signup Card */}
+      <div className="relative w-full max-w-md">
+     <div className="bg-white rounded-2xl shadow-lg p-8 md:p-10 space-y-7 w-full">
 
-          <Field
-            label="Your Name"
-            value={name}
-            onChange={setName}
-            placeholder="Admin name"
-          />
 
-          <Field
-            label="Email"
-            type="email"
-            value={email}
-            onChange={setEmail}
-            placeholder="you@example.com"
-          />
+          {/* Header */}
+          <div className="text-center space-y-3">
+            <div className="flex justify-center">
+             <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
 
-          {/* PASSWORD */}
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Password
-            </label>
-            <input
-              type="password"
-              ref={passwordRef}
-              placeholder="••••••••"
-              autoComplete="new-password"
-              className="
-                w-full
-                border border-gray-300
-                rounded-lg
-                px-4 py-2.5
-                text-sm
-                bg-white
-                focus:outline-none
-                focus:ring-2
-                focus:ring-indigo-500
-              "
-              required
-            />
+                <Building2 className="w-7 h-7 text-white" />
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900">
+  RealEstate CRM
+</h1>
+<p className="text-gray-600 text-sm">
+  Create your agency account
+</p>
+
           </div>
 
-          {/* SUBMIT BUTTON */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="
-              w-full
-              bg-indigo-600
-              text-white
-              py-2.5
-              rounded-lg
-              font-medium
-              hover:bg-indigo-700
-              transition
-              disabled:opacity-60
-            "
-          >
-            {loading ? "Creating account..." : "Create Account"}
-          </button>
-        </form>
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 text-sm text-center py-2 px-4 rounded-lg">
+              {error}
+            </div>
+          )}
 
-        {/* LOGIN LINK */}
-        <p className="mt-6 text-sm text-center text-gray-500">
-          Already have an account?{" "}
-          <a
-            href="/login"
-            className="text-indigo-600 font-medium hover:underline"
-          >
-            Login
-          </a>
-        </p>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Agency Name */}
+            <div className="space-y-2">
+              <label htmlFor="agencyName" className="block text-sm font-medium text-gray-700">
+                Agency Name
+              </label>
+              <input
+                id="agencyName"
+                type="text"
+                value={agencyName}
+                onChange={(e) => setAgencyName(e.target.value)}
+                placeholder="Dream Homes Realtors"
+               className="w-full h-11 px-4 bg-white border border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg outline-none focus:outline-none focus:border-indigo-600 focus:ring-0 focus:shadow-none"
+
+
+                required
+              />
+            </div>
+
+            {/* Your Name */}
+            <div className="space-y-2">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Your Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Admin name"
+                className="w-full h-11 px-4 bg-white border border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg outline-none focus:outline-none focus:border-indigo-600 focus:ring-0 focus:shadow-none"
+
+                required
+              />
+            </div>
+
+            {/* Email */}
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full h-11 px-4 bg-white border border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg outline-none focus:outline-none focus:border-indigo-600 focus:ring-0 focus:shadow-none"
+
+                required
+              />
+            </div>
+
+            {/* Password */}
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  ref={passwordRef}
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  className="w-full h-11 px-4 bg-white border border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg outline-none focus:outline-none focus:border-indigo-600 focus:ring-0 focus:shadow-none"
+
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+           
+            
+            {/* Signup Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+
+            >
+              {loading ? "Creating account..." : "Create Account"}
+            </button>
+          </form>
+
+         
+         {/* Footer */}
+<div className="pt-6 text-center text-sm text-gray-500">
+  Already have an account?
+  <span
+    onClick={() => router.push("/login")}
+    className="ml-1 cursor-pointer text-gray-700 font-medium hover:text-indigo-600 transition-colors"
+  >
+    Login
+  </span>
+</div>
+
+
+
+
+
+
+
+        </div>
       </div>
-    </div>
-  );
-}
-
-/* ---------- FIELD COMPONENT ---------- */
-
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-  type = "text",
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder: string;
-  type?: string;
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium mb-1 text-gray-700">
-        {label}
-      </label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="
-          w-full
-          border border-gray-300
-          rounded-lg
-          px-4 py-2.5
-          text-sm
-          bg-white
-          focus:outline-none
-          focus:ring-2
-          focus:ring-indigo-500
-        "
-        required
-      />
     </div>
   );
 }
