@@ -190,14 +190,14 @@ const serverBars = [
               placeholder="Task title"
               value={newTaskTitle}
               onChange={(e) => setNewTaskTitle(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
             <input
               type="date"
               value={newTaskDueDate}
               onChange={(e) => setNewTaskDueDate(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
             <div className="flex justify-end gap-3">
@@ -209,7 +209,7 @@ const serverBars = [
               </button>
               <button
                 onClick={createManualTask}
-                className="bg-indigo-600 text-white text-sm px-6 py-2 rounded-lg hover:bg-indigo-700 transition"
+                className="bg-blue-600 text-white text-sm px-6 py-2 rounded-lg hover:bg-blue-700 transition"
               >
                 Save Task
               </button>
@@ -262,7 +262,7 @@ const serverBars = [
             <h3 className="text-lg font-semibold text-gray-900">REPORTS</h3>
             <button 
               onClick={() => router.push("/buyers")}
-              className="text-sm text-indigo-600 hover:underline"
+              className="text-sm text-blue-600 hover:underline"
             >
               SEE ALL
             </button>
@@ -315,11 +315,11 @@ const serverBars = [
             </div>
           </div>
 
-          <div className="h-32 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg flex items-end px-2 pb-2">
+          <div className="h-32 bg-gradient-to-r from-blue-100 to-blue-100 rounded-lg flex items-end px-2 pb-2">
   {serverBars.map((val, i) => (
     <div
       key={i}
-      className="flex-1 bg-indigo-500 mx-0.5 rounded-t"
+      className="flex-1 bg-blue-500 mx-0.5 rounded-t"
       style={{ height: `${val}%` }}
     />
   ))}
@@ -346,7 +346,7 @@ const serverBars = [
             </h3>
             <button
               onClick={() => router.push("/sellers")}
-              className="text-sm text-indigo-600 hover:underline"
+              className="text-sm text-blue-600 hover:underline"
             >
               View All
             </button>
@@ -361,7 +361,7 @@ const serverBars = [
     >
       <div className="flex items-start gap-4">
         {/* Icon */}
-        <div className="w-12 h-12 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+        <div className="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
           🏠
         </div>
 
@@ -378,7 +378,7 @@ const serverBars = [
 
       {/* Price */}
       <div className="text-right">
-        <div className="text-lg font-bold text-indigo-600">
+        <div className="text-lg font-bold text-blue-600">
           ₹{p.price}
         </div>
         <div className="text-xs text-gray-400 mt-1">
@@ -407,7 +407,7 @@ const serverBars = [
     </h3>
     <button
       onClick={() => setShowTaskModal(true)}
-      className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition"
+      className="text-sm font-medium text-blue-600 hover:text-blue-700 transition"
     >
       + Add Task
     </button>
@@ -429,13 +429,13 @@ const serverBars = [
       .map((task) => (
         <div
           key={task.id}
-          className="group flex items-start gap-4 p-4 rounded-xl border border-gray-200 bg-white hover:shadow-sm hover:border-indigo-300 transition"
+          className="group flex items-start gap-4 p-4 rounded-xl border border-gray-200 bg-white hover:shadow-sm hover:border-blue-300 transition"
         >
           {/* Checkbox */}
           <input
             type="checkbox"
             onChange={() => markTaskDone(task.id)}
-            className="mt-1 w-4 h-4 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500"
+            className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
           />
 
           {/* Task Content */}

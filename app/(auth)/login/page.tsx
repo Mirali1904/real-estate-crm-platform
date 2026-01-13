@@ -43,31 +43,35 @@ export default function LoginPage() {
   }
 
   return (
-   <div className="min-h-screen w-full bg-gradient-to-br from-indigo-50 via-indigo-100 to-blue-100 flex items-center justify-center px-4">
-
+    <div className="min-h-screen w-full flex items-center justify-center px-4
+bg-gray-50]">
 
 
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-10 left-10 w-72 h-72 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-<div className="absolute bottom-10 right-10 w-72 h-72 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div className="absolute top-10 left-10 w-72 h-72 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div className="absolute bottom-10 right-10 w-72 h-72 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+
 
       </div>
 
       {/* Login Card */}
       <div className="relative w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.25)] p-8 md:p-10 space-y-7 w-full">
+        <div className="bg-white/95 backdrop-blur rounded-2xl shadow-[0_30px_80px_rgba(0,0,0,0.35)] p-8 md:p-10 space-y-7 w-full">
+
 
           {/* Header */}
           <div className="text-center space-y-3">
             <div className="flex justify-center">
-             <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
+
+
 
                 <Building2 className="w-7 h-7 text-white" />
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">RealEstate CRM</h1>
-            <p className="text-gray-600 text-sm">Welcome back to your agency portal</p>
+            <h1 className="text-3xl font-bold text-slate-900">RealEstate CRM</h1>
+            <p className="text-slate-500 text-sm">Welcome back to your agency portal</p>
           </div>
 
           {/* Error Message */}
@@ -90,7 +94,14 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full h-11 px-4 bg-white border border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg outline-none focus:outline-none focus:border-indigo-600 focus:ring-0 focus:shadow-none"
+                className="
+  w-full h-11 px-4 rounded-lg
+  border border-gray-300
+  focus:border-blue-600
+  focus:ring-2 focus:ring-blue-500
+  outline-none
+"
+
 
               />
             </div>
@@ -101,7 +112,7 @@ export default function LoginPage() {
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   Password
                 </label>
-                
+
               </div>
               <div className="relative">
                 <input
@@ -110,7 +121,15 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                 className="w-full h-11 px-4 bg-white border border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg outline-none focus:outline-none focus:border-indigo-600 focus:ring-0 focus:shadow-none"
+                  className="
+  w-full h-11 px-4 rounded-lg
+  border border-gray-300
+  focus:border-blue-600
+  focus:ring-2 focus:ring-blue-500
+  outline-none
+"
+
+
                   required
                 />
                 <button
@@ -125,10 +144,10 @@ export default function LoginPage() {
 
             {/* Remember Me */}
             <div className="flex items-center gap-2">
-              <input 
-                type="checkbox" 
-                id="remember" 
-                className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" 
+              <input
+                type="checkbox"
+                id="remember"
+                className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
               />
               <label htmlFor="remember" className="text-sm text-gray-600 cursor-pointer">
                 Remember me
@@ -137,30 +156,37 @@ export default function LoginPage() {
 
             {/* Login Button */}
             <button
-  type="submit"
-  disabled={loading}
-  className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed"
->
+              type="submit"
+              disabled={loading}
+              className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+
+
 
               {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
-          
+
 
           {/* Footer */}
           <div className="pt-4 text-center text-sm text-gray-500">
-  Don't have an account?
-  <span
-    onClick={() => router.push("/signup")}
-    className="ml-1 cursor-pointer text-gray-700 font-medium hover:text-indigo-600 transition-colors"
-  >
-    Sign up
-  </span>
-</div>
+            Don't have an account?
+            <span
+              onClick={() => router.push("/signup")}
+              className="
+      ml-1 cursor-pointer font-medium
+      text-blue-600
+      hover:text-blue-700
+      transition-colors
+    "
+            >
+              Sign up
+            </span>
+          </div>
 
-</div>
-        
+
+        </div>
+
       </div>
     </div>
   );

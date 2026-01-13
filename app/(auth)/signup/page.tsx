@@ -45,30 +45,37 @@ export default function SignupPage() {
   }
 
   return (
-   <div className="min-h-screen w-full bg-gradient-to-br from-indigo-50 via-indigo-100 to-blue-100 flex items-center justify-center px-4">
+    <div className="min-h-screen w-full flex items-center justify-center px-4
+bg-gray-50">
 
 
-     
+
 
       {/* Signup Card */}
       <div className="relative w-full max-w-md">
-     <div className="bg-white rounded-2xl shadow-lg p-8 md:p-10 space-y-7 w-full">
+        <div className="bg-white/95 backdrop-blur rounded-2xl
+shadow-[0_30px_80px_rgba(0,0,0,0.35)]
+p-8 md:p-10 space-y-7 w-full">
+
 
 
           {/* Header */}
           <div className="text-center space-y-3">
             <div className="flex justify-center">
-             <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-blue-600
+rounded-xl flex items-center justify-center shadow-lg">
+
+
 
                 <Building2 className="w-7 h-7 text-white" />
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">
-  RealEstate CRM
-</h1>
-<p className="text-gray-600 text-sm">
-  Create your agency account
-</p>
+            <h1 className="text-3xl font-bold text-slate-900">
+              RealEstate CRM
+            </h1>
+            <p className="text-slate-500 text-sm">
+              Create your agency account
+            </p>
 
           </div>
 
@@ -92,7 +99,18 @@ export default function SignupPage() {
                 value={agencyName}
                 onChange={(e) => setAgencyName(e.target.value)}
                 placeholder="Dream Homes Realtors"
-               className="w-full h-11 px-4 bg-white border border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg outline-none focus:outline-none focus:border-indigo-600 focus:ring-0 focus:shadow-none"
+                className="
+w-full h-11 px-4
+bg-gray-50
+border border-gray-200
+text-gray-900 placeholder:text-gray-400
+rounded-lg
+focus:border-blue-500
+focus:ring-2 focus:ring-blue-500/30
+
+outline-none
+"
+
 
 
                 required
@@ -110,7 +128,18 @@ export default function SignupPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Admin name"
-                className="w-full h-11 px-4 bg-white border border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg outline-none focus:outline-none focus:border-indigo-600 focus:ring-0 focus:shadow-none"
+                className="
+w-full h-11 px-4
+bg-gray-50
+border border-gray-200
+text-gray-900 placeholder:text-gray-400
+rounded-lg
+focus:border-blue-500
+focus:ring-2 focus:ring-blue-500/30
+
+outline-none
+"
+
 
                 required
               />
@@ -127,7 +156,18 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full h-11 px-4 bg-white border border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg outline-none focus:outline-none focus:border-indigo-600 focus:ring-0 focus:shadow-none"
+                className="
+w-full h-11 px-4
+bg-gray-50
+border border-gray-200
+text-gray-900 placeholder:text-gray-400
+rounded-lg
+focus:border-blue-500
+focus:ring-2 focus:ring-blue-500/30
+
+outline-none
+"
+
 
                 required
               />
@@ -145,43 +185,68 @@ export default function SignupPage() {
                   ref={passwordRef}
                   placeholder="••••••••"
                   autoComplete="new-password"
-                  className="w-full h-11 px-4 bg-white border border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg outline-none focus:outline-none focus:border-indigo-600 focus:ring-0 focus:shadow-none"
+                  className="
+w-full h-11 px-4
+bg-gray-50
+border border-gray-200
+text-gray-900 placeholder:text-gray-400
+rounded-lg
+focus:border-blue-500
+focus:ring-2 focus:ring-blue-500/30
+
+outline-none
+"
+
 
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-           
-            
+
+
             {/* Signup Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-
+              className="
+    w-full h-11
+    bg-blue-600 hover:bg-blue-700
+    text-white font-semibold
+    rounded-lg
+    transition-colors
+    disabled:opacity-60 disabled:cursor-not-allowed
+  "
             >
               {loading ? "Creating account..." : "Create Account"}
             </button>
+
           </form>
 
-         
-         {/* Footer */}
-<div className="pt-6 text-center text-sm text-gray-500">
-  Already have an account?
-  <span
-    onClick={() => router.push("/login")}
-    className="ml-1 cursor-pointer text-gray-700 font-medium hover:text-indigo-600 transition-colors"
-  >
-    Login
-  </span>
-</div>
+
+          {/* Footer */}
+          <div className="pt-6 text-center text-sm text-gray-500">
+            Already have an account?
+            <span
+              onClick={() => router.push("/login")}
+              className="
+      ml-1 cursor-pointer font-medium
+      text-blue-600
+      hover:text-blue-700
+      transition-colors
+    "
+            >
+              Login
+            </span>
+          </div>
+
 
 
 
