@@ -9,18 +9,20 @@ export default function SecondaryButton({
     <button
       {...props}
       className={`
-        bg-[#f3f1ff]
-        text-[#5b5ce2]
+        bg-blue-50
+        text-blue-600
         px-4
         py-1.5
         rounded-full
         text-xs
         font-medium
         border
-        border-[#d9d6ff]
-        hover:bg-[#ebe9ff]
-        hover:border-[#bdb8ff]
+        border-blue-200
+        hover:bg-blue-100
+        hover:border-blue-300
         transition
+        disabled:opacity-60
+        disabled:cursor-not-allowed
         ${className}
       `}
     >

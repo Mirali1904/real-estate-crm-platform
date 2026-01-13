@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import BackButton from "@/components/BackButton";
+import { Mail, Phone, MoreHorizontal, Shield, CheckCircle, Plus, Search } from "lucide-react";
 
 type LoggedUser = {
   id: number;
@@ -55,7 +55,6 @@ export default function UsersPage() {
       .finally(() => setLoading(false));
   }, [router]);
 
-  /* 🔍 SEARCH FILTER (buyer jaisa) */
   const filteredUsers = users.filter((u) => {
     const q = search.toLowerCase();
     return (
@@ -65,87 +64,155 @@ export default function UsersPage() {
     );
   });
 
+  const getRoleColor = (role: string) => {
+    switch (role.toUpperCase()) {
+      case "ADMIN":
+        return "bg-purple-100 text-purple-800";
+      case "AGENT":
+        return "bg-blue-100 text-blue-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
   if (!currentUser) return null;
 
   return (
-    <div className="w-full px-6 pt-2 space-y-6">
-
-      {/* BACK */}
-      <BackButton />
-
-      {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-xl font-semibold">Team Members</h1>
-          <p className="text-xs text-gray-500">
-            Users in your agency (tenant_id {currentUser.tenantId})
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        {/* Top Section */}
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-1">Manage Your Team</h2>
+            <p className="text-sm text-gray-600">{users.length} members in your organization</p>
+          </div>
+          <Link href="/users/new">
+            <button className="bg-blue-600 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition font-medium">
+              <Plus className="w-4 h-4" />
+              Invite Member
+            </button>
+          </Link>
         </div>
 
-        <Link href="/users/new">
-  <button
-    className="
-      bg-indigo-600
-      text-white
-      px-5
-      py-2.5
-      rounded-full
-      text-sm
-      font-medium
-      hover:bg-indigo-700
-      transition
-    "
-  >
-    + Add User
-  </button>
-</Link>
+        {/* Search */}
+        <div className="relative w-full">
 
-      </div>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name, email or phone..."
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
 
-      {/* SEARCH BAR (buyer jaisa) */}
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search by name, email or role"
-        className="w-full max-w-md border rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
-      />
+        {/* Loading State */}
+        {loading ? (
+          <p className="text-sm text-gray-500">Loading team members...</p>
+        ) : (
+          <>
+            {/* Team Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredUsers.map((member) => (
+                <div
+                  key={member.id}
+                  className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all group"
+                >
+                  {/* Header with Actions */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                     <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+  {member.name[0].toUpperCase()}
+</div>
 
-      {/* LIST */}
-      {loading ? (
-        <p className="text-sm text-gray-500">Loading users...</p>
-      ) : filteredUsers.length === 0 ? (
-        <p className="text-sm text-gray-500">No users found</p>
-      ) : (
-        <div className="space-y-3">
-          {filteredUsers.map((u) => (
-            <div
-              key={u.id}
-              className="bg-white rounded-xl shadow-sm p-4 flex justify-between items-center"
-            >
-              <div className="flex gap-4 items-center">
-                {/* AVATAR */}
-                <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">
-                  {u.name[0].toUpperCase()}
+                      <div>
+                        <h3 className="text-base font-semibold text-gray-900">{member.name}</h3>
+                        <span className={`${getRoleColor(member.role)} border-0 rounded-full text-xs px-2.5 py-1 inline-block mt-1 font-medium`}>
+                          {member.role.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                    <button className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-gray-100 rounded-lg">
+                      <MoreHorizontal className="w-4 h-4 text-gray-600" />
+                    </button>
+                  </div>
+
+                  {/* Contact Info */}
+                  <div className="space-y-2 mb-4 pb-4 border-b border-gray-100">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <span className="text-gray-600 truncate">{member.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <span className="text-gray-600">N/A</span>
+                    </div>
+                  </div>
+
+                  {/* Status & Stats */}
+                  <div className="space-y-3 mb-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Status</span>
+                      <div className="flex items-center gap-1.5">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <span className="text-xs font-medium text-green-600">ACTIVE</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Joined</span>
+                      <span className="text-xs font-medium text-gray-900">
+                        {new Date(member.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Performance */}
+                  <div className="grid grid-cols-2 gap-2 p-3 bg-gray-50 rounded-lg mb-4">
+                    <div className="text-center">
+                      <p className="text-xs text-gray-500 mb-1">Properties</p>
+                      <p className="font-bold text-lg text-gray-900">0</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-gray-500 mb-1">Sales</p>
+                      <p className="font-bold text-lg text-blue-600">₹0</p>
+                    </div>
+                  </div>
+
+                  {/* Permission Badge */}
+                  <button className="w-full border border-gray-200 bg-transparent rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-2">
+                    <Shield className="w-4 h-4" />
+                    Manage Permissions
+                  </button>
                 </div>
+              ))}
 
-                <div>
-                  <p className="font-medium text-sm">{u.name}</p>
-                  <p className="text-xs text-gray-500">{u.email}</p>
+              {/* Add New Member CTA */}
+              <Link href="/users/new">
+                <div className="bg-white p-6 rounded-xl border-dashed border-2 border-gray-300 flex flex-col items-center justify-center text-center cursor-pointer hover:border-blue-500 transition-colors group h-full min-h-[400px]">
+                  <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-3 group-hover:bg-blue-50 transition-colors">
+                    <Plus className="w-6 h-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                  </div>
+                  <h3 className="text-base font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
+                    Invite Member
+                  </h3>
+                  <p className="text-xs text-gray-500 mb-3">Add a new team member to your organization</p>
+                  <button className="bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-blue-700 transition">
+                    Send Invite
+                  </button>
                 </div>
-              </div>
-
-              <div className="text-right">
-                <p className="text-xs uppercase tracking-wider text-gray-500">
-                  {u.role}
-                </p>
-                <p className="text-xs text-gray-400">
-                  {new Date(u.created_at).toLocaleString()}
-                </p>
-              </div>
+              </Link>
             </div>
-          ))}
-        </div>
-      )}
+
+            {/* No Results */}
+            {filteredUsers.length === 0 && !loading && (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No team members found</p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

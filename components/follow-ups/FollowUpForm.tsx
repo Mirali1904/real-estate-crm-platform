@@ -73,7 +73,8 @@ export default function FollowUpForm({
       className="space-y-4">
 
     
-      <h3 className="text-lg font-semibold">Add Follow-up</h3>
+     
+
 
       {error && (
         <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
@@ -90,7 +91,8 @@ export default function FollowUpForm({
           value={followUpType}
           onChange={(e) => setFollowUpType(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm
-           focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+
 
         >
           <option value="CALL">Call</option>
@@ -127,9 +129,9 @@ export default function FollowUpForm({
       <button
         type="submit"
         disabled={loading}
-       className="w-full bg-indigo-600 hover:bg-indigo-700
-           text-white px-4 py-2 rounded-lg text-sm font-medium
-           transition disabled:opacity-60"
+       className="w-full bg-blue-600 hover:bg-blue-700
+text-white px-4 py-2 rounded-lg text-sm font-medium
+transition disabled:opacity-60"
 
       >
         {loading ? "Saving..." : "Save Follow-up"}

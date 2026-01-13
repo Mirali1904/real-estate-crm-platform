@@ -36,7 +36,7 @@ export default function Sidebar() {
     
     { path: "/groups", label: "Groups", icon: "👨‍👩‍👧‍👦" },
     { path: "/follow-ups", label: "Follow-ups", icon: "🔔", badge: pendingCount },
-    { path: "/team", label: "Team", icon: "👨‍💼" },
+    { path: "/users", label: "Team", icon: "👨‍💼" },
   ];
 
   return (

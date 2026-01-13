@@ -329,10 +329,17 @@ export default function BuyersPage() {
       {/* Assign Agent Modal */}
       {assignBuyerId && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-[400px]">
-            <h2 className="text-lg font-semibold mb-4">Assign Agent</h2>
+          <div className="bg-white rounded-2xl p-6 w-[400px] shadow-xl border border-slate-200">
+
+            <h2 className="text-lg font-semibold mb-4 text-blue-600">
+  Assign Agent
+</h2>
+
             <select
-              className="w-full border rounded-lg px-3 py-2 mb-4"
+  className="w-full border rounded-lg px-3 py-2 mb-4 text-sm
+  focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+
+
               value={selectedAgent || ""}
               onChange={(e) => setSelectedAgent(Number(e.target.value))}
             >

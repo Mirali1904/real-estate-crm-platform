@@ -33,7 +33,7 @@ export default function Header() {
   if (pathname.startsWith("/properties")) return "Properties";
   if (pathname.startsWith("/groups")) return "Groups";
   if (pathname.startsWith("/follow-ups")) return "Follow Ups";
-  if (pathname.startsWith("/team")) return "Team";
+  if (pathname.startsWith("/users")) return "Team";
   return "Dashboard";
 };
 
