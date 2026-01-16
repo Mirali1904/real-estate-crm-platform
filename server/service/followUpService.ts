@@ -81,10 +81,10 @@ if (filter === "overdue") {
   LEFT JOIN sellers s ON s.id = fu.seller_id
   WHERE fu.agent_id = ?
     AND fu.tenant_id = ?
-    AND fu.status = 'PENDING'
     ${filterSql}
   ORDER BY fu.follow_up_date ASC
 `;
+
 
 
   const [rows] = await conn.execute(sql, [agentId, tenantId]);

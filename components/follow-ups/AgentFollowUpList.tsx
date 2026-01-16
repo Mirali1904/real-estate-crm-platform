@@ -1,62 +1,89 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Calendar, MoreHorizontal } from "lucide-react";
+import { AlertCircle,  CheckCircle } from "lucide-react";
 
-function startOfToday() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
+interface FollowUp {
+  id: number;
+  entity_name?: string;
+  buyer_name?: string;
+  seller_name?: string;
+  note?: string;
+  follow_up_date?: string;
+  follow_up_time?: string;
+  follow_up_type?: string;
+  status: string;
+  priority?: string;
+  agent_id?: number;
+  agent_name?: string;
 }
 
-type Props = {
-  agentId: number;
-  tenantId: number;
+interface AgentFollowUpListProps {
+  followUps: FollowUp[];
+  loading: boolean;
+  onMarkAsDone: (id: number) => void;
+}
+
+export default function AgentFollowUpList({
+  followUps,
+  loading,
+  onMarkAsDone,
+}: AgentFollowUpListProps) {
+  const getPriorityColor = (priority: string) => {
+    switch (priority?.toUpperCase()) {
+      case "HIGH":
+        return "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300";
+      case "MEDIUM":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300";
+      case "LOW":
+        return "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+
+
+const getStatusIcon = (
+  status: string,
+  followUpDate?: string
+) => {
+  const s = status?.toUpperCase();
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const followDate = followUpDate ? new Date(followUpDate) : null;
+  if (followDate) followDate.setHours(0, 0, 0, 0);
+
+  // 🟢 Completed
+  if (s === "DONE" || s === "COMPLETED") {
+    return <CheckCircle className="w-5 h-5 text-green-500" />;
+  }
+
+  // 🔵 Scheduled explicitly
+  if (s === "SCHEDULED") {
+    return <Calendar className="w-5 h-5 text-blue-500" />;
+  }
+
+  // 🔴 Pending but overdue or today
+  if (s === "PENDING" && followDate && followDate <= today) {
+    return <AlertCircle className="w-5 h-5 text-red-500" />;
+  }
+
+  // 🔵 Pending but future
+  if (s === "PENDING" && followDate && followDate > today) {
+    return <Calendar className="w-5 h-5 text-blue-500" />;
+  }
+
+  return null;
 };
 
-export default function AgentFollowUpList({ agentId, tenantId }: Props) {
-  const [followUps, setFollowUps] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "today" | "overdue">("all");
 
-  function isToday(dateStr: string) {
-    const today = new Date();
-    const d = new Date(dateStr);
-    return (
-      d.getDate() === today.getDate() &&
-      d.getMonth() === today.getMonth() &&
-      d.getFullYear() === today.getFullYear()
-    );
-  }
-
-  async function fetchFollowUps() {
-    setLoading(true);
-    const res = await fetch(
-      `/api/follow-ups/agent?agentId=${agentId}&tenantId=${tenantId}&filter=${filter}`
-    );
-    const json = await res.json();
-    setFollowUps(json.data || []);
-    setLoading(false);
-  }
-
-  async function markAsDone(id: number) {
-    await fetch("/api/follow-ups/update-status", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        followUpId: id,
-        status: "DONE",
-      }),
-    });
-    setFollowUps((prev) => prev.map((f) => (f.id === id ? { ...f, status: "DONE" } : f)));
-  }
-
-  useEffect(() => {
-    fetchFollowUps();
-  }, [filter]);
 
   if (loading) {
     return (
-      <div className="bg-white/60 rounded-2xl p-8 shadow-sm text-sm text-gray-400">
+      <div className="text-center py-12 text-muted-foreground text-sm">
         Loading follow-ups...
       </div>
     );
@@ -64,78 +91,117 @@ export default function AgentFollowUpList({ agentId, tenantId }: Props) {
 
   if (followUps.length === 0) {
     return (
-      <div className="bg-white/60 rounded-2xl p-8 shadow-sm text-sm text-gray-400">
-        No follow-ups assigned to you
+      <div className="text-center py-12">
+        <div className="text-muted-foreground text-4xl mb-2">📋</div>
+        <p className="text-muted-foreground font-medium text-sm">No follow-ups found</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      {followUps.map((fu) => {
-        const followUpDate = new Date(fu.follow_up_date);
-        const todayStart = startOfToday();
-        const isOverdue = fu.status === "PENDING" && followUpDate < todayStart;
-        const isTodayDate = fu.status === "PENDING" && isToday(fu.follow_up_date);
+  <div className="space-y-4">
+    {followUps.map((followUp) => {
+      const isCompleted =
+        followUp.status?.toUpperCase() === "DONE" ||
+        followUp.status?.toUpperCase() === "COMPLETED";
 
-        return (
-          <div
-            key={fu.id}
-            className={`
-              rounded-2xl p-6 border backdrop-blur transition flex flex-col justify-between
-              ${
-                isOverdue
-                  ? "bg-red-50 border-red-300 shadow-red-200"
-                  : isTodayDate
-                  ? "bg-yellow-50 border-yellow-300 shadow-yellow-200"
-                  : "bg-white/70 shadow-md hover:shadow-lg"
-              }
-            `}
-          >
-            <div className="space-y-3">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 font-semibold">
-                    {fu.follow_up_type}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {new Date(fu.follow_up_date).toDateString()}
-                  </span>
+      return (
+        <div
+          key={followUp.id}
+          className={`bg-white border border-gray-200 rounded-xl px-6 py-4 
+          ${!isCompleted ? "hover:shadow-md" : "opacity-70 bg-gray-50"}
+          transition`}
+        >
+          <div className="flex items-start justify-between">
+            {/* LEFT */}
+            <div className="flex gap-4">
+              {/* ICON */}
+              <div className="pt-1">{getStatusIcon(followUp.status, followUp.follow_up_date)}
+</div>
+
+              {/* CONTENT */}
+              <div>
+                {/* NAME + PRIORITY */}
+                <div className="flex items-center gap-2 mb-1">
+                  <h3
+                    className={`text-sm font-semibold text-gray-900 ${
+                      isCompleted ? "line-through" : ""
+                    }`}
+                  >
+                    {followUp.entity_name ||
+                      followUp.buyer_name ||
+                      followUp.seller_name ||
+                      "Unknown"}
+                  </h3>
+
+                  {followUp.priority && (
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${getPriorityColor(
+                        followUp.priority
+                      )}`}
+                    >
+                      {followUp.priority}
+                    </span>
+                  )}
                 </div>
-                <span
-                  className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                    fu.status === "DONE"
-                      ? "bg-green-100 text-green-700"
-                      : isOverdue
-                      ? "bg-red-100 text-red-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
-                >
-                  {fu.status}
-                </span>
+
+                {/* NOTE / PROPERTY */}
+                <p className="text-sm text-gray-600 mb-1">
+                  {followUp.note || "—"}
+                </p>
+
+                {/* META */}
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <Calendar className="w-3 h-3" />
+                  <span>
+                    {followUp.follow_up_date
+                      ? new Date(
+                          followUp.follow_up_date
+                        ).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })
+                      : "No date"}
+                    {followUp.follow_up_time &&
+                      `, ${followUp.follow_up_time}`}
+                  </span>
+
+                  <span>•</span>
+
+                  <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium text-[11px]">
+                    {followUp.follow_up_type || "TASK"}
+                  </span>
+
+                  {followUp.agent_name && (
+                    <>
+                      <span>•</span>
+                      <span>Agent: {followUp.agent_name}</span>
+                    </>
+                  )}
+                </div>
               </div>
-
-              {fu.entity_name && (
-                <div className="text-sm">
-                  <span className="font-semibold text-gray-800">{fu.entity_name}</span>
-                  <span className="text-gray-400 ml-1">({fu.entity_type})</span>
-                </div>
-              )}
-
-              {fu.note && <p className="text-sm text-gray-600 leading-relaxed">{fu.note}</p>}
             </div>
 
-            {fu.status === "PENDING" && (
-              <button
-                onClick={() => markAsDone(fu.id)}
-                className="mt-5 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition self-start"
-              >
-                ✔ Mark as Done
+            {/* RIGHT */}
+            <div className="flex items-center gap-2">
+              {!isCompleted && (
+                <button
+                  onClick={() => onMarkAsDone(followUp.id)}
+                  className="text-xs px-3 py-1.5 bg-green-50 text-green-700 
+                  rounded-lg hover:bg-green-100 font-medium"
+                >
+                  Mark as Complete
+                </button>
+              )}
+              <button className="p-1 hover:bg-gray-100 rounded">
+                <MoreHorizontal className="w-5 h-5 text-gray-400" />
               </button>
-            )}
+            </div>
           </div>
-        );
-      })}
-    </div>
-  );
+        </div>
+      );
+    })}
+  </div>
+);
+
 }

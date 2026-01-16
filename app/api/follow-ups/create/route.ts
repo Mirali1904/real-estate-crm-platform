@@ -19,25 +19,18 @@ export async function POST(req: Request) {
       note,
     } = body;
 
-    // 🔒 Validation
-    if (!tenantId || !agentId || !followUpDate) {
+    // 🔒 Basic validation
+    if (!tenantId || !agentId || !followUpDate || !followUpType) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    if (!buyerId && !sellerId) {
-      return NextResponse.json(
-        { error: "Either buyerId or sellerId is required" },
-        { status: 400 }
-      );
-    }
-
     const result = await followUpService.create({
       tenantId,
-      buyerId,
-      sellerId,
+      buyerId,   // can be null
+      sellerId,  // can be null
       agentId,
       followUpType,
       followUpDate,

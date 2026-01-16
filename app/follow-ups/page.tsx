@@ -1,8 +1,19 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Filter } from "lucide-react";
+import Header from "@/components/Header";
+import Sidebar from "@/components/Sidebar";
+import AgentFollowUpList from "@/components/follow-ups/AgentFollowUpList";
+import FollowUpForm from "@/components/follow-ups/FollowUpForm";
+
+function startOfToday() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+
 
 export default function FollowUpsPage() {
   const [agentId, setAgentId] = useState<number | null>(null);
@@ -11,6 +22,8 @@ export default function FollowUpsPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"all" | "pending" | "scheduled" | "completed">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
+
 
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
@@ -45,235 +58,201 @@ export default function FollowUpsPage() {
     setFollowUps((prev) => prev.map((f) => (f.id === id ? { ...f, status: "DONE" } : f)));
   }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority?.toUpperCase()) {
-      case "HIGH":
-        return "bg-red-100 text-red-800";
-      case "MEDIUM":
-        return "bg-orange-100 text-orange-800";
-      case "LOW":
-        return "bg-green-100 text-green-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status?.toUpperCase()) {
-      case "DONE":
-      case "COMPLETED":
-        return "✓";
-      case "SCHEDULED":
-        return "📅";
-      case "PENDING":
-        return "⏰";
-      default:
-        return "⏱";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status?.toUpperCase()) {
-      case "DONE":
-      case "COMPLETED":
-        return "text-green-600";
-      case "SCHEDULED":
-        return "text-blue-600";
-      case "PENDING":
-        return "text-orange-600";
-      default:
-        return "text-gray-600";
-    }
-  };
+  const today = startOfToday();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
 
   const filteredFollowUps = followUps
-    .filter((fu) => {
-      if (activeTab === "all") return true;
-      if (activeTab === "pending") return fu.status === "PENDING";
-      if (activeTab === "scheduled") return fu.status === "SCHEDULED";
-      if (activeTab === "completed") return fu.status === "DONE" || fu.status === "COMPLETED";
-      return true;
-    })
+    // 🔍 SEARCH FILTER (FIRST)
     .filter((fu) => {
       if (!searchQuery) return true;
-      const search = searchQuery.toLowerCase();
+
+      const q = searchQuery.toLowerCase();
+
       return (
-        fu.entity_name?.toLowerCase().includes(search) ||
-        fu.note?.toLowerCase().includes(search) ||
-        fu.follow_up_type?.toLowerCase().includes(search)
+        fu.entity_name?.toLowerCase().includes(q) ||
+        fu.note?.toLowerCase().includes(q) ||
+        fu.follow_up_type?.toLowerCase().includes(q)
       );
+    })
+
+    // 📅 TAB FILTER (SECOND)
+    .filter((fu) => {
+      const followUpDate = new Date(fu.follow_up_date);
+      followUpDate.setHours(0, 0, 0, 0);
+
+      // 🟦 ALL → sab active
+      if (activeTab === "all") {
+        return fu.status !== "DONE" && fu.status !== "COMPLETED";
+      }
+
+      // 🟨 PENDING → sirf AAJ
+      if (activeTab === "pending") {
+        return (
+          fu.status === "PENDING" &&
+          followUpDate.getTime() === today.getTime()
+        );
+      }
+
+      // 🟪 SCHEDULED → sirf KAL
+      if (activeTab === "scheduled") {
+        return (
+          fu.status === "PENDING" &&
+          followUpDate.getTime() === tomorrow.getTime()
+        );
+      }
+
+      // 🟩 COMPLETED
+      if (activeTab === "completed") {
+        return fu.status === "DONE" || fu.status === "COMPLETED";
+      }
+
+      return false;
     });
 
-  if (!agentId || !tenantId) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Loading...</p>
-      </div>
-    );
-  }
+
+
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Follow-ups</h1>
-            <p className="text-sm text-gray-500 mt-1">Track all pending and scheduled follow-ups</p>
-          </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-            <Plus className="w-4 h-4" />
-            Add Follow-up
-          </button>
-        </div>
-      </div>
+    <div className="flex bg-gray-50 min-h-screen">
+      <Sidebar />
 
-      {/* Content */}
-      <div className="px-6 py-6 space-y-6">
-        {/* Search & Filters */}
-        <div className="flex gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search follow-ups..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <button className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <Filter className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
+      <div className="flex-1 ml-56">
+        <Header />
 
-        {/* Tabs */}
-        <div className="bg-white rounded-xl border border-gray-200">
-          <div className="flex border-b border-gray-200">
+        <div className="p-6">
+          {/* Search + Add Follow-up */}
+          <div className="flex items-center gap-3 mb-6">
+            {/* Search */}
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Search follow-ups..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-12 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <svg
+                className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <button className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded">
+                <Filter className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
+
+            {/* Add Follow-up Button */}
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4" />
+              Add Follow-up
+            </button>
+
+          </div>
+
+
+          {/* Tabs (Outside the card) */}
+          <div className="flex gap-1 mb-0">
             <button
               onClick={() => setActiveTab("all")}
-              className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
-                activeTab === "all"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+              className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${activeTab === "all"
+                  ? "bg-white text-blue-600 border-t border-l border-r border-gray-200"
+                  : "bg-transparent text-gray-600 hover:text-gray-900"
+                }`}
             >
               All
             </button>
             <button
               onClick={() => setActiveTab("pending")}
-              className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
-                activeTab === "pending"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+              className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${activeTab === "pending"
+                  ? "bg-white text-blue-600 border-t border-l border-r border-gray-200"
+                  : "bg-transparent text-gray-600 hover:text-gray-900"
+                }`}
             >
               Pending
             </button>
             <button
               onClick={() => setActiveTab("scheduled")}
-              className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
-                activeTab === "scheduled"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+              className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${activeTab === "scheduled"
+                  ? "bg-white text-blue-600 border-t border-l border-r border-gray-200"
+                  : "bg-transparent text-gray-600 hover:text-gray-900"
+                }`}
             >
               Scheduled
             </button>
             <button
               onClick={() => setActiveTab("completed")}
-              className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
-                activeTab === "completed"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+              className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${activeTab === "completed"
+                  ? "bg-white text-blue-600 border-t border-l border-r border-gray-200"
+                  : "bg-transparent text-gray-600 hover:text-gray-900"
+                }`}
             >
               Completed
             </button>
           </div>
 
-          {/* Follow-ups List */}
-          <div className="p-6 space-y-4">
-            {loading ? (
-              <div className="text-center py-12 text-gray-500">Loading follow-ups...</div>
-            ) : filteredFollowUps.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-gray-400 text-5xl mb-3">📋</div>
-                <p className="text-gray-500 font-medium">No follow-ups found</p>
-              </div>
-            ) : (
-              filteredFollowUps.map((followUp) => (
-                <div
-                  key={followUp.id}
-                  className={`bg-white border-2 rounded-xl shadow-sm p-5 hover:shadow-md transition-all ${
-                    followUp.status === "DONE" || followUp.status === "COMPLETED"
-                      ? "opacity-60 border-gray-200"
-                      : "border-gray-200"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    {/* Left - Status Icon & Info */}
-                    <div className="flex items-start gap-4 flex-1">
-                      <div className={`mt-1 text-2xl ${getStatusColor(followUp.status)}`}>
-                        {getStatusIcon(followUp.status)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <h3
-                            className={`font-semibold text-gray-900 ${
-                              followUp.status === "DONE" || followUp.status === "COMPLETED" ? "line-through" : ""
-                            }`}
-                          >
-                            {followUp.entity_name || "Unknown"}
-                          </h3>
-                          {followUp.priority && (
-                            <span
-                              className={`${getPriorityColor(
-                                followUp.priority
-                              )} px-2 py-0.5 rounded-full text-xs font-medium`}
-                            >
-                              {followUp.priority}
-                            </span>
-                          )}
-                        </div>
-                        {followUp.note && <p className="text-sm text-gray-600 mb-2">{followUp.note}</p>}
-                        <div className="flex items-center gap-2 text-xs text-gray-500 flex-wrap">
-                          <span>📅 {new Date(followUp.follow_up_date).toLocaleDateString()}</span>
-                          <span>•</span>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
-                            {followUp.follow_up_type}
-                          </span>
-                          <span>•</span>
-                          <span className="text-gray-500">
-                            {followUp.entity_type === "buyer" ? "Buyer" : "Seller"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right - Actions */}
-                    <div className="flex items-center gap-2">
-                      {followUp.status === "PENDING" && (
-                        <button
-                          onClick={() => markAsDone(followUp.id)}
-                          className="text-sm px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors font-medium"
-                        >
-                          Mark as Complete
-                        </button>
-                      )}
-                      <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                        <span className="text-gray-400">⋯</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
+          {/* White Card Container */}
+          <div className="bg-white rounded-b-xl rounded-tr-xl border border-gray-200 shadow-sm p-6">
+            <AgentFollowUpList
+              followUps={filteredFollowUps}
+              loading={loading}
+              onMarkAsDone={markAsDone}
+            />
           </div>
+
+          {/* ADD FOLLOW-UP MODAL */}
+          {showAddModal && (
+            <>
+              {/* Backdrop */}
+              <div
+                className="fixed inset-0 bg-black/30 z-40"
+                onClick={() => setShowAddModal(false)}
+              />
+
+              {/* Modal */}
+              <div className="fixed inset-0 z-50 flex items-center justify-center">
+                <div className="bg-white w-full max-w-md rounded-xl shadow-xl p-6 relative">
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Add Follow-up
+                    </h2>
+                    <button
+                      onClick={() => setShowAddModal(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* FORM */}
+                  <FollowUpForm
+                    tenantId={tenantId!}
+                    agentId={agentId!}
+                    onSuccess={() => {
+                      setShowAddModal(false);
+                      fetchFollowUps(); // refresh list
+                    }}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
         </div>
       </div>
     </div>
   );
 }
-
-
