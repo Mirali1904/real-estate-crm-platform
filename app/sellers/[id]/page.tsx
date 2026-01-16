@@ -40,8 +40,10 @@ export default function SellerDetailPage() {
 
   const [seller, setSeller] = useState<Seller | null>(null);
   const [buyers, setBuyers] = useState<any[]>([]);
-  const [remarks, setRemarks] = useState("");
-  const [savingRemarks, setSavingRemarks] = useState(false);
+ const [latestRemark, setLatestRemark] = useState("");
+const [remarksHistory, setRemarksHistory] = useState<any[]>([]);
+const [savingRemark, setSavingRemark] = useState(false);
+
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [photos, setPhotos] = useState<any[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
@@ -128,6 +130,44 @@ export default function SellerDetailPage() {
     }
   }
 
+  async function fetchRemarks() {
+  if (!sellerId) return;
+
+  const res = await fetch(
+    `/api/internal-remarks?entityType=seller&entityId=${sellerId}`
+  );
+  if (!res.ok) return;
+
+  const data = await res.json();
+  setRemarksHistory(data);
+  setLatestRemark(data[0]?.remark || "");
+}
+async function saveRemark() {
+  if (!latestRemark.trim()) return;
+
+  const raw = localStorage.getItem("loggedUser");
+  if (!raw) return;
+  const user = JSON.parse(raw);
+
+  setSavingRemark(true);
+
+  await fetch("/api/internal-remarks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      entityType: "seller",
+      entityId: sellerId,
+      remark: latestRemark,
+      createdBy: user.id,
+    }),
+  });
+
+  setSavingRemark(false);
+  fetchRemarks();
+}
+
+
+
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
     if (!raw) return;
@@ -143,7 +183,8 @@ export default function SellerDetailPage() {
         if (sellerRes.ok) {
           const data = await sellerRes.json();
           setSeller(data);
-          setRemarks(data.remarks || "");
+          await fetchRemarks();
+          
         }
         const buyersRes = await fetch(`/api/sellers/${sellerId}/buyer-status`, {
           headers: { "x-tenant-id": String(tenantId) },
@@ -212,10 +253,10 @@ export default function SellerDetailPage() {
       
 
       {/* HEADER CARD */}
-      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl shadow-sm p-6 border border-indigo-100">
+      <div className="bg-gradient-to-r from-blue-50 to-blue-50 rounded-xl shadow-sm p-6 border border-blue-100">
         <div className="flex justify-between items-start">
           <div className="flex gap-4">
-            <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold text-lg">
+            <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-lg">
               {(seller.owner_name || seller.name)?.[0]?.toUpperCase() || "S"}
 
             </div>
@@ -248,7 +289,7 @@ export default function SellerDetailPage() {
           </div>
           <button
             onClick={() => setShowFollowUpModal(true)}
-            className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             + Follow-up
           </button>
@@ -273,7 +314,7 @@ export default function SellerDetailPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`px-6 py-4 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? "border-indigo-600 text-indigo-600"
+                  ? "border-indigo-600 text-blue-600"
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
@@ -367,7 +408,7 @@ export default function SellerDetailPage() {
                                 body: JSON.stringify({ sellerId, status: newStatus }),
                               });
                             }}
-                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                           >
                             {STATUS_OPTIONS.map((opt) => (
                               <option key={opt}>{opt}</option>
@@ -384,38 +425,53 @@ export default function SellerDetailPage() {
 
           {/* INTERNAL REMARKS TAB */}
           {activeTab === "remarks" && (
-            <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900 text-lg">Internal Remarks / Notes</h3>
-              <textarea
-                value={remarks}
-                onChange={(e) => setRemarks(e.target.value)}
-                rows={5}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500"
-                placeholder="Add internal notes about this seller..."
-              />
-              <button
-                disabled={savingRemarks}
-                onClick={async () => {
-                  if (!sellerId || !tenantId) return;
-                  setSavingRemarks(true);
-                  const raw = localStorage.getItem("loggedUser");
-                  if (!raw) return;
-                  const user = JSON.parse(raw);
-                  await fetch("/api/sellers/remarks", {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ sellerId, tenantId, remarks, updatedBy: user.id }),
-                  });
-                  setSeller((prev: any) => ({ ...prev, remarks }));
-                  await fetchActivityLogs(tenantId);
-                  setSavingRemarks(false);
-                }}
-                className="px-5 py-2.5 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50"
-              >
-                {savingRemarks ? "Saving..." : "Save Remarks"}
-              </button>
-            </div>
-          )}
+  <div className="space-y-6">
+    <h3 className="font-semibold text-gray-900 text-lg">
+      Internal Remarks
+    </h3>
+
+    {/* Latest Remark */}
+    <textarea
+      value={latestRemark}
+      onChange={(e) => setLatestRemark(e.target.value)}
+      rows={4}
+      className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm
+                 focus:ring-2 focus:ring-blue-500"
+      placeholder="Add new internal remark..."
+    />
+
+    <button
+      disabled={savingRemark}
+      onClick={saveRemark}
+      className="px-5 py-2.5 text-sm rounded-lg bg-blue-600 text-white
+                 hover:bg-blue-700 disabled:opacity-50"
+    >
+      {savingRemark ? "Saving..." : "Save Remark"}
+    </button>
+
+    {/* History */}
+    {remarksHistory.length > 1 && (
+      <div className="mt-6 space-y-3">
+        <h4 className="text-sm font-semibold text-gray-600">
+          Previous Remarks
+        </h4>
+
+        {remarksHistory.slice(1).map((r) => (
+          <div
+            key={r.id}
+            className="border-l-4 border-blue-500 bg-blue-50 p-3 rounded-r-lg"
+          >
+            <p className="text-sm text-gray-800">{r.remark}</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {new Date(r.created_at).toLocaleString()}
+            </p>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
+
 
           {/* LOAN DETAILS TAB */}
           {activeTab === "loans" && (
@@ -424,7 +480,7 @@ export default function SellerDetailPage() {
                 <h3 className="font-semibold text-gray-900 text-lg">Loan Details</h3>
                 <button
                   onClick={() => setShowLoanModal(true)}
-                  className="text-sm px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                  className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
                   + Add Loan
                 </button>
@@ -476,7 +532,7 @@ export default function SellerDetailPage() {
                             {loan.documents.map((doc: any) => (
                               <li key={doc.id} className="flex items-center gap-2">
                                 📄
-                                <a href={doc.file_path} target="_blank" rel="noopener noreferrer" className="text-indigo-600 underline">
+                                <a href={doc.file_path} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
                                   {doc.file_name}
                                 </a>
                               </li>
@@ -490,7 +546,7 @@ export default function SellerDetailPage() {
                             setUploadLoanId(loan.id);
                             loanFileInputRef.current?.click();
                           }}
-                          className="text-indigo-600 underline"
+                          className="text-blue-600 underline"
                         >
                           Upload
                         </button>
@@ -527,16 +583,13 @@ export default function SellerDetailPage() {
             </div>
           )}
 
-          {/* DOCUMENTS TAB */}
-          {activeTab === "documents" && (
-            <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900 text-lg">Documents</h3>
-              <div className="bg-gray-50 rounded-lg p-8 text-center border-2 border-dashed border-gray-300">
-                <p className="text-gray-500">Document section will be implemented here</p>
-                <p className="text-xs text-gray-400 mt-2">Use your DocumentSection component</p>
-              </div>
-            </div>
-          )}
+         {/* DOCUMENTS TAB */}
+{activeTab === "documents" && sellerId && (
+  <div>
+    <DocumentSection entityType="seller" entityId={sellerId} />
+  </div>
+)}
+
 
           {/* PROPERTY PHOTOS TAB */}
           {activeTab === "photos" && (
@@ -549,7 +602,7 @@ export default function SellerDetailPage() {
                   onChange={(e) => setSelectedFiles(e.target.files)}
                   className="text-sm"
                 />
-                <button onClick={uploadPhotos} className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
+                <button onClick={uploadPhotos} className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700">
                   Upload Photos
                 </button>
               </div>
@@ -575,7 +628,7 @@ export default function SellerDetailPage() {
                 <h3 className="font-semibold text-gray-900 text-lg">Follow-ups</h3>
                 <button
                   onClick={() => setShowFollowUpModal(true)}
-                  className="text-sm px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                  className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
                   + Schedule Follow-up
                 </button>
@@ -591,7 +644,7 @@ export default function SellerDetailPage() {
                     <div key={fu.id} className="flex justify-between items-center border-2 rounded-lg p-4 border-gray-200">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">{fu.follow_up_type}</span>
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{fu.follow_up_type}</span>
                           <span className="text-xs text-gray-500">{new Date(fu.follow_up_date).toDateString()}</span>
                         </div>
                         {fu.note && <p className="text-sm text-gray-600 mt-1">{fu.note}</p>}
@@ -605,7 +658,7 @@ export default function SellerDetailPage() {
                           {fu.status}
                         </span>
                         {fu.status === "PENDING" && (
-                          <button onClick={() => markSellerFollowUpDone(fu.id)} className="text-xs text-indigo-600 hover:underline">
+                          <button onClick={() => markSellerFollowUpDone(fu.id)} className="text-xs text-blue-600 hover:underline">
                             ✔ Mark as Done
                           </button>
                         )}
@@ -629,7 +682,7 @@ export default function SellerDetailPage() {
               ) : (
                 <ul className="space-y-4">
                   {activityLogs.map((log, idx) => (
-                    <li key={idx} className="border-l-4 border-indigo-500 pl-4 py-2 bg-indigo-50 rounded-r-lg">
+                    <li key={idx} className="border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 rounded-r-lg">
                       <div className="text-sm text-gray-800 font-medium">{log.description}</div>
                       <div className="text-xs text-gray-500 mt-1">
                         by {log.performed_by_name ?? "System"} {log.performed_by_role ? `(${log.performed_by_role})` : ""} •{" "}
@@ -721,7 +774,7 @@ export default function SellerDetailPage() {
 
               {/* 👇👇👇 EXACT YAHAN 👇👇👇 */}
               <button
-                className="text-sm px-4 py-2 bg-indigo-600 text-white rounded-lg"
+                className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg"
                 onClick={async () => {
                   const payload = {
                     loan_type: loanType,

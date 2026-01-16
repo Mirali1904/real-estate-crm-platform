@@ -58,11 +58,11 @@ export async function POST(req: NextRequest) {
         radius_km,
         bedrooms,
         brokerage_amount,
-        remarks,
+       
         status,
         is_deleted
       )
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ENQUIRY', 0)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  'ENQUIRY', 0)
 
       `,
       [
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
 
         // 🔹 NEW VALUES
         brokerage_amount || null,
-        remarks || null,
+        
       ]
     );
 

@@ -41,9 +41,51 @@ export async function createUserForTenant(input: CreateUserInput) {
 // get all users for a specific tenant (agency)
 export async function getUsersForTenant(tenantId: number) {
   const [rows]: any = await conn.query(
-    "SELECT id, name, email, role, created_at FROM users WHERE tenant_id = ? ORDER BY id ASC",
+    `
+    SELECT
+      u.id,
+      u.name,
+      u.email,
+      u.role,
+      u.created_at,
+
+      -- 🔹 PROPERTIES COUNT
+      CASE
+        WHEN u.role = 'ADMIN' THEN (
+          SELECT COUNT(*)
+          FROM sellers s
+          WHERE s.tenant_id = u.tenant_id
+        )
+        ELSE (
+          SELECT COUNT(*)
+          FROM sellers s
+          WHERE s.agent_id = u.id
+            AND s.tenant_id = u.tenant_id
+        )
+      END AS properties_count,
+
+      -- 🔹 SALES AMOUNT
+      CASE
+        WHEN u.role = 'ADMIN' THEN (
+          SELECT COALESCE(SUM(price), 0)
+          FROM sellers s
+          WHERE s.tenant_id = u.tenant_id
+        )
+        ELSE (
+          SELECT COALESCE(SUM(price), 0)
+          FROM sellers s
+          WHERE s.agent_id = u.id
+            AND s.tenant_id = u.tenant_id
+        )
+      END AS sales_amount
+
+    FROM users u
+    WHERE u.tenant_id = ?
+    ORDER BY u.created_at DESC
+    `,
     [tenantId]
   );
 
   return rows;
 }
+

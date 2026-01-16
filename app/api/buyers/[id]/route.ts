@@ -38,7 +38,7 @@ export async function GET(
 
         -- 🔹 NEW FIELDS
         brokerage_amount,
-        remarks,
+       
 
         status,
         selected_seller_id

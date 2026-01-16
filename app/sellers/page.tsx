@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, Filter, MoreHorizontal, MapPin, Home, DollarSign, User } from "lucide-react";
 import ShareToGroupModal from "@/components/groups/ShareToGroupModal";
+import { FileText } from "lucide-react";
+
 
 // Dropdown Menu Component
 function DropdownMenu({ seller, onAssign, onShare, onDelete }: { 
@@ -84,7 +86,7 @@ type Seller = {
   price: number;
   bedrooms: number;
   brokerage_amount?: string | null;
-  remarks?: string | null;
+    latest_remark?: string | null;
   assigned_agent_id?: number | null;
   assigned_agent_name?: string | null;
 };
@@ -101,6 +103,11 @@ export default function SellersPage() {
   const [agents, setAgents] = useState<any[]>([]);
   const [assignSellerId, setAssignSellerId] = useState<number | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<number | null>(null);
+
+   const totalValue = sellers.reduce(
+    (sum, s) => sum + Number(s.price || 0),
+    0
+  );
 
   /* ================= FETCH SELLERS ================= */
   useEffect(() => {
@@ -223,7 +230,10 @@ export default function SellersPage() {
           <div className="bg-white p-4 rounded-xl border border-gray-200">
             <p className="text-sm text-gray-500 mb-1">Active Listings</p>
             <h4 className="text-3xl font-bold text-blue-600">
-              {sellers.filter(s => s.assigned_agent_id).length}
+              {sellers.filter(
+  s => s.assigned_agent_id !== null && s.assigned_agent_id !== undefined
+).length
+}
             </h4>
           </div>
           <div className="bg-white p-4 rounded-xl border border-gray-200">
@@ -233,11 +243,12 @@ export default function SellersPage() {
             </h4>
           </div>
           <div className="bg-white p-4 rounded-xl border border-gray-200">
-            <p className="text-sm text-gray-500 mb-1">Total Value</p>
-            <h4 className="text-2xl font-bold text-gray-900">
-              ₹{(sellers.reduce((sum, s) => sum + s.price, 0) / 10000000).toFixed(1)} Cr
-            </h4>
-          </div>
+  <p className="text-sm text-gray-500 mb-1">Total Value</p>
+  <h4 className="text-2xl font-bold text-gray-900">
+    ₹{(totalValue / 10000000).toFixed(1)} Cr
+  </h4>
+</div>
+
         </div>
 
         {/* Properties Grid */}
@@ -308,12 +319,16 @@ export default function SellersPage() {
                       </span>
                     )}
                   </div>
-                  {seller.remarks && (
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
-                      <span className="text-sm text-gray-500">{seller.remarks}</span>
-                    </div>
-                  )}
+                  {seller.latest_remark && (
+  <div className="flex items-start gap-2">
+    <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
+    <span className="text-sm text-gray-500">
+      {seller.latest_remark}
+    </span>
+  </div>
+)}
+
+
                 </div>
 
                 {/* Actions */}

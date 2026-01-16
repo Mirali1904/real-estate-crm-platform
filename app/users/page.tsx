@@ -20,7 +20,11 @@ type UserRow = {
   email: string;
   role: string;
   created_at: string;
+
+  properties_count: number;
+  sales_amount: number;
 };
+
 
 export default function UsersPage() {
   const router = useRouter();
@@ -80,32 +84,29 @@ export default function UsersPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
-        {/* Top Section */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-1">Manage Your Team</h2>
-            <p className="text-sm text-gray-600">{users.length} members in your organization</p>
-          </div>
-          <Link href="/users/new">
-            <button className="bg-blue-600 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition font-medium">
-              <Plus className="w-4 h-4" />
-              Invite Member
-            </button>
-          </Link>
-        </div>
+      <div className="w-full px-6 lg:px-10 xl:px-14 space-y-6">
 
-        {/* Search */}
-        <div className="relative w-full">
+        <div className="flex items-center gap-3 w-full">
+  {/* SEARCH BAR - FULL WIDTH */}
+  <div className="relative flex-1">
+    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+    <input
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      placeholder="Search by name, email or phone..."
+      className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
 
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, email or phone..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+  {/* INVITE MEMBER BUTTON */}
+  <Link href="/users/new">
+    <button className="bg-blue-600 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition font-medium whitespace-nowrap">
+      <Plus className="w-4 h-4" />
+      Invite Member
+    </button>
+  </Link>
+</div>
+
 
         {/* Loading State */}
         {loading ? (
@@ -113,7 +114,8 @@ export default function UsersPage() {
         ) : (
           <>
             {/* Team Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+
               {filteredUsers.map((member) => (
                 <div
                   key={member.id}
@@ -171,11 +173,15 @@ export default function UsersPage() {
                   <div className="grid grid-cols-2 gap-2 p-3 bg-gray-50 rounded-lg mb-4">
                     <div className="text-center">
                       <p className="text-xs text-gray-500 mb-1">Properties</p>
-                      <p className="font-bold text-lg text-gray-900">0</p>
+                     <p className="font-bold text-lg text-gray-900">
+  {member.properties_count ?? 0}
+</p>
                     </div>
                     <div className="text-center">
                       <p className="text-xs text-gray-500 mb-1">Sales</p>
-                      <p className="font-bold text-lg text-blue-600">₹0</p>
+                      <p className="font-bold text-lg text-blue-600">
+  ₹{member.sales_amount ?? 0}
+</p>
                     </div>
                   </div>
 

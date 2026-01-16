@@ -53,12 +53,12 @@ export async function POST(req: NextRequest) {
         bedrooms,
 
         brokerage_amount,
-        remarks,
+       
 
         status,
         created_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'LISTED', NOW())
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  'LISTED', NOW())
     `;
 
     await conn.execute(query, [
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 
       // 🔹 NEW VALUES
       brokerage_amount || null,
-      remarks || null,
+      
     ]);
 
     return NextResponse.json({ success: true });

@@ -37,7 +37,7 @@ export async function GET(_req: Request, context: any) {
 
         -- 🔹 NEW (same as buyer)
         brokerage_amount,
-        remarks,
+       
 
         status,
         selected_buyer_id
@@ -93,7 +93,7 @@ export async function PUT(req: Request, context: any) {
 
     // 🔹 NEW
     "brokerage_amount",
-    "remarks",
+    
   ];
 
   const keys = Object.keys(body).filter(k => allowedFields.includes(k));
@@ -118,30 +118,32 @@ export async function PUT(req: Request, context: any) {
   try {
     await conn.execute(sql, paramsArr);
 
-    /* ===== SELLER REMARK ACTIVITY LOG ===== */
-if (keys.includes("remarks")) {
-  await conn.execute(
-    `
-    INSERT INTO agent_activity_logs
-      (tenant_id, agent_id, action_type, entity_type, entity_id, description)
-    VALUES (?, ?, ?, ?, ?, ?)
-    `,
-    [
-      body.tenantId,              // tenant id
-      body.updatedBy || null,     // agent id
-      "SELLER_REMARK_UPDATED",
-      "seller",
-      id,
-      "Seller remarks updated",
-    ]
-  );
-}
+    
 
 
     const [rows]: any = await conn.execute(
-      "SELECT * FROM sellers WHERE id = ?",
-      [id]
-    );
+  `
+  SELECT
+    id,
+    tenant_id,
+    name,
+    email,
+    owner_contact,
+    property_type,
+    location,
+    lat,
+    lng,
+    price,
+    bedrooms,
+    brokerage_amount,
+    status,
+    selected_buyer_id
+  FROM sellers
+  WHERE id = ?
+  `,
+  [id]
+);
+
 
     return NextResponse.json({ success: true, seller: rows[0] });
   } catch (err: any) {

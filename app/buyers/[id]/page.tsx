@@ -32,8 +32,7 @@ export default function BuyerDetailPage() {
   const [sellerPhotos, setSellerPhotos] = useState<Record<number, any[]>>({});
   const [openImages, setOpenImages] = useState<Record<number, boolean>>({});
 
-  const [remarks, setRemarks] = useState("");
-  const [savingRemarks, setSavingRemarks] = useState(false);
+ 
   const [areaSize, setAreaSize] = useState("");
   const [govtEstimatedPrice, setGovtEstimatedPrice] = useState<number | null>(null);
   const [loans, setLoans] = useState<any[]>([]);
@@ -44,6 +43,12 @@ export default function BuyerDetailPage() {
   const [openMap, setOpenMap] = useState<Record<number, boolean>>({});
   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
   const [activeTab, setActiveTab] = useState("properties");
+
+  // 🔵 INTERNAL REMARKS (NEW SYSTEM)
+const [latestRemark, setLatestRemark] = useState("");
+const [remarksHistory, setRemarksHistory] = useState<any[]>([]);
+const [savingRemark, setSavingRemark] = useState(false);
+
 
 
   
@@ -64,6 +69,18 @@ export default function BuyerDetailPage() {
     "Deal Closed",
     "Discarded",
   ];
+
+  async function fetchRemarks() {
+  const res = await fetch(
+    `/api/internal-remarks?entityType=buyer&entityId=${buyerId}`
+  );
+  if (!res.ok) return;
+
+  const data = await res.json();
+  setRemarksHistory(data);
+  setLatestRemark(data[0]?.remark || "");
+}
+
 
   
   
@@ -95,8 +112,10 @@ export default function BuyerDetailPage() {
         if (buyerRes.ok) {
           const data = await buyerRes.json();
           setBuyer(data);
-          setRemarks(data.remarks || "");
+          
         }
+
+        fetchRemarks();
 
         const matchRes = await fetch(`/api/buyers/${buyerId}/matches`, {
           headers: { "x-tenant-id": String(tenantId) },
@@ -141,6 +160,31 @@ export default function BuyerDetailPage() {
     const data = await res.json();
     setGovtEstimatedPrice(data.estimatedPrice);
   }
+
+  async function saveRemark() {
+  if (!latestRemark.trim()) return;
+
+  const raw = localStorage.getItem("loggedUser");
+  if (!raw) return;
+  const user = JSON.parse(raw);
+
+  setSavingRemark(true);
+
+  await fetch("/api/internal-remarks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      entityType: "buyer",
+      entityId: buyerId,
+      remark: latestRemark,
+      createdBy: user.id,
+    }),
+  });
+
+  setSavingRemark(false);
+  fetchRemarks(); // reload history
+}
+
 
   function statusBadge(status: string) {
     switch (status) {
@@ -404,44 +448,55 @@ export default function BuyerDetailPage() {
             </div>
           )}
 
-          {/* INTERNAL REMARKS TAB */}
-          {activeTab === "remarks" && (
-            <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900 text-lg">Internal Remarks / Notes</h3>
-              <textarea
-                value={remarks}
-                onChange={(e) => setRemarks(e.target.value)}
-                rows={5}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Add internal notes about this buyer..."
-              />
-              <button
-                disabled={savingRemarks}
-                onClick={async () => {
-                  setSavingRemarks(true);
-                  const raw = localStorage.getItem("loggedUser");
-                  if (!raw) return;
-                  const user = JSON.parse(raw);
-                  await fetch(`/api/buyers/remarks`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      buyerId,
-                      tenantId: user.tenant_id ?? user.tenantId,
-                      remarks,
-                      updatedBy: user.id,
-                    }),
-                  });
-                  setBuyer((prev: any) => ({ ...prev, remarks }));
-                  await fetchActivityLogs(user.tenant_id ?? user.tenantId);
-                  setSavingRemarks(false);
-                }}
-                className="px-5 py-2.5 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
-              >
-                {savingRemarks ? "Saving..." : "Save Remarks"}
-              </button>
-            </div>
-          )}
+        {/* INTERNAL REMARKS TAB */}
+{activeTab === "remarks" && (
+  <div className="space-y-6">
+    <h3 className="font-semibold text-gray-900 text-lg">
+      Internal Remarks
+    </h3>
+
+    {/* 🔹 Latest Remark */}
+    <textarea
+      value={latestRemark}
+      onChange={(e) => setLatestRemark(e.target.value)}
+      rows={4}
+      className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm
+                 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      placeholder="Add new internal remark..."
+    />
+
+    <button
+      disabled={savingRemark}
+      onClick={saveRemark}
+      className="px-5 py-2.5 text-sm rounded-lg bg-blue-600 text-white
+                 hover:bg-blue-700 disabled:opacity-50"
+    >
+      {savingRemark ? "Saving..." : "Save Remark"}
+    </button>
+
+    {/* 🔹 History */}
+    {remarksHistory.length > 1 && (
+      <div className="mt-6 space-y-3">
+        <h4 className="text-sm font-semibold text-gray-600">
+          Previous Remarks
+        </h4>
+
+        {remarksHistory.map((r) => (
+  <div
+    key={r.id}
+    className="border-l-4 border-blue-500 bg-blue-50 p-3 rounded-r-lg"
+  >
+    <p className="text-sm text-gray-800">{r.remark}</p>
+    <p className="text-xs text-gray-500 mt-1">
+      {new Date(r.created_at).toLocaleString()}
+    </p>
+  </div>
+))}
+
+      </div>
+    )}
+  </div>
+)}
 
 
           
@@ -543,7 +598,7 @@ export default function BuyerDetailPage() {
             setShowUploadModal(false);
             setUploadFile(null);
             setUploadLoanId(null);
-            fetchLoans();
+          
           }}
         >
           Upload

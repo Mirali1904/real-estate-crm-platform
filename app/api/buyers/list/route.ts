@@ -12,17 +12,13 @@ export async function GET(req: Request) {
       return NextResponse.json([], { status: 200 });
     }
 
-    /* 🔒 GET ROLE FROM DB (NOT FROM CLIENT) */
+    // 🔒 ROLE FROM DB
     const [userRows]: any = await conn.execute(
-      `
-      SELECT role
-      FROM users
-      WHERE id = ? AND tenant_id = ?
-      `,
+      `SELECT role FROM users WHERE id = ? AND tenant_id = ?`,
       [userId, tenantId]
     );
 
-    if (userRows.length === 0) {
+    if (!userRows.length) {
       return NextResponse.json([], { status: 200 });
     }
 
@@ -32,7 +28,16 @@ export async function GET(req: Request) {
       SELECT 
         b.*,
 
-        -- ✅ MATCH FRONTEND EXPECTATION
+        -- 🔹 LATEST BUYER REMARK
+        (
+          SELECT ir.remark
+          FROM internal_remarks ir
+          WHERE ir.entity_type = 'buyer'
+            AND ir.entity_id = b.id
+          ORDER BY ir.created_at DESC
+          LIMIT 1
+        ) AS remarks,
+
         u.id   AS assigned_agent_id,
         u.name AS assigned_agent_name
 
@@ -49,11 +54,20 @@ export async function GET(req: Request) {
 
     let params: any[] = [tenantId];
 
-    /* 🔐 AGENT → ONLY OWN BUYERS */
+    // 🔐 AGENT → ONLY OWN BUYERS
     if (role === "AGENT") {
       query = `
         SELECT 
           b.*,
+
+          (
+            SELECT ir.remark
+            FROM internal_remarks ir
+            WHERE ir.entity_type = 'buyer'
+              AND ir.entity_id = b.id
+            ORDER BY ir.created_at DESC
+            LIMIT 1
+          ) AS remarks,
 
           u.id   AS assigned_agent_id,
           u.name AS assigned_agent_name

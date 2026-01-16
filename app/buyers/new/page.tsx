@@ -32,7 +32,7 @@ export default function AddBuyerPage() {
     budget_max: "",
     bedrooms: "",
     brokerage_amount: "",
-    remarks: "",
+   
     agentId: null,
   });
 
@@ -381,19 +381,7 @@ export default function AddBuyerPage() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Buyer Remarks / Notes
-                    </label>
-                    <textarea
-                      name="remarks"
-                      value={form.remarks}
-                      onChange={handleChange}
-                      placeholder="Example: Wants sea-facing flat, call after 10 AM"
-                      rows={4}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-                    />
-                  </div>
+                 
                 </div>
               </div>
 

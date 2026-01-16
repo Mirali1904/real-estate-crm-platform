@@ -27,7 +27,7 @@ export default function AddSellerPage() {
     price: "",
     bedrooms: "",
     brokerage_amount: "",
-    remarks: "",
+    
     agentId: null as number | null,
   });
 
@@ -110,7 +110,7 @@ export default function AddSellerPage() {
         price: form.price,
         bedrooms: form.bedrooms,
         brokerage_amount: form.brokerage_amount,
-        remarks: form.remarks,
+        
       }),
     });
 
@@ -123,7 +123,8 @@ export default function AddSellerPage() {
      
 
       {/* ===== BUYER STYLE HEADER ===== */}
-      <div className="max-w-5xl mx-auto mt-4 bg-white rounded-xl overflow-hidden">
+     <div className="w-full mt-4 bg-white rounded-xl overflow-hidden">
+
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
@@ -176,14 +177,7 @@ export default function AddSellerPage() {
               />
             </div>
 
-            <div className="mt-5">
-              <Textarea
-                label="Seller Remarks / Notes"
-                name="remarks"
-                value={form.remarks}
-                onChange={handleChange}
-              />
-            </div>
+            
           </section>
 
           {/* LOCATION */}
