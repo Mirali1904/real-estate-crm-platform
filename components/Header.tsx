@@ -9,6 +9,16 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname() || "";
 
+   const isBuyerDetailPage =
+    pathname.startsWith("/buyers/") && pathname.split("/").length === 3;
+
+    const isSellerDetailPage =
+  pathname.startsWith("/sellers/") && pathname.split("/").length === 3;
+
+  const isTeamAddPage = pathname === "/users/new";
+
+
+
 
   const [user, setUser] = useState<any>(null);
   const [openMore, setOpenMore] = useState(false);
@@ -45,13 +55,29 @@ export default function Header() {
     >
       <div className="h-full flex items-center justify-between px-6">
 
-        {/* LEFT — PAGE TITLE */}
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-gray-900">
-  {getPageTitle()}
-</h1>
+        <div className="flex items-center gap-3">
+  {(isBuyerDetailPage || isSellerDetailPage || isTeamAddPage) && (
+  <button
+    onClick={() => {
+      if (isBuyerDetailPage) router.push("/buyers");
+      else if (isSellerDetailPage) router.push("/sellers");
+      else router.push("/users");
+    }}
+    className="p-1.5 rounded-md hover:bg-gray-100 text-gray-600 transition"
+    aria-label="Back"
+  >
+    ←
+  </button>
+)}
 
-        </div>
+
+
+  <h1 className="text-xl font-bold text-gray-900">
+    {getPageTitle()}
+  </h1>
+</div>
+
+
 
         {/* RIGHT — SEARCH + ACTIONS */}
         <div className="flex items-center gap-4">

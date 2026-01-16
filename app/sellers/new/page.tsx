@@ -2,13 +2,15 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { Home } from "lucide-react";
 import PrimaryButton from "@/components/PrimaryButton";
 import BackButton from "@/components/BackButton";
+import dynamic from "next/dynamic";
 
-
-import SellerLocationMap from "@/components/SellerLocationMap";
-
-
+const SellerLocationMap = dynamic(
+  () => import("@/components/SellerLocationMap"),
+  { ssr: false }
+);
 
 
 export default function AddSellerPage() {
@@ -24,11 +26,9 @@ export default function AddSellerPage() {
     lng: "",
     price: "",
     bedrooms: "",
-
-    // 🔹 NEW (same as buyer)
     brokerage_amount: "",
     remarks: "",
-     agentId: null,
+    agentId: null as number | null,
   });
 
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -43,7 +43,7 @@ export default function AddSellerPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  /* -------- LOCATION SEARCH (UNCHANGED) -------- */
+  /* ===== LOCATION SEARCH (UNCHANGED) ===== */
   function handleLocationChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     setForm({ ...form, location: value });
@@ -84,7 +84,7 @@ export default function AddSellerPage() {
     setSuggestions([]);
   }
 
-  /* -------- SUBMIT -------- */
+  /* ===== SUBMIT (UNCHANGED) ===== */
   async function handleSubmit() {
     const raw = localStorage.getItem("loggedUser");
     if (!raw) return alert("Not logged in");
@@ -92,15 +92,14 @@ export default function AddSellerPage() {
     const user = JSON.parse(raw);
     const tenantId = user.tenant_id || user.tenantId;
 
-    form.agentId = user.id; // ✅ LOGGED-IN AGENT AUTO ASSIGN
-
+    form.agentId = user.id;
 
     const res = await fetch("/api/sellers/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         tenantId,
-         agentId: form.agentId,
+        agentId: form.agentId,
         name: form.seller_name,
         owner_contact: form.owner_contact,
         email: form.email,
@@ -110,8 +109,6 @@ export default function AddSellerPage() {
         lng: form.lng,
         price: form.price,
         bedrooms: form.bedrooms,
-
-        // 🔹 NEW
         brokerage_amount: form.brokerage_amount,
         remarks: form.remarks,
       }),
@@ -123,61 +120,80 @@ export default function AddSellerPage() {
 
   return (
     <div className="w-full px-6 pt-2">
-      <BackButton />
+     
 
-      {/* ===== CARD (Buyer-style) ===== */}
-      <div className="flex justify-center mt-4">
-        <div className="w-full max-w-2xl bg-white rounded-xl shadow-sm p-6">
-          <h1 className="text-lg font-semibold mb-6">
-            Add Property
-          </h1>
+      {/* ===== BUYER STYLE HEADER ===== */}
+      <div className="max-w-5xl mx-auto mt-4 bg-white rounded-xl overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
+              <Home className="text-white w-7 h-7" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">
+                RealEstateCRM
+              </h1>
+              <p className="text-blue-100 text-sm">
+                Add New Property
+              </p>
+            </div>
+          </div>
+        </div>
 
-          {/* ===== GRID ===== */}
-          <div className="grid grid-cols-2 gap-4">
-            <Field
-              label="Seller Name"
-              name="seller_name"
-              value={form.seller_name}
-              onChange={handleChange}
-            />
-            <Field
-              label="Phone"
-              name="owner_contact"
-              value={form.owner_contact}
-              onChange={handleChange}
-            />
+        {/* ===== FORM BODY ===== */}
+        <div className="p-8 space-y-10">
 
-            <Field
-              label="Email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-            />
-            <Field
-              label="Property Type"
-              name="property_type"
-              value={form.property_type}
-              onChange={handleChange}
-            />
+          {/* BASIC INFO */}
+          <section>
+            <h2 className="text-lg font-semibold mb-5 flex items-center gap-2">
+              <span className="w-2 h-2 bg-blue-600 rounded-full" />
+              Basic Information
+            </h2>
 
-            {/* 🔹 BROKERAGE */}
-            <Field
-              label="Brokerage Amount (₹ / %)"
-              name="brokerage_amount"
-              value={form.brokerage_amount}
-              onChange={handleChange}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <Field label="Seller Name" name="seller_name" value={form.seller_name} onChange={handleChange} />
+              <Field label="Phone" name="owner_contact" value={form.owner_contact} onChange={handleChange} />
+              <Field label="Email" name="email" value={form.email} onChange={handleChange} />
+              <Field label="Property Type" name="property_type" value={form.property_type} onChange={handleChange} />
+            </div>
+          </section>
 
-            {/* 🔹 REMARKS */}
-            <Textarea
-              label="Seller Remarks / Notes"
-              name="remarks"
-              value={form.remarks}
-              onChange={handleChange}
-            />
+          {/* PROPERTY DETAILS */}
+          <section>
+            <h2 className="text-lg font-semibold mb-5 flex items-center gap-2">
+              <span className="w-2 h-2 bg-blue-600 rounded-full" />
+              Property Details
+            </h2>
 
-            {/* LOCATION */}
-            <div className="col-span-2 relative">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <Field label="Price" name="price" value={form.price} onChange={handleChange} />
+              <Field label="Bedrooms" name="bedrooms" value={form.bedrooms} onChange={handleChange} />
+              <Field
+                label="Brokerage Amount (₹ / %)"
+                name="brokerage_amount"
+                value={form.brokerage_amount}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="mt-5">
+              <Textarea
+                label="Seller Remarks / Notes"
+                name="remarks"
+                value={form.remarks}
+                onChange={handleChange}
+              />
+            </div>
+          </section>
+
+          {/* LOCATION */}
+          <section>
+            <h2 className="text-lg font-semibold mb-5 flex items-center gap-2">
+              <span className="w-2 h-2 bg-blue-600 rounded-full" />
+              Location
+            </h2>
+
+            <div className="relative">
               <Field
                 label="Location"
                 name="location"
@@ -185,32 +201,12 @@ export default function AddSellerPage() {
                 onChange={handleLocationChange}
               />
 
-              {/* ===== PROPERTY LOCATION MAP ===== */}
-{form.lat && form.lng && (
-  <div className="col-span-2 mt-4">
-    <SellerLocationMap
-      lat={Number(form.lat)}
-      lng={Number(form.lng)}
-      onChange={(newLat, newLng) => {
-        setForm({
-          ...form,
-          lat: String(newLat),
-          lng: String(newLng),
-        });
-      }}
-    />
-  </div>
-)}
-
-
               {loadingLocation && (
-                <p className="text-xs text-gray-400 mt-1">
-                  Searching…
-                </p>
+                <p className="text-xs text-gray-400 mt-1">Searching…</p>
               )}
 
               {suggestions.length > 0 && (
-                <div className="absolute z-10 bg-white border rounded-lg w-full mt-1 max-h-48 overflow-auto">
+                <div className="absolute z-20 bg-white border rounded-lg w-full mt-1 max-h-48 overflow-auto">
                   {suggestions.map((p, i) => (
                     <div
                       key={i}
@@ -224,30 +220,35 @@ export default function AddSellerPage() {
               )}
             </div>
 
-           <Field label="Latitude" name="lat" value={form.lat} onChange={handleChange} />
-<Field label="Longitude" name="lng" value={form.lng} onChange={handleChange} />
+            {form.lat && form.lng && (
+              <div className="mt-6">
+                <SellerLocationMap
+                  lat={Number(form.lat)}
+                  lng={Number(form.lng)}
+                  onChange={(newLat, newLng) =>
+                    setForm({
+                      ...form,
+                      lat: String(newLat),
+                      lng: String(newLng),
+                    })
+                  }
+                />
+              </div>
+            )}
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+              <Field label="Latitude" name="lat" value={form.lat} onChange={handleChange} />
+              <Field label="Longitude" name="lng" value={form.lng} onChange={handleChange} />
+            </div>
+          </section>
 
-            <Field
-              label="Price"
-              name="price"
-              value={form.price}
-              onChange={handleChange}
-            />
-            <Field
-              label="Bedrooms"
-              name="bedrooms"
-              value={form.bedrooms}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* ===== ACTION ===== */}
-          <div className="flex justify-end mt-6">
+          {/* ACTION */}
+          <div className="flex justify-end pt-6 border-t">
             <PrimaryButton onClick={handleSubmit}>
               Save Property
             </PrimaryButton>
           </div>
+
         </div>
       </div>
     </div>
@@ -258,17 +259,15 @@ export default function AddSellerPage() {
 function Field({ label, name, value, onChange }: any) {
   return (
     <div>
-      <label className="text-xs text-gray-500 mb-1 block">
-        {label}
-      </label>
+      <label className="text-sm text-gray-600 mb-1 block">{label}</label>
       <input
         name={name}
         value={value}
         onChange={onChange}
         className="
-          w-full rounded-lg border border-gray-200
-          px-3 py-2 text-sm
-          focus:outline-none focus:ring-2 focus:ring-indigo-500
+          w-full rounded-lg border border-gray-300
+          px-4 py-2.5 text-sm
+          focus:outline-none focus:ring-2 focus:ring-blue-500
         "
       />
     </div>
@@ -278,19 +277,17 @@ function Field({ label, name, value, onChange }: any) {
 /* ===== TEXTAREA ===== */
 function Textarea({ label, name, value, onChange }: any) {
   return (
-    <div className="col-span-2">
-      <label className="text-xs text-gray-500 mb-1 block">
-        {label}
-      </label>
+    <div>
+      <label className="text-sm text-gray-600 mb-1 block">{label}</label>
       <textarea
         name={name}
         value={value}
         onChange={onChange}
         rows={3}
         className="
-          w-full rounded-lg border border-gray-200
-          px-3 py-2 text-sm
-          focus:outline-none focus:ring-2 focus:ring-indigo-500
+          w-full rounded-lg border border-gray-300
+          px-4 py-2.5 text-sm
+          focus:outline-none focus:ring-2 focus:ring-blue-500
         "
         placeholder="Example: Exclusive seller, price negotiable till 95L"
       />

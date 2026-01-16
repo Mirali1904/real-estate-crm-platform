@@ -12,13 +12,7 @@ const PropertyMap = dynamic(
   { ssr: false }
 );
 
-const LOAN_CARD_STYLE: Record<string, string> = {
-  INQUIRY: "border-gray-300 bg-gray-50",
-  PROCESSING: "border-blue-300 bg-blue-50",
-  DOCUMENTS_PENDING: "border-yellow-300 bg-yellow-50",
-  APPROVED: "border-green-300 bg-green-50",
-  REJECTED: "border-red-300 bg-red-50",
-};
+
 
 export default function BuyerDetailPage() {
   const params = useParams();
@@ -37,33 +31,22 @@ export default function BuyerDetailPage() {
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [sellerPhotos, setSellerPhotos] = useState<Record<number, any[]>>({});
   const [openImages, setOpenImages] = useState<Record<number, boolean>>({});
-  const [editingLoan, setEditingLoan] = useState<any>(null);
+
   const [remarks, setRemarks] = useState("");
   const [savingRemarks, setSavingRemarks] = useState(false);
   const [areaSize, setAreaSize] = useState("");
   const [govtEstimatedPrice, setGovtEstimatedPrice] = useState<number | null>(null);
   const [loans, setLoans] = useState<any[]>([]);
-  const [showLoanModal, setShowLoanModal] = useState(false);
-  const [loanType, setLoanType] = useState("HOME_LOAN");
-  const [bankName, setBankName] = useState("");
-  const [loanAmount, setLoanAmount] = useState("");
-  const [interestRate, setInterestRate] = useState("");
-  const [tenureYears, setTenureYears] = useState("");
-  const [loanStatus, setLoanStatus] = useState("INQUIRY");
-  const [loanRemarks, setLoanRemarks] = useState("");
+  
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadLoanId, setUploadLoanId] = useState<number | null>(null);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [openMap, setOpenMap] = useState<Record<number, boolean>>({});
   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("properties");
 
-  const openUploadModal = (loanId: number) => {
-    setUploadLoanId(loanId);
-    setShowUploadModal(true);
-    setUploadFile(null);
-  };
 
+  
   async function fetchActivityLogs(tenantId: number) {
     const res = await fetch(
       `/api/activity-logs?tenantId=${tenantId}&entityType=buyer&entityId=${buyerId}`
@@ -82,29 +65,8 @@ export default function BuyerDetailPage() {
     "Discarded",
   ];
 
-  const fetchLoans = async () => {
-    const res = await fetch(`/api/loans?buyerId=${buyerId}`);
-    const data = await res.json();
-    setLoans(data || []);
-  };
-
-  const deleteLoan = async (loanId: number) => {
-    if (!confirm("Are you sure you want to delete this loan?")) return;
-    await fetch(`/api/loans/${loanId}`, { method: "DELETE" });
-    setLoans((prev) => prev.filter((loan) => loan.id !== loanId));
-  };
-
-  const openEditLoanModal = (loan: any) => {
-    setEditingLoan(loan);
-    setLoanType(loan.loan_type);
-    setBankName(loan.bank_name || "");
-    setLoanAmount(String(loan.loan_amount || ""));
-    setInterestRate(loan.interest_rate !== null ? String(loan.interest_rate) : "");
-    setTenureYears(loan.tenure_years !== null ? String(loan.tenure_years) : "");
-    setLoanStatus(loan.status || "INQUIRY");
-    setLoanRemarks(loan.remarks || "");
-    setShowLoanModal(true);
-  };
+  
+  
 
   async function fetchSellerPhotos(sellerId: number) {
     if (sellerPhotos[sellerId]) return;
@@ -168,11 +130,7 @@ export default function BuyerDetailPage() {
     loadData();
   }, [buyerId]);
 
-  useEffect(() => {
-    if (buyerId) {
-      fetchLoans();
-    }
-  }, [buyerId]);
+  
 
   async function handleGovtPriceEstimate() {
     if (!areaSize || !buyer?.location) return;
@@ -203,24 +161,18 @@ export default function BuyerDetailPage() {
   if (!buyer) return <div className="px-6 pt-4">Buyer not found</div>;
 
   const tabs = [
-    { id: "overview", label: "Overview" },
+   
     { id: "properties", label: "Matched Properties" },
     { id: "remarks", label: "Internal Remarks" },
-    { id: "loans", label: "Loan Details" },
     { id: "documents", label: "Documents" },
     { id: "followups", label: "Follow-ups" },
     { id: "activity", label: "Activity Timeline" },
+     { id: "overview", label: "About" },
   ];
 
   return (
     <div className="w-full px-6 pt-2 space-y-6">
-      {/* BACK BUTTON */}
-      <button
-        onClick={() => router.push("/buyers")}
-        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-      >
-        ← Back to Buyers
-      </button>
+      
 
       {/* HEADER CARD */}
       <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl shadow-sm p-6 border border-blue-100">
@@ -491,98 +443,8 @@ export default function BuyerDetailPage() {
             </div>
           )}
 
-          {/* LOAN DETAILS TAB */}
-          {activeTab === "loans" && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-gray-900 text-lg">Loan Details</h3>
-                <button
-                  onClick={() => setShowLoanModal(true)}
-                  className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                >
-                  + Add Loan
-                </button>
-              </div>
 
-              {loans.length === 0 ? (
-                <div className="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
-                  <div className="text-gray-400 text-5xl mb-3">💰</div>
-                  <p className="text-gray-500 font-medium">No loans added yet</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {loans.map((loan: any) => (
-                    <div
-                      key={loan.id}
-                      className={`border-2 rounded-lg p-4 space-y-2 transition-all ${LOAN_CARD_STYLE[loan.status?.toUpperCase()] || "border-gray-300"}`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900">{loan.loan_type.replace("_", " ")}</h3>
-                          <p className="text-xs text-gray-500 mt-0.5">Bank: {loan.bank_name || "-"}</p>
-                        </div>
-                        <select
-                          value={loan.status}
-                          onChange={async (e) => {
-                            const newStatus = e.target.value;
-                            await fetch(`/api/loans/${loan.id}`, {
-                              method: "PUT",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ status: newStatus }),
-                            });
-                            setLoans((prev) => prev.map((l) => (l.id === loan.id ? { ...l, status: newStatus } : l)));
-                          }}
-                          className="text-xs border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="INQUIRY">Inquiry</option>
-                          <option value="PROCESSING">Processing</option>
-                          <option value="DOCUMENTS_PENDING">Documents Pending</option>
-                          <option value="APPROVED">Approved</option>
-                          <option value="REJECTED">Rejected</option>
-                        </select>
-                      </div>
-                      <p className="text-sm text-gray-700 font-medium">
-                        ₹{loan.loan_amount.toLocaleString()} • {loan.interest_rate || "-"}% • {loan.tenure_years || "-"} yrs
-                      </p>
-                      {loan.remarks && (
-                        <p className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
-                          <b>Remarks:</b> {loan.remarks}
-                        </p>
-                      )}
-                      <div className="text-xs text-gray-500 space-y-2 pt-2 border-t border-gray-200">
-                        <p className="font-semibold text-gray-700">Documents:</p>
-                        {loan.documents && loan.documents.length > 0 ? (
-                          <ul className="space-y-1.5">
-                            {loan.documents.map((doc: any) => (
-                              <li key={doc.id} className="flex items-center gap-2">
-                                <span className="text-base">📄</span>
-                                <a href={doc.file_path} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline">
-                                  {doc.file_name}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-gray-400">No documents uploaded</p>
-                        )}
-                        <button onClick={() => openUploadModal(loan.id)} className="text-blue-600 hover:text-blue-700 underline font-medium">
-                          + Upload Document
-                        </button>
-                      </div>
-                      <div className="flex gap-4 text-xs pt-2 border-t border-gray-200">
-                        <button onClick={() => openEditLoanModal(loan)} className="text-blue-600 hover:text-blue-700 font-medium">
-                          ✏️ Edit
-                        </button>
-                        <button onClick={() => deleteLoan(loan.id)} className="text-red-600 hover:text-red-700 font-medium">
-                          🗑 Delete
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          
 
           {/* DOCUMENTS TAB */}
           {activeTab === "documents" && (
@@ -636,64 +498,7 @@ export default function BuyerDetailPage() {
 
       
       {/* MODALS */}
-      {showLoanModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-[420px] space-y-3">
-            <h3 className="text-sm font-semibold">{editingLoan ? "Edit Loan" : "Add Loan"}</h3>
-            <select value={loanType} onChange={(e) => setLoanType(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm">
-              <option value="HOME_LOAN">Home Loan</option>
-              <option value="BALANCE_TRANSFER">Balance Transfer</option>
-            </select>
-            <input placeholder="Bank Name" value={bankName} onChange={(e) => setBankName(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
-            <input type="number" placeholder="Loan Amount" value={loanAmount} onChange={(e) => setLoanAmount(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
-            <div className="flex gap-2">
-              <input type="number" placeholder="Interest Rate %" value={interestRate} onChange={(e) => setInterestRate(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
-              <input type="number" placeholder="Tenure (Years)" value={tenureYears} onChange={(e) => setTenureYears(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
-            </div>
-            <textarea rows={2} placeholder="Internal remarks" value={loanRemarks} onChange={(e) => setLoanRemarks(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
-            <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setShowLoanModal(false)} className="text-sm px-4 py-2">Cancel</button>
-              <button
-                className="text-sm px-4 py-2 bg-indigo-600 text-white rounded-lg"
-                onClick={async () => {
-                  const payload = {
-                    loan_type: loanType,
-                    bank_name: bankName,
-                    loan_amount: Number(loanAmount),
-                    interest_rate: interestRate ? Number(interestRate) : null,
-                    tenure_years: tenureYears ? Number(tenureYears) : null,
-                    remarks: loanRemarks,
-                  };
-
-                  if (editingLoan) {
-                    await fetch(`/api/loans/${editingLoan.id}`, {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(payload),
-                    });
-                  } else {
-                    await fetch("/api/loans", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        ...payload,
-                        tenant_id: buyer.tenant_id,
-                        buyer_id: buyer.id,
-                      }),
-                    });
-                  }
-
-                  setShowLoanModal(false);
-                  setEditingLoan(null);
-                  fetchLoans();
-                }}
-              >
-                Save Loan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      
 
      {showUploadModal && (
   <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">

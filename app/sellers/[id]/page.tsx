@@ -1,22 +1,30 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
-import { useParams } from "next/navigation";
-import DocumentSection from "@/components/DocumentSection";
+import { useParams, useRouter } from "next/navigation";
 import FollowUpForm from "@/components/follow-ups/FollowUpForm";
-
-
+import FollowUpList from "@/components/follow-ups/FollowUpList";
+import DocumentSection from "@/components/DocumentSection";
 import dynamic from "next/dynamic";
 
-const PropertyMap = dynamic(
-  () => import("@/components/PropertyMap"),
-  { ssr: false }
-);
 
-
-
-
+type Seller = {
+  id: number;
+  name: string;
+  owner_name: string;
+  property_type: string;
+  price: number;
+  bedrooms: number;
+  email?: string;
+  owner_contact?: string;
+  status: string;
+  remarks?: string;
+  location?: string;
+  lat?: number;
+  lng?: number;
+  tenant_id?: number;
+};
 
 const LOAN_CARD_STYLE: Record<string, string> = {
   INQUIRY: "border-gray-300 bg-gray-50",
@@ -26,136 +34,100 @@ const LOAN_CARD_STYLE: Record<string, string> = {
   REJECTED: "border-red-300 bg-red-50",
 };
 
-
 export default function SellerDetailPage() {
-  const params = useParams();
+  // ✅ DYNAMIC SELLER ID - URL se lena (Next.js useParams jaisa)
+  const [sellerId, setSellerId] = useState<number | null>(null);
 
-  /* ✅ SAFE sellerId extraction */
-  const sellerId =
-    typeof params?.id === "string" ? Number(params.id) : null;
-
-  /* 🔥 DEBUG (temporary) */
-  console.log("FINAL sellerId 👉", sellerId);
-
-
-  const [seller, setSeller] = useState<any>(null);
+  const [seller, setSeller] = useState<Seller | null>(null);
   const [buyers, setBuyers] = useState<any[]>([]);
   const [remarks, setRemarks] = useState("");
   const [savingRemarks, setSavingRemarks] = useState(false);
-
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [photos, setPhotos] = useState<any[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
-
-
-
   const [tenantId, setTenantId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-
-
   const [loans, setLoans] = useState<any[]>([]);
   const [showLoanModal, setShowLoanModal] = useState(false);
   const [editingLoan, setEditingLoan] = useState<any>(null);
-
   const [loanType, setLoanType] = useState("HOME_LOAN");
   const [bankName, setBankName] = useState("");
   const [loanAmount, setLoanAmount] = useState("");
   const [interestRate, setInterestRate] = useState("");
   const [tenureYears, setTenureYears] = useState("");
   const [loanRemarks, setLoanRemarks] = useState("");
-
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadLoanId, setUploadLoanId] = useState<number | null>(null);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const loanFileInputRef = useRef<HTMLInputElement | null>(null);
-
   const [sellerFollowUps, setSellerFollowUps] = useState<any[]>([]);
-const [showFollowUpModal, setShowFollowUpModal] = useState(false);
+  const [showFollowUpModal, setShowFollowUpModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("buyers");
 
 
+  const STATUS_OPTIONS = ["New", "Contacted", "Site Visit Done", "Dropped"];
 
-
-  const STATUS_OPTIONS = [
-    "New",
-    "Contacted",
-    "Site Visit Done",
-    "Dropped",
-  ];
-
+  // ✅ URL se seller ID extract karna
+  useEffect(() => {
+    // Browser URL se ID nikalna (e.g., /sellers/131)
+    const pathSegments = window.location.pathname.split('/');
+    const idFromUrl = Number(pathSegments[pathSegments.length - 1]);
+    
+    if (!isNaN(idFromUrl) && idFromUrl > 0) {
+      setSellerId(idFromUrl);
+    } else {
+      console.error('Invalid seller ID in URL');
+      setLoading(false);
+    }
+  }, []);
 
   const fetchLoans = async () => {
     if (!sellerId) return;
-
     const res = await fetch(`/api/loans?sellerId=${sellerId}`);
     const data = await res.json();
     setLoans(data || []);
   };
 
   async function fetchSellerFollowUps() {
-  const res = await fetch(`/api/follow-ups?sellerId=${sellerId}`);
-  if (res.ok) {
-    setSellerFollowUps(await res.json());
+    if (!sellerId) return;
+    const res = await fetch(`/api/follow-ups?sellerId=${sellerId}`);
+    if (res.ok) {
+      setSellerFollowUps(await res.json());
+    }
   }
-}
-async function markSellerFollowUpDone(id: number) {
-  await fetch(`/api/follow-ups/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status: "DONE" }),
-  });
 
-  setSellerFollowUps((prev) =>
-    prev.map((f) =>
-      f.id === id ? { ...f, status: "DONE" } : f
-    )
-  );
-}
-
-
-
+  async function markSellerFollowUpDone(id: number) {
+    await fetch(`/api/follow-ups/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "DONE" }),
+    });
+    setSellerFollowUps((prev) => prev.map((f) => (f.id === id ? { ...f, status: "DONE" } : f)));
+  }
 
   async function uploadPhotos() {
-
-    console.log("UPLOAD CLICKED", selectedFiles);
-    if (!selectedFiles || selectedFiles.length === 0) return;
-
+    if (!selectedFiles || selectedFiles.length === 0 || !sellerId) return;
     const formData = new FormData();
-
-    Array.from(selectedFiles).forEach((file) => {
-      formData.append("photos", file);
-    });
-
-    const res = await fetch(`/api/sellers/${sellerId}/photos`, {
-      method: "POST",
-      body: formData,
-    });
-
+    Array.from(selectedFiles).forEach((file) => formData.append("photos", file));
+    const res = await fetch(`/api/sellers/${sellerId}/photos`, { method: "POST", body: formData });
     if (res.ok) {
-      // re-fetch photos after upload
       const photosRes = await fetch(`/api/sellers/${sellerId}/photos`);
       if (photosRes.ok) {
         const data = await photosRes.json();
         setPhotos(data || []);
       }
-
-      // reset file input
       setSelectedFiles(null);
     }
   }
 
-
   async function fetchActivityLogs(tenantId: number) {
-    const res = await fetch(
-      `/api/activity-logs?tenantId=${tenantId}&entityType=seller&entityId=${sellerId}`
-    );
-
+    if (!sellerId) return;
+    const res = await fetch(`/api/activity-logs?tenantId=${tenantId}&entityType=seller&entityId=${sellerId}`);
     if (res.ok) {
       setActivityLogs(await res.json());
     }
   }
 
-
-  /* LOAD TENANT */
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
     if (!raw) return;
@@ -163,10 +135,8 @@ async function markSellerFollowUpDone(id: number) {
     setTenantId(user.tenant_id ?? user.tenantId);
   }, []);
 
-  /* LOAD SELLER + BUYERS */
   useEffect(() => {
     if (!sellerId || !tenantId) return;
-
     async function loadData() {
       try {
         const sellerRes = await fetch(`/api/sellers/${sellerId}`);
@@ -175,44 +145,27 @@ async function markSellerFollowUpDone(id: number) {
           setSeller(data);
           setRemarks(data.remarks || "");
         }
-
-        const buyersRes = await fetch(
-          `/api/sellers/${sellerId}/buyer-status`,
-          {
-            headers: { "x-tenant-id": String(tenantId) },
-          }
-        );
-
+        const buyersRes = await fetch(`/api/sellers/${sellerId}/buyer-status`, {
+          headers: { "x-tenant-id": String(tenantId) },
+        });
         if (buyersRes.ok) {
           const data = await buyersRes.json();
           setBuyers(data.buyers || []);
         }
-
-        /* ===== LOAD PROPERTY PHOTOS ===== */
-        const photosRes = await fetch(
-          `/api/sellers/${sellerId}/photos`
-        );
-
+        const photosRes = await fetch(`/api/sellers/${sellerId}/photos`);
         if (photosRes.ok) {
           const data = await photosRes.json();
           setPhotos(data || []);
         }
-
-
-        // ✅ ADD THIS LINE
         if (tenantId) {
           await fetchActivityLogs(tenantId);
         }
-
-
       } finally {
         setLoading(false);
       }
     }
-
     loadData();
   }, [sellerId, tenantId]);
-
 
   useEffect(() => {
     if (sellerId) {
@@ -221,12 +174,10 @@ async function markSellerFollowUpDone(id: number) {
   }, [sellerId]);
 
   useEffect(() => {
-  if (sellerId) {
-    fetchSellerFollowUps();
-  }
-}, [sellerId]);
-
-
+    if (sellerId) {
+      fetchSellerFollowUps();
+    }
+  }, [sellerId]);
 
   function statusBadge(status: string) {
     switch (status) {
@@ -244,556 +195,458 @@ async function markSellerFollowUpDone(id: number) {
   if (loading) return <div className="px-6 pt-4">Loading...</div>;
   if (!seller) return <div className="px-6 pt-4">Seller not found</div>;
 
+  const tabs = [
+    
+    { id: "buyers", label: "Matched Buyers" },
+    { id: "remarks", label: "Internal Remarks" },
+    { id: "loans", label: "Loan Details" },
+    { id: "documents", label: "Documents" },
+    { id: "photos", label: "Property Photos" },
+    { id: "followups", label: "Follow-ups" },
+    { id: "activity", label: "Activity Timeline" },
+    { id: "overview", label: "About" },
+  ];
+
   return (
     <div className="w-full px-6 pt-2 space-y-6">
+      
 
-      {/* ===== SELLER HEADER CARD (BUYER STYLE) ===== */}
-      <div className="bg-white rounded-xl shadow-sm p-6 flex justify-between">
-        <div className="flex gap-4">
-          <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">
-            {seller.name?.[0]?.toUpperCase() || "S"}
-          </div>
+      {/* HEADER CARD */}
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl shadow-sm p-6 border border-indigo-100">
+        <div className="flex justify-between items-start">
+          <div className="flex gap-4">
+            <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold text-lg">
+              {(seller.owner_name || seller.name)?.[0]?.toUpperCase() || "S"}
 
-          <div>
-            <h1 className="text-lg font-semibold">
-              {seller.property_type || "Property"}
-            </h1>
-            <p className="text-sm text-gray-500">
-              Seller: {seller.name}
-            </p>
-            {seller.email && (
-              <p className="text-sm text-gray-500">{seller.email}</p>
-            )}
-            {seller.owner_contact && (
-              <p className="text-sm text-gray-500">
-                {seller.owner_contact}
-              </p>
-            )}
-          </div>
-        </div>
+            </div>
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-2xl font-bold text-gray-900">{seller.property_type || "Property"}</h1>
+                <span className={`px-3 py-1 text-xs rounded-full font-medium ${statusBadge(seller.status)}`}>
+                  {seller.status}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-4 mt-3">
+  <p className="text-sm text-gray-600 flex items-center gap-2">
+    👤 Seller: {seller.owner_name || seller.name}
+  </p>
 
-        <div className="flex items-center gap-3">
-  <span
-    className={`h-fit px-3 py-1 text-xs rounded-full font-medium ${statusBadge(
-      seller.status
-    )}`}
-  >
-    {seller.status}
-  </span>
+  {seller.email && (
+    <p className="text-sm text-gray-600 flex items-center gap-2">
+      ✉️ {seller.email}
+    </p>
+  )}
 
-  <button
-    onClick={() => setShowFollowUpModal(true)}
-    className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-lg"
-  >
-    ➕ Follow-up
-  </button>
+  {seller.owner_contact && (
+    <p className="text-sm text-gray-600 flex items-center gap-2">
+      📞 {seller.owner_contact}
+    </p>
+  )}
 </div>
 
+            </div>
+          </div>
+          <button
+            onClick={() => setShowFollowUpModal(true)}
+            className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            + Follow-up
+          </button>
+        </div>
       </div>
 
-      {/* ===== SELLER META (GRID LIKE BUYER) ===== */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* KEY INFO CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Info label="Price" value={`₹${seller.price}`} />
-        <Info label="Bedrooms" value={seller.bedrooms} />
+        <Info label="Bedrooms" value={`${seller.bedrooms} BHK`} />
         <Info label="Contact" value={seller.owner_contact || "-"} />
         <Info label="Status" value={seller.status} />
       </div>
 
-
-
-
-      {/* ===== SELLER REMARKS ===== */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-sm font-semibold mb-2 text-gray-700">
-          Internal Remarks
-        </h2>
-
-        <textarea
-          value={remarks}
-          onChange={(e) => setRemarks(e.target.value)}
-          rows={3}
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
-          placeholder="Add internal remarks about this seller..."
-        />
-
-        <div className="flex justify-end mt-3">
-          <button
-
-
-            disabled={savingRemarks}
-
-            onClick={async () => {
-              try {
-
-                if (!sellerId) {
-                  alert("Seller ID not found");
-                  return;
-                }
-
-                if (!tenantId) {
-                  alert("Tenant not loaded yet");
-                  return;
-                }
-
-                setSavingRemarks(true);
-
-                const raw = localStorage.getItem("loggedUser");
-                if (!raw) {
-                  alert("Not logged in");
-                  return;
-                }
-
-                const user = JSON.parse(raw);
-                if (!tenantId) {
-                  alert("Tenant not loaded");
-                  return;
-                }
-
-                const res = await fetch("/api/sellers/remarks", {
-                  method: "PUT",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    sellerId,
-                    tenantId,
-                    remarks,
-                    updatedBy: user.id,
-                  }),
-                });
-
-                if (!res.ok) {
-                  const err = await res.json();
-                  alert(err.error || "Failed to save remarks");
-                  return;
-                }
-
-                // ✅ update UI
-                setSeller((prev: any) => ({
-                  ...prev,
-                  remarks,
-                }));
-
-                // ✅ reload timeline
-                await fetchActivityLogs(tenantId);
-              } catch (err) {
-                console.error("Save remarks error", err);
-                alert("Something went wrong");
-              } finally {
-                // 🔥 MOST IMPORTANT
-                setSavingRemarks(false);
-              }
-            }}
-            className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
-          >
-            {savingRemarks ? "Saving..." : "Save Remarks"}
-          </button>
-
-
-
-        </div>
-      </div>
-
-      {/* ===== SELLER DOCUMENTS ===== */}
-      <DocumentSection
-        entityType="seller"
-        entityId={sellerId!}
-      />
-
-      {/* ===== SELLER FOLLOW-UPS LIST ===== */}
-<div className="bg-white rounded-xl shadow-sm p-6">
-  <h2 className="text-sm font-semibold mb-4 text-gray-700">
-    Follow-ups
-  </h2>
-
-  {sellerFollowUps.length === 0 ? (
-    <p className="text-sm text-gray-400">No follow-ups yet</p>
-  ) : (
-    <div className="space-y-3">
-      {sellerFollowUps.map((fu) => (
-        <div
-          key={fu.id}
-          className="flex justify-between items-center border rounded-lg p-4"
-        >
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
-                {fu.follow_up_type}
-              </span>
-
-              <span className="text-xs text-gray-500">
-                {new Date(fu.follow_up_date).toDateString()}
-              </span>
-            </div>
-
-            {fu.note && (
-              <p className="text-sm text-gray-600 mt-1">
-                {fu.note}
-              </p>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span
-              className={`text-xs px-3 py-1 rounded-full font-semibold ${
-                fu.status === "DONE"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-yellow-100 text-yellow-700"
+      {/* TABBED CARD */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        {/* TAB HEADERS */}
+        <div className="flex border-b border-gray-200 overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-6 py-4 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
+                activeTab === tab.id
+                  ? "border-indigo-600 text-indigo-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
-              {fu.status}
-            </span>
-
-            {fu.status === "PENDING" && (
-              <button
-                onClick={() => markSellerFollowUpDone(fu.id)}
-                className="text-xs text-indigo-600 hover:underline"
-              >
-                ✔ Mark as Done
-              </button>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-
-
-
-      {/* ===== PROPERTY PHOTOS ===== */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-sm font-semibold mb-3 text-gray-700">
-          Property Photos
-        </h2>
-
-        {/* UPLOAD PHOTOS */}
-        <div className="mb-4 flex items-center gap-3">
-          <input
-            type="file"
-            multiple
-            onChange={(e) => setSelectedFiles(e.target.files)}
-            className="text-sm"
-          />
-
-          <button
-            onClick={uploadPhotos}
-            className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
-          >
-            Upload Photos
-          </button>
+              {tab.label}
+            </button>
+          ))}
         </div>
 
+        {/* TAB CONTENT */}
+        <div className="p-6">
+          {/* OVERVIEW TAB */}
+          {activeTab === "overview" && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900 mb-3">Seller Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Seller Name</p>
+                  <p className="text-gray-900 font-medium">
+  {seller.owner_name || seller.name || "-"}
+</p>
 
-        {photos.length === 0 ? (
-          <p className="text-sm text-gray-400">
-            No photos uploaded yet
-          </p>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {photos.map((photo: any) => (
-              <img
-                key={photo.id}
-                src={photo.photo_url}
-                alt="Property"
-                className="h-32 w-full object-cover rounded-lg border"
-              />
-            ))}
-          </div>
-
-
-        )}
-      </div>
-
-      {/* ===== PROPERTY LOCATION MAP ===== */}
-{seller.lat && seller.lng && (
-  <div className="bg-white rounded-xl shadow-sm p-6">
-    <h2 className="text-sm font-semibold mb-3 text-gray-700">
-      Property Location
-    </h2>
-
-    <PropertyMap
-      lat={Number(seller.lat)}
-      lng={Number(seller.lng)}
-      label={seller.location || "Property Location"}
-    />
-  </div>
-)}
-
-
-      {/* ===== SELLER LOANS ===== */}
-      <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-sm font-semibold text-gray-700">
-            Loan Details
-          </h2>
-
-          <button
-            onClick={() => setShowLoanModal(true)}
-            className="text-sm px-4 py-2 bg-indigo-600 text-white rounded-lg"
-          >
-            + Add Loan
-          </button>
-        </div>
-
-        {loans.length === 0 ? (
-          <p className="text-sm text-gray-500">No loans added yet</p>
-        ) : (
-          <div className="space-y-3">
-            {loans.map((loan: any) => (
-              <div
-                key={loan.id}
-                className={`border rounded-lg p-3 space-y-1.5 transition-colors duration-300 ${LOAN_CARD_STYLE[loan.status?.toUpperCase()] ||
-                  "border-gray-300 bg-white"
-                  }`}
-              >
-                <div className="flex justify-between items-center">
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Property Type</p>
+                  <p className="text-gray-900 font-medium">{seller.property_type}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Price</p>
+                  <p className="text-gray-900 font-medium">₹{seller.price}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Bedrooms</p>
+                  <p className="text-gray-900 font-medium">{seller.bedrooms} BHK</p>
+                </div>
+                {seller.location && (
                   <div>
-                    <h3 className="text-sm font-semibold">
-                      {loan.loan_type.replace("_", " ")}
-                    </h3>
-                    <p className="text-xs text-gray-500">
-                      Bank: {loan.bank_name || "-"}
-                    </p>
+                    <p className="text-sm text-gray-500">Location</p>
+                    <p className="text-gray-900 font-medium">{seller.location}</p>
                   </div>
+                )}
+              </div>
+            </div>
+          )}
 
-                  {/* STATUS DROPDOWN */}
-                  <select
-                    value={loan.status}
-                    onChange={async (e) => {
-                      const newStatus = e.target.value;
-
-                      await fetch(`/api/loans/${loan.id}`, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ status: newStatus }),
-                      });
-
-                      setLoans((prev) =>
-                        prev.map((l) =>
-                          l.id === loan.id
-                            ? { ...l, status: newStatus }
-                            : l
-                        )
-                      );
-                    }}
-                    className="text-xs border rounded px-2 py-1 bg-white"
-                  >
-                    <option value="INQUIRY">Inquiry</option>
-                    <option value="PROCESSING">Processing</option>
-                    <option value="DOCUMENTS_PENDING">
-                      Documents Pending
-                    </option>
-                    <option value="APPROVED">Approved</option>
-                    <option value="REJECTED">Rejected</option>
-                  </select>
+          {/* MATCHED BUYERS TAB */}
+          {activeTab === "buyers" && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900 text-lg mb-4">Matched Buyers</h3>
+              {buyers.length === 0 ? (
+                <div className="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
+                  <div className="text-gray-400 text-5xl mb-3">👥</div>
+                  <p className="text-gray-500 font-medium">No matched buyers yet</p>
                 </div>
-
-                <p className="text-xs text-gray-700">
-                  ₹{loan.loan_amount} • {loan.interest_rate || "-"}% •{" "}
-                  {loan.tenure_years || "-"} yrs
-                </p>
-
-                <div className="text-xs text-gray-500 space-y-1 mt-2">
-                  <p className="font-medium">Documents:</p>
-
-                  {loan.documents && loan.documents.length > 0 ? (
-                    <ul className="space-y-1">
-                      {loan.documents.map((doc: any) => (
-                        <li key={doc.id} className="flex items-center gap-2">
-                          📄
-                          <a
-                            href={doc.file_path}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-indigo-600 underline"
+              ) : (
+                buyers.map((buyer) => {
+                  const status = buyer.status || "New";
+                  const isDropped = status === "Dropped";
+                  return (
+                    <div
+                      key={buyer.buyer_id}
+                      className={`bg-white border-2 rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow ${
+                        isDropped ? "opacity-50 border-gray-200" : "border-gray-200"
+                      }`}
+                    >
+                      <div className="flex justify-between gap-6">
+                        <div className="space-y-2 flex-1">
+                          <p className="font-semibold text-gray-900 text-lg">{buyer.name}</p>
+                          <p className="text-gray-600">{buyer.email} • {buyer.phone}</p>
+                          <p className="text-sm text-gray-700">Budget: ₹{buyer.budget_min} – ₹{buyer.budget_max}</p>
+                          <p className="text-xs text-gray-500">
+                            <span className="font-medium">Buyer Interest:</span> {status}
+                          </p>
+                        </div>
+                        <div className="flex flex-col">
+                          <label className="text-xs text-gray-500 mb-1 font-medium">Seller Action</label>
+                          <select
+                            value={status}
+                            disabled={isDropped}
+                            onChange={async (e) => {
+                              const newStatus = e.target.value;
+                              setBuyers((prev) =>
+                                prev.map((b) => (b.buyer_id === buyer.buyer_id ? { ...b, status: newStatus } : b))
+                              );
+                              const raw = localStorage.getItem("loggedUser");
+                              if (!raw) return;
+                              const user = JSON.parse(raw);
+                              const tenantId = user.tenant_id ?? user.tenantId;
+                              await fetch(`/api/buyers/${buyer.buyer_id}/property-status`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json", "x-tenant-id": String(tenantId) },
+                                body: JSON.stringify({ sellerId, status: newStatus }),
+                              });
+                            }}
+                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
                           >
-                            {doc.file_name}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-gray-400">No documents</p>
-                  )}
+                            {STATUS_OPTIONS.map((opt) => (
+                              <option key={opt}>{opt}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
 
-                  <button
-                    onClick={() => {
-                      setUploadLoanId(loan.id);
-                      loanFileInputRef.current?.click();
-                    }}
-                    className="text-indigo-600 underline"
-                  >
-                    Upload
-                  </button>
-
-                </div>
-
-
-                <div className="flex gap-4 text-xs text-gray-600 pt-1">
-                  <button
-                    onClick={() => {
-                      setEditingLoan(loan);
-                      setLoanType(loan.loan_type);
-                      setBankName(loan.bank_name || "");
-                      setLoanAmount(String(loan.loan_amount || ""));
-                      setInterestRate(
-                        loan.interest_rate !== null
-                          ? String(loan.interest_rate)
-                          : ""
-                      );
-                      setTenureYears(
-                        loan.tenure_years !== null
-                          ? String(loan.tenure_years)
-                          : ""
-                      );
-                      setLoanRemarks(loan.remarks || "");
-                      setShowLoanModal(true);
-                    }}
-                  >
-                    ✏️ Edit
-                  </button>
-
-                  <button
-                    onClick={async () => {
-                      await fetch(`/api/loans/${loan.id}`, {
-                        method: "DELETE",
-                      });
-                      setLoans((prev) =>
-                        prev.filter((l) => l.id !== loan.id)
-                      );
-                    }}
-                    className="text-red-500"
-                  >
-                    🗑 Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-
-
-
-
-
-      {/* ===== ACTIVITY TIMELINE ===== */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-sm font-semibold mb-4 text-gray-700">
-          Activity Timeline
-        </h2>
-
-        {activityLogs.length === 0 ? (
-          <p className="text-sm text-gray-400">No activity yet</p>
-        ) : (
-          <ul className="space-y-3">
-            {activityLogs.map((log, idx) => (
-              <li key={idx} className="text-sm">
-                <div className="text-gray-700">{log.description}</div>
-
-                <div className="text-xs text-gray-400">
-                  by {log.performed_by_name ?? "System"}{" "}
-                  {log.performed_by_role ? `(${log.performed_by_role})` : ""}
-                  {" • "}
-                  {new Date(log.created_at).toLocaleString()}
-                </div>
-              </li>
-            ))}
-
-          </ul>
-        )}
-      </div>
-
-
-
-      {/* ===== BUYERS TABLE (BUYER MATCH STYLE) ===== */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">
-          Buyers (Seller Action)
-        </h2>
-
-        <div className="space-y-4">
-          {buyers.map((buyer) => {
-            const status = buyer.status || "New";
-            const isDropped = status === "Dropped";
-
-            return (
-              <div
-                key={buyer.buyer_id}
-                className={`bg-white rounded-xl shadow-sm p-5 flex justify-between ${isDropped ? "opacity-60" : ""
-                  }`}
+          {/* INTERNAL REMARKS TAB */}
+          {activeTab === "remarks" && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900 text-lg">Internal Remarks / Notes</h3>
+              <textarea
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                rows={5}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500"
+                placeholder="Add internal notes about this seller..."
+              />
+              <button
+                disabled={savingRemarks}
+                onClick={async () => {
+                  if (!sellerId || !tenantId) return;
+                  setSavingRemarks(true);
+                  const raw = localStorage.getItem("loggedUser");
+                  if (!raw) return;
+                  const user = JSON.parse(raw);
+                  await fetch("/api/sellers/remarks", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ sellerId, tenantId, remarks, updatedBy: user.id }),
+                  });
+                  setSeller((prev: any) => ({ ...prev, remarks }));
+                  await fetchActivityLogs(tenantId);
+                  setSavingRemarks(false);
+                }}
+                className="px-5 py-2.5 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50"
               >
-                <div className="space-y-1 text-sm">
-                  <p className="font-medium">{buyer.name}</p>
-                  <p className="text-gray-600">
-                    {buyer.email} • {buyer.phone}
-                  </p>
-                  <p>
-                    ₹{buyer.budget_min} – ₹{buyer.budget_max}
-                  </p>
+                {savingRemarks ? "Saving..." : "Save Remarks"}
+              </button>
+            </div>
+          )}
 
-                  <p className="text-xs mt-1">
-                    <span className="text-gray-400">
-                      Buyer Interest:
-                    </span>{" "}
-                    <span className="font-medium">{status}</span>
-                  </p>
-                </div>
-
-                <div className="flex flex-col">
-                  <label className="text-xs text-gray-400 mb-1">
-                    Seller Action
-                  </label>
-
-                  <select
-                    value={status}
-                    disabled={isDropped}
-                    onChange={async (e) => {
-                      const newStatus = e.target.value;
-
-                      setBuyers((prev) =>
-                        prev.map((b) =>
-                          b.buyer_id === buyer.buyer_id
-                            ? { ...b, status: newStatus }
-                            : b
-                        )
-                      );
-
-                      const raw = localStorage.getItem("loggedUser");
-                      if (!raw) return;
-                      const user = JSON.parse(raw);
-                      const tenantId =
-                        user.tenant_id ?? user.tenantId;
-
-                      await fetch(
-                        `/api/buyers/${buyer.buyer_id}/property-status`,
-                        {
-                          method: "POST",
-                          headers: {
-                            "Content-Type": "application/json",
-                            "x-tenant-id": String(tenantId),
-                          },
-                          body: JSON.stringify({
-                            sellerId,
-                            status: newStatus,
-                          }),
-                        }
-                      );
-                    }}
-                    className="border rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500"
-                  >
-                    {STATUS_OPTIONS.map((opt) => (
-                      <option key={opt}>{opt}</option>
-                    ))}
-                  </select>
-                </div>
+          {/* LOAN DETAILS TAB */}
+          {activeTab === "loans" && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="font-semibold text-gray-900 text-lg">Loan Details</h3>
+                <button
+                  onClick={() => setShowLoanModal(true)}
+                  className="text-sm px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                >
+                  + Add Loan
+                </button>
               </div>
-            );
-          })}
+              {loans.length === 0 ? (
+                <div className="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
+                  <div className="text-gray-400 text-5xl mb-3">💰</div>
+                  <p className="text-gray-500 font-medium">No loans added yet</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {loans.map((loan: any) => (
+                    <div
+                      key={loan.id}
+                      className={`border-2 rounded-lg p-4 space-y-2 ${LOAN_CARD_STYLE[loan.status?.toUpperCase()] || "border-gray-300"}`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="text-sm font-semibold">{loan.loan_type.replace("_", " ")}</h3>
+                          <p className="text-xs text-gray-500">Bank: {loan.bank_name || "-"}</p>
+                        </div>
+                        <select
+                          value={loan.status}
+                          onChange={async (e) => {
+                            const newStatus = e.target.value;
+                            await fetch(`/api/loans/${loan.id}`, {
+                              method: "PUT",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ status: newStatus }),
+                            });
+                            setLoans((prev) => prev.map((l) => (l.id === loan.id ? { ...l, status: newStatus } : l)));
+                          }}
+                          className="text-xs border rounded px-2 py-1 bg-white"
+                        >
+                          <option value="INQUIRY">Inquiry</option>
+                          <option value="PROCESSING">Processing</option>
+                          <option value="DOCUMENTS_PENDING">Documents Pending</option>
+                          <option value="APPROVED">Approved</option>
+                          <option value="REJECTED">Rejected</option>
+                        </select>
+                      </div>
+                      <p className="text-xs text-gray-700">
+                        ₹{loan.loan_amount} • {loan.interest_rate || "-"}% • {loan.tenure_years || "-"} yrs
+                      </p>
+                      <div className="text-xs text-gray-500 space-y-1 mt-2">
+                        <p className="font-medium">Documents:</p>
+                        {loan.documents && loan.documents.length > 0 ? (
+                          <ul className="space-y-1">
+                            {loan.documents.map((doc: any) => (
+                              <li key={doc.id} className="flex items-center gap-2">
+                                📄
+                                <a href={doc.file_path} target="_blank" rel="noopener noreferrer" className="text-indigo-600 underline">
+                                  {doc.file_name}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-gray-400">No documents</p>
+                        )}
+                        <button
+                          onClick={() => {
+                            setUploadLoanId(loan.id);
+                            loanFileInputRef.current?.click();
+                          }}
+                          className="text-indigo-600 underline"
+                        >
+                          Upload
+                        </button>
+                      </div>
+                      <div className="flex gap-4 text-xs text-gray-600 pt-1">
+                        <button
+                          onClick={() => {
+                            setEditingLoan(loan);
+                            setLoanType(loan.loan_type);
+                            setBankName(loan.bank_name || "");
+                            setLoanAmount(String(loan.loan_amount || ""));
+                            setInterestRate(loan.interest_rate !== null ? String(loan.interest_rate) : "");
+                            setTenureYears(loan.tenure_years !== null ? String(loan.tenure_years) : "");
+                            setLoanRemarks(loan.remarks || "");
+                            setShowLoanModal(true);
+                          }}
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          onClick={async () => {
+                            await fetch(`/api/loans/${loan.id}`, { method: "DELETE" });
+                            setLoans((prev) => prev.filter((l) => l.id !== loan.id));
+                          }}
+                          className="text-red-500"
+                        >
+                          🗑 Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* DOCUMENTS TAB */}
+          {activeTab === "documents" && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900 text-lg">Documents</h3>
+              <div className="bg-gray-50 rounded-lg p-8 text-center border-2 border-dashed border-gray-300">
+                <p className="text-gray-500">Document section will be implemented here</p>
+                <p className="text-xs text-gray-400 mt-2">Use your DocumentSection component</p>
+              </div>
+            </div>
+          )}
+
+          {/* PROPERTY PHOTOS TAB */}
+          {activeTab === "photos" && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900 text-lg">Property Photos</h3>
+              <div className="mb-4 flex items-center gap-3">
+                <input
+                  type="file"
+                  multiple
+                  onChange={(e) => setSelectedFiles(e.target.files)}
+                  className="text-sm"
+                />
+                <button onClick={uploadPhotos} className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
+                  Upload Photos
+                </button>
+              </div>
+              {photos.length === 0 ? (
+                <div className="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
+                  <div className="text-gray-400 text-5xl mb-3">📷</div>
+                  <p className="text-gray-500 font-medium">No photos uploaded yet</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {photos.map((photo: any) => (
+                    <img key={photo.id} src={photo.photo_url} alt="Property" className="h-32 w-full object-cover rounded-lg border" />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* FOLLOW-UPS TAB */}
+          {activeTab === "followups" && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="font-semibold text-gray-900 text-lg">Follow-ups</h3>
+                <button
+                  onClick={() => setShowFollowUpModal(true)}
+                  className="text-sm px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                >
+                  + Schedule Follow-up
+                </button>
+              </div>
+              {sellerFollowUps.length === 0 ? (
+                <div className="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
+                  <div className="text-gray-400 text-5xl mb-3">📅</div>
+                  <p className="text-gray-500 font-medium">No follow-ups yet</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {sellerFollowUps.map((fu) => (
+                    <div key={fu.id} className="flex justify-between items-center border-2 rounded-lg p-4 border-gray-200">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">{fu.follow_up_type}</span>
+                          <span className="text-xs text-gray-500">{new Date(fu.follow_up_date).toDateString()}</span>
+                        </div>
+                        {fu.note && <p className="text-sm text-gray-600 mt-1">{fu.note}</p>}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`text-xs px-3 py-1 rounded-full font-semibold ${
+                            fu.status === "DONE" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                          }`}
+                        >
+                          {fu.status}
+                        </span>
+                        {fu.status === "PENDING" && (
+                          <button onClick={() => markSellerFollowUpDone(fu.id)} className="text-xs text-indigo-600 hover:underline">
+                            ✔ Mark as Done
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ACTIVITY TIMELINE TAB */}
+          {activeTab === "activity" && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900 text-lg">Activity Timeline</h3>
+              {activityLogs.length === 0 ? (
+                <div className="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
+                  <div className="text-gray-400 text-5xl mb-3">📋</div>
+                  <p className="text-gray-500 font-medium">No activity yet</p>
+                </div>
+              ) : (
+                <ul className="space-y-4">
+                  {activityLogs.map((log, idx) => (
+                    <li key={idx} className="border-l-4 border-indigo-500 pl-4 py-2 bg-indigo-50 rounded-r-lg">
+                      <div className="text-sm text-gray-800 font-medium">{log.description}</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        by {log.performed_by_name ?? "System"} {log.performed_by_role ? `(${log.performed_by_role})` : ""} •{" "}
+                        {new Date(log.created_at).toLocaleString()}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
       </div>
+
+      
+
+      
 
       {showLoanModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
