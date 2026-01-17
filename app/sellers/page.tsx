@@ -190,7 +190,7 @@ export default function SellersPage() {
   return (
     <div className="w-full min-h-screen bg-gray-50">
       {/* Main Content */}
-      <div className="p-6 space-y-6">
+      <div className="flex-1 p-4 space-y-3">
         {/* Top Actions */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           

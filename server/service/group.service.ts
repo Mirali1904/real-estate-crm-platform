@@ -22,6 +22,15 @@ export class GroupService {
           WHERE ga2.group_id = g.id
             AND ga2.status = 'active'
         ) AS member_count
+
+        ,
+(
+  SELECT COUNT(*)
+  FROM group_posts gp
+  WHERE gp.group_id = g.id
+    AND gp.status = 'active'
+) AS post_count
+
       FROM groups g
       LEFT JOIN group_agencies ga
         ON ga.group_id = g.id
@@ -106,10 +115,7 @@ export class GroupService {
     }
   }
 
-  /* ======================================
-     ✅ ADD THIS METHOD (NEW)
-     Used by POST /api/groups
-  ====================================== */
+
   async addAgencyToGroup(groupId: number, tenantId: number) {
     return this.addAgency(groupId, tenantId);
   }

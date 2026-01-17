@@ -138,7 +138,7 @@ export default function BuyersPage() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Main Content */}
-      <div className="flex-1 p-6 space-y-6">
+      <div className="flex-1 p-4 space-y-3">
        
 
         {/* Top Actions */}

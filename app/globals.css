@@ -27,68 +27,83 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ================= FULLCALENDAR THEME ================= */
+
+/* ================= FULLCALENDAR BLUE THEME (FORCE OVERRIDE) ================= */
 
 .fc {
-  font-family: inherit;
+  --fc-button-bg-color: #2563eb;        /* blue-600 */
+  --fc-button-border-color: #2563eb;
+  --fc-button-hover-bg-color: #1d4ed8;  /* blue-700 */
+  --fc-button-hover-border-color: #1d4ed8;
+  --fc-button-active-bg-color: #1e40af; /* blue-800 */
+  --fc-button-active-border-color: #1e40af;
+  --fc-today-bg-color: #eff6ff;         /* light blue */
 }
 
-/* Header title */
-.fc-toolbar-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #111827; /* gray-900 */
-}
-
-/* Buttons */
-.fc-button {
-  background-color: #4f46e5 !important; /* indigo-600 */
-  border: none !important;
-  color: white !important;
+/* Button base */
+.fc .fc-button-primary {
+  background-color: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #ffffff !important;
   border-radius: 9999px !important;
-  padding: 6px 14px !important;
-  font-size: 0.875rem;
-}
-
-.fc-button:hover {
-  background-color: #4338ca !important; /* indigo-700 */
-}
-
-.fc-button-primary:not(:disabled).fc-button-active {
-  background-color: #312e81 !important; /* indigo-900 */
-}
-
-/* Calendar cells */
-.fc-daygrid-day-frame {
-  padding: 6px;
-}
-
-.fc-daygrid-day-number {
   font-weight: 500;
-  color: #374151; /* gray-700 */
 }
 
-/* Today highlight */
-.fc-day-today {
-  background-color: #eef2ff !important; /* indigo-50 */
+/* Hover */
+.fc .fc-button-primary:hover {
+  background-color: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+
+/* Active */
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #1e40af !important;
+  border-color: #1e40af !important;
+}
+
+/* Today button */
+.fc .fc-today-button {
+  background-color: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+}
+
+/* Toolbar title */
+.fc-toolbar-title {
+  font-weight: 700;
+  color: #1e3a8a;
 }
 
 /* Events */
 .fc-event {
   border-radius: 8px !important;
-  padding: 2px 6px !important;
+  padding: 2px 6px;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-/* Hover effect */
-.fc-event:hover {
-  opacity: 0.9;
-  cursor: pointer;
+/* Remove purple focus ring */
+.fc .fc-button:focus {
+  box-shadow: none !important;
 }
 
-/* Soft grid borders */
-.fc-theme-standard td,
-.fc-theme-standard th {
-  border-color: #e5e7eb; /* gray-200 */
+.fc .fc-toolbar {
+  padding: 12px 16px !important;
+  margin-bottom: 12px !important;
+}
+
+/* Left / center / right groups alignment */
+.fc .fc-toolbar-chunk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Buttons ko thoda breathing space */
+.fc .fc-button-group {
+  gap: 6px;
+}
+
+/* Calendar outer container spacing */
+.fc-view-harness {
+  padding: 0 8px 8px 8px;
 }

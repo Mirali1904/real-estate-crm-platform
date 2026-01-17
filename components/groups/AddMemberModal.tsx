@@ -41,7 +41,7 @@ export default function AddMemberModal({
         {/* HEADER */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">
-            Add <span className="text-indigo-600">Agency</span>
+            Add <span className="text-blue-600">Agency</span>
           </h2>
 
           <button
@@ -59,7 +59,7 @@ export default function AddMemberModal({
             placeholder="Search by name or email"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full border rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+            className="w-full border rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -77,7 +77,7 @@ export default function AddMemberModal({
               >
                 <div className="flex items-center gap-3">
                   {/* AVATAR */}
-                  <div className="h-9 w-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-semibold uppercase">
+                  <div className="h-9 w-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-semibold uppercase">
                     {agent.name.charAt(0)}
                   </div>
 
@@ -93,7 +93,7 @@ export default function AddMemberModal({
 
                 <button
                   onClick={() => onAddMember(agent.id)}
-                  className="px-4 py-1.5 rounded-full bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700 transition"
+                  className="px-4 py-1.5 rounded-full bg-blue-600 text-white text-xs font-medium hover:bg-indigo-700 transition"
                 >
                   Add
                 </button>

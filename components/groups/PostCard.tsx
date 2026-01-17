@@ -70,7 +70,7 @@ export default function PostCard({
       {/* ================= HEADER ================= */}
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 font-medium uppercase">
+          <span className="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700 font-medium uppercase">
             {post.post_type}
           </span>
           <h3 className="text-base font-semibold text-gray-900">
@@ -138,7 +138,7 @@ export default function PostCard({
           {post.post_type === "seller" && photos.length > 0 && (
             <button
               onClick={() => setShowPhotos(!showPhotos)}
-              className="text-xs text-indigo-600 underline mt-2"
+              className="text-xs text-blue-600 underline mt-2"
             >
               {showPhotos ? "Hide Images" : "Show Images"}
             </button>
@@ -171,7 +171,7 @@ export default function PostCard({
 
         <button
           onClick={onViewResponses}
-          className="text-indigo-600 hover:underline font-medium"
+          className="text-blue-600 hover:underline font-medium"
         >
           Responses ({post.response_count})
         </button>

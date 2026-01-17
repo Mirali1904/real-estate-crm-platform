@@ -111,143 +111,181 @@ export default function CreateGroupPage() {
 
   return (
     <div className="w-full px-6 pt-2 space-y-6">
-      <BackButton />
+  
 
-      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
-        <h1 className="text-xl font-semibold mb-1">
-          Create <span className="text-indigo-600">Group</span>
-        </h1>
-        <p className="text-sm text-gray-500 mb-6">
-          Create a collaboration group for agents
-        </p>
+  <div className="w-full bg-white rounded-2xl shadow-sm overflow-hidden">
 
-        <form onSubmit={handleSubmit} className="space-y-6 text-sm">
-          {/* GROUP NAME */}
-          <div>
-            <label className="text-xs text-gray-400 mb-1 block">
-              Group Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              placeholder="e.g. Vadodara Real Estate Network"
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
-              required
-            />
-          </div>
 
-          {/* DESCRIPTION */}
-          <div>
-            <label className="text-xs text-gray-400 mb-1 block">
-              Description
-            </label>
-            <textarea
-              rows={4}
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  description: e.target.value,
-                })
-              }
-              placeholder="Describe the purpose of this group…"
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
-            />
-          </div>
+    {/* 🔵 BLUE HEADER (same as Team page) */}
+    <div className="bg-blue-600 px-8 py-6 flex items-center gap-4">
+  <div className="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center text-white">
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+      />
+    </svg>
+  </div>
 
-          {/* ADD AGENCY */}
-          <button
-            type="button"
-            onClick={() => {
-              fetchAvailableUsers();
-              setShowAddMemberModal(true);
-            }}
-            className="text-sm text-indigo-600 hover:underline"
-          >
-            + Add Agency
-          </button>
+  <div>
+    <h1 className="text-xl font-semibold text-white">
+      RealEstateCRM
+    </h1>
+    <p className="text-sm text-blue-100">
+      Create a collaboration group for agents
+    </p>
+  </div>
+</div>
 
-          {/* ✅ SELECTED AGENCIES PREVIEW */}
-          {selectedAgencies.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs text-gray-400">Selected Agencies</p>
+    {/* ⚪ FORM BODY */}
+    <form onSubmit={handleSubmit} className="p-8 space-y-8 text-sm">
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {selectedAgencies.map((agency) => (
-                  <div
-                    key={agency.id}
-                    className="flex justify-between items-center border rounded-lg px-3 py-2 bg-gray-50"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">{agency.name}</p>
-                      <p className="text-xs text-gray-500">{agency.email}</p>
-                    </div>
+      {/* SECTION: BASIC INFO */}
+      <div className="space-y-5">
+        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+          Basic Information
+        </h3>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedUsers((prev) =>
-                          prev.filter((id) => id !== agency.id)
-                        );
-                        setSelectedAgencies((prev) =>
-                          prev.filter((a) => a.id !== agency.id)
-                        );
-                      }}
-                      className="text-red-500 text-sm hover:underline"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+        {/* GROUP NAME */}
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">
+            Group Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) =>
+              setFormData({ ...formData, name: e.target.value })
+            }
+            placeholder="e.g. Vadodara Real Estate Network"
+            className="w-full rounded-lg border px-4 py-2.5
+                       focus:ring-2 focus:ring-blue-500 outline-none"
+            required
+          />
+        </div>
 
-          {/* ACTION BUTTONS */}
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => router.push("/groups")}
-              disabled={loading}
-              className="px-5 py-2.5 rounded-full border text-sm text-gray-600 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-indigo-600 text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-indigo-700 disabled:opacity-60"
-            >
-              {loading ? "Creating..." : "Create Group"}
-            </button>
-          </div>
-        </form>
+        {/* DESCRIPTION */}
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">
+            Description
+          </label>
+          <textarea
+            rows={4}
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+            placeholder="Describe the purpose of this group..."
+            className="w-full rounded-lg border px-4 py-2.5 resize-none
+                       focus:ring-2 focus:ring-blue-500 outline-none"
+          />
+        </div>
       </div>
 
-      {/* ADD MEMBER MODAL */}
-      <AddMemberModal
-        isOpen={showAddMemberModal}
-        onClose={() => setShowAddMemberModal(false)}
-        agents={availableUsers}
-        onAddMember={(tenantId) => {
-          const agency = availableUsers.find((a) => a.id === tenantId);
-          if (!agency) return;
+      {/* SECTION: ADD AGENCY */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+          Members
+        </h3>
 
-          setSelectedUsers((prev) =>
-            prev.includes(tenantId) ? prev : [...prev, tenantId]
-          );
+        <button
+          type="button"
+          onClick={() => {
+            fetchAvailableUsers();
+            setShowAddMemberModal(true);
+          }}
+          className="text-blue-600 text-sm font-medium hover:underline"
+        >
+          + Add Agency
+        </button>
 
-          setSelectedAgencies((prev) =>
-            prev.find((a) => a.id === tenantId) ? prev : [...prev, agency]
-          );
+        {/* SELECTED AGENCIES */}
+        {selectedAgencies.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {selectedAgencies.map((agency) => (
+              <div
+                key={agency.id}
+                className="flex justify-between items-center
+                           border rounded-lg px-4 py-3 bg-gray-50"
+              >
+                <div>
+                  <p className="text-sm font-medium">{agency.name}</p>
+                  <p className="text-xs text-gray-500">{agency.email}</p>
+                </div>
 
-          setShowAddMemberModal(false);
-        }}
-      />
-    </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedUsers((prev) =>
+                      prev.filter((id) => id !== agency.id)
+                    );
+                    setSelectedAgencies((prev) =>
+                      prev.filter((a) => a.id !== agency.id)
+                    );
+                  }}
+                  className="text-red-500 text-xs hover:underline"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ACTION BUTTONS */}
+      <div className="flex justify-end gap-3 pt-4 border-t">
+        <button
+          type="button"
+          onClick={() => router.push("/groups")}
+          disabled={loading}
+          className="px-6 py-2.5 rounded-full border text-sm
+                     text-gray-600 hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-blue-600 text-white px-7 py-2.5
+                     rounded-full text-sm font-medium
+                     hover:bg-blue-700 disabled:opacity-60"
+        >
+          {loading ? "Creating..." : "Create Group"}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  {/* MODAL */}
+  <AddMemberModal
+    isOpen={showAddMemberModal}
+    onClose={() => setShowAddMemberModal(false)}
+    agents={availableUsers}
+    onAddMember={(tenantId) => {
+      const agency = availableUsers.find((a) => a.id === tenantId);
+      if (!agency) return;
+
+      setSelectedUsers((prev) =>
+        prev.includes(tenantId) ? prev : [...prev, tenantId]
+      );
+      setSelectedAgencies((prev) =>
+        prev.find((a) => a.id === tenantId) ? prev : [...prev, agency]
+      );
+      setShowAddMemberModal(false);
+    }}
+  />
+</div>
+
   );
 }

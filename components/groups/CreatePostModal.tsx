@@ -51,7 +51,7 @@ export default function CreatePostModal({
         {/* HEADER */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">
-            Create <span className="text-indigo-600">Post</span>
+            Create <span className="text-blue-600">Post</span>
           </h2>
 
           <button
@@ -76,7 +76,7 @@ export default function CreatePostModal({
                 onChange={(e) =>
                   setFormData({ ...formData, postType: e.target.value })
                 }
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
               >
                 <option value="requirement">Requirement</option>
                 <option value="offer">Offer</option>
@@ -97,7 +97,7 @@ export default function CreatePostModal({
                   setFormData({ ...formData, title: e.target.value })
                 }
                 placeholder="Looking for 2BHK in Vastrapur"
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
@@ -115,7 +115,7 @@ export default function CreatePostModal({
                 setFormData({ ...formData, description: e.target.value })
               }
               placeholder="Write details here..."
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -132,7 +132,7 @@ export default function CreatePostModal({
                   setFormData({ ...formData, location: e.target.value })
                 }
                 placeholder="Vastrapur, Ahmedabad"
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -147,7 +147,7 @@ export default function CreatePostModal({
                   setFormData({ ...formData, budget: e.target.value })
                 }
                 placeholder="5000000"
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -164,7 +164,7 @@ export default function CreatePostModal({
 
             <button
               type="submit"
-              className="px-6 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition"
+              className="px-6 py-2 rounded-full bg-blue-600 text-white hover:bg-indigo-700 transition"
             >
               Create Post
             </button>

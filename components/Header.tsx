@@ -17,6 +17,10 @@ export default function Header() {
 
   const isTeamAddPage = pathname === "/users/new";
 
+  const isGroupDetailPage =
+  pathname.startsWith("/groups/") && pathname.split("/").length === 3;
+
+
 
 
 
@@ -42,6 +46,8 @@ export default function Header() {
   if (pathname.startsWith("/sellers")) return "Seller Leads";
   if (pathname.startsWith("/properties")) return "Properties";
   if (pathname.startsWith("/groups")) return "Groups";
+  if (pathname.startsWith("/appointments")) return "Appointments";
+
   if (pathname.startsWith("/follow-ups")) return "Follow Ups";
   if (pathname.startsWith("/users")) return "Team";
   return "Dashboard";
@@ -56,13 +62,19 @@ export default function Header() {
       <div className="h-full flex items-center justify-between px-6">
 
         <div className="flex items-center gap-3">
-  {(isBuyerDetailPage || isSellerDetailPage || isTeamAddPage) && (
+  {(isBuyerDetailPage ||
+  isSellerDetailPage ||
+  isTeamAddPage ||
+  isGroupDetailPage) && (
+
   <button
     onClick={() => {
-      if (isBuyerDetailPage) router.push("/buyers");
-      else if (isSellerDetailPage) router.push("/sellers");
-      else router.push("/users");
-    }}
+  if (isBuyerDetailPage) router.push("/buyers");
+  else if (isSellerDetailPage) router.push("/sellers");
+  else if (isGroupDetailPage) router.push("/groups");
+  else router.push("/users");
+}}
+
     className="p-1.5 rounded-md hover:bg-gray-100 text-gray-600 transition"
     aria-label="Back"
   >

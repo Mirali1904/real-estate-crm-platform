@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import BackButton from "@/components/BackButton";
+import { Search, Calendar, List, Edit2, Trash2 } from "lucide-react";
 import CreateAppointmentModal from "@/components/appointments/CreateAppointmentModal";
 import AppointmentCalendar from "@/components/appointments/AppointmentCalendar";
+
+import Sidebar from "@/components/Sidebar";
+import Header from "@/components/Header";
+
 
 export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -12,7 +16,7 @@ export default function AppointmentsPage() {
   const [editAppointment, setEditAppointment] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [search, setSearch] = useState("");
-  const [view, setView] = useState<"calendar" | "list">("calendar"); // ✅ TABS
+  const [view, setView] = useState<"calendar" | "list">("list");
 
   /* ================= LOAD USER ================= */
   useEffect(() => {
@@ -55,169 +59,233 @@ export default function AppointmentsPage() {
     return () => clearTimeout(timer);
   }, [search, user]);
 
+  const handleDelete = async (id: number) => {
+    if (!confirm("Delete this appointment?")) return;
+    await fetch(`/api/appointments/${id}`, { method: "DELETE" });
+    fetchAppointments(user.tenantId);
+  };
+
+  const getStatusColor = (status: string) => {
+    const colors: any = {
+      confirmed: "bg-green-100 text-green-700",
+      pending: "bg-yellow-100 text-yellow-700",
+      cancelled: "bg-red-100 text-red-700",
+      completed: "bg-blue-100 text-blue-700",
+    };
+    return colors[status?.toLowerCase()] || "bg-gray-100 text-gray-700";
+  };
+
   if (!user) return null;
 
   return (
-   <div className="px-6 pt-3 pb-4 bg-gray-50 min-h-screen space-y-3">
+  <div className="flex min-h-screen bg-gray-50">
 
-      {/* BACK */}
-      <BackButton />
+    {/* SIDEBAR */}
+    <Sidebar />
+
+    {/* RIGHT SIDE */}
+    <div className="flex-1 ml-56">
 
       {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-900">
-          Appointments
-        </h1>
+      <Header />
 
-        <button
-          onClick={() => {
-            setEditAppointment(null);
-            setShowModal(true);
-          }}
-          className="bg-indigo-600 hover:bg-indigo-700 transition text-white px-5 py-2 rounded-full text-sm"
-        >
-          + New Appointment
-        </button>
-      </div>
+        <div className="max-w-7xl mx-auto px-6 pt-3 pb-6">
 
-      {/* SEARCH */}
-      <input
-        placeholder="Search by name or purpose"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="
-          w-full max-w-sm
-          px-4 py-2
-          border border-gray-200
-          rounded-full
-          text-sm
-          bg-white
-          focus:outline-none
-          focus:ring-2 focus:ring-indigo-500
-        "
-      />
 
-      {/* VIEW TABS */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => setView("calendar")}
-          className={`px-4 py-2 rounded-full text-sm font-medium ${
-            view === "calendar"
-              ? "bg-indigo-600 text-white"
-              : "bg-white border text-gray-600"
-          }`}
-        >
-          Calendar View
-        </button>
-
+   
+      
+      {/* View Toggle Buttons */}
+      <div className="flex items-center gap-4 mb-6">
         <button
           onClick={() => setView("list")}
-          className={`px-4 py-2 rounded-full text-sm font-medium ${
+          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
             view === "list"
-              ? "bg-indigo-600 text-white"
-              : "bg-white border text-gray-600"
+              ? "bg-white text-gray-900 shadow-md"
+              : "bg-transparent text-gray-600 hover:bg-white/50"
           }`}
         >
+          <List className="w-4 h-4" />
           List View
+        </button>
+        <button
+          onClick={() => setView("calendar")}
+          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+            view === "calendar"
+              ? "bg-white text-gray-900 shadow-md"
+              : "bg-transparent text-gray-600 hover:bg-white/50"
+          }`}
+        >
+          <Calendar className="w-4 h-4" />
+          Calendar
         </button>
       </div>
 
-      {/* ================= CALENDAR ================= */}
-      {view === "calendar" && (
-        <div className="bg-white rounded-2xl shadow-sm border p-4">
-          <AppointmentCalendar
-            appointments={appointments}
-            onEventClick={(appointment: any) => {
-              setEditAppointment(appointment);
-              setShowModal(true);
-            }}
-          />
-        </div>
-      )}
+      {/* SEARCH + NEW APPOINTMENT */}
+<div className="flex items-center gap-4 mb-6">
 
-      {/* ================= LIST ================= */}
-      {view === "list" && (
-        <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
+  {/* SEARCH – FULL WIDTH */}
+  <div className="relative flex-1">
+    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+    <input
+      type="text"
+      placeholder="Search by name or purpose..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      className="
+        w-full
+        pl-12 pr-4 py-3
+        bg-white
+        border border-gray-200
+        rounded-lg
+        text-sm
+        focus:outline-none
+        focus:ring-2 focus:ring-blue-500
+      "
+    />
+  </div>
 
-          {/* HEADER */}
-          <div className="grid grid-cols-6 px-6 py-3 text-xs font-semibold text-gray-500 uppercase bg-gray-50 border-b">
-            <div>Name</div>
-            <div>Date</div>
-            <div>Time</div>
-            <div>Purpose</div>
-            <div>Status</div>
-            <div>Actions</div>
-          </div>
+  {/* NEW APPOINTMENT BUTTON */}
+  <button
+    onClick={() => {
+      setEditAppointment(null);
+      setShowModal(true);
+    }}
+    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg text-sm font-medium whitespace-nowrap"
+  >
+    + New Appointment
+  </button>
 
-          {/* BODY */}
-          {loading && (
-            <div className="px-6 py-4 text-sm text-gray-500">
-              Loading...
-            </div>
-          )}
+</div>
 
-          {!loading && appointments.length === 0 && (
-            <div className="px-6 py-4 text-sm text-gray-400">
-              No appointments found
-            </div>
-          )}
 
-          {!loading &&
-            appointments.map((a) => (
-              <div
-                key={a.id}
-                className="grid grid-cols-6 px-6 py-4 text-sm border-b hover:bg-gray-50"
-              >
-                {/* NAME */}
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-semibold uppercase">
-                    {a.customer_name?.[0]}
-                  </div>
-                  <span className="font-medium capitalize">
-                    {a.customer_name}
-                  </span>
-                </div>
-
-                <div>{new Date(a.appointment_date).toLocaleDateString()}</div>
-                <div>{a.appointment_time}</div>
-                <div className="text-gray-600">{a.purpose || "-"}</div>
-
-                <div>
-                  <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700">
-                    {a.status}
-                  </span>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setEditAppointment(a);
-                      setShowModal(true);
-                    }}
-                    className="text-indigo-600 text-sm hover:underline"
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={async () => {
-                      if (!confirm("Delete this appointment?")) return;
-                      await fetch(`/api/appointments/${a.id}`, {
-                        method: "DELETE",
-                      });
-                      fetchAppointments(user.tenantId);
-                    }}
-                    className="text-red-500 text-sm hover:underline"
-                  >
-                    Delete
-                  </button>
-                </div>
+      {/* Content Area */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {/* LIST VIEW */}
+        {view === "list" && (
+          <>
+            {/* Table Header */}
+            <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200">
+              <div className="col-span-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Name
               </div>
-            ))}
-        </div>
-      )}
+              <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Date
+              </div>
+              <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Time
+              </div>
+              <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Purpose
+              </div>
+              <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Status
+              </div>
+              <div className="col-span-1 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
+                Actions
+              </div>
+            </div>
 
-      {/* MODAL */}
+            {/* Table Body */}
+            <div className="divide-y divide-gray-200">
+              {loading && (
+                <div className="px-6 py-12 text-center text-gray-500">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-blue-600"></div>
+                  <p className="mt-3">Loading appointments...</p>
+                </div>
+              )}
+
+              {!loading && appointments.length === 0 && (
+                <div className="px-6 py-12 text-center text-gray-500">
+                  <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p className="text-lg font-medium text-gray-900 mb-1">No appointments found</p>
+                  <p className="text-sm text-gray-500">Create your first appointment to get started</p>
+                </div>
+              )}
+
+              {!loading &&
+                appointments.map((a) => (
+                  <div
+                    key={a.id}
+                    className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition-colors"
+                  >
+                    {/* Name */}
+                    <div className="col-span-3 flex items-center">
+                      <div className="font-medium text-gray-900 capitalize">
+                        {a.customer_name}
+                      </div>
+                    </div>
+
+                    {/* Date */}
+                    <div className="col-span-2 flex items-center text-gray-700">
+                      {new Date(a.appointment_date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                      })}
+                    </div>
+
+                    {/* Time */}
+                    <div className="col-span-2 flex items-center text-gray-700">
+                      {a.appointment_time}
+                    </div>
+
+                    {/* Purpose */}
+                    <div className="col-span-2 flex items-center text-gray-600">
+                      {a.purpose || "-"}
+                    </div>
+
+                    {/* Status */}
+                    <div className="col-span-2 flex items-center">
+                      <span
+                        className={`inline-flex px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(
+                          a.status
+                        )}`}
+                      >
+                        {a.status}
+                      </span>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="col-span-1 flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => {
+                          setEditAppointment(a);
+                          setShowModal(true);
+                        }}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(a.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </>
+        )}
+
+        {/* CALENDAR VIEW */}
+        {view === "calendar" && (
+          <div className="p-6">
+            <AppointmentCalendar
+              appointments={appointments}
+              onEventClick={(appointment: any) => {
+                setEditAppointment(appointment);
+                setShowModal(true);
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Modal */}
       <CreateAppointmentModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
@@ -225,6 +293,8 @@ export default function AppointmentsPage() {
         appointment={editAppointment}
         onCreated={() => fetchAppointments(user.tenantId)}
       />
+    </div>
+    </div>
     </div>
   );
 }

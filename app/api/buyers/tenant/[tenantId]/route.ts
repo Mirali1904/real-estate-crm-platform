@@ -31,7 +31,7 @@ export async function GET(
         b.bedrooms,
 
         b.brokerage_amount,
-        b.remarks,
+       
         b.status,
         b.created_at,
 
