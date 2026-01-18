@@ -70,7 +70,7 @@ export async function GET(
         s.email         AS seller_email,
         s.owner_contact AS seller_contact,
 
-        -- 🔥 BUYER ↔ SELLER STATUS
+        --  BUYER ↔ SELLER STATUS
         COALESCE(bps.status, 'New') AS buyer_property_status,
 
         (

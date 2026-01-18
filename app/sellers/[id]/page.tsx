@@ -44,6 +44,8 @@ export default function SellerDetailPage() {
 const [remarksHistory, setRemarksHistory] = useState<any[]>([]);
 const [savingRemark, setSavingRemark] = useState(false);
 
+
+
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [photos, setPhotos] = useState<any[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
@@ -385,8 +387,9 @@ async function saveRemark() {
                           <p className="text-gray-600">{buyer.email} • {buyer.phone}</p>
                           <p className="text-sm text-gray-700">Budget: ₹{buyer.budget_min} – ₹{buyer.budget_max}</p>
                           <p className="text-xs text-gray-500">
-                            <span className="font-medium">Buyer Interest:</span> {status}
-                          </p>
+  <span className="font-medium">Buyer–Property Status:</span> {status}
+</p>
+
                         </div>
                         <div className="flex flex-col">
                           <label className="text-xs text-gray-500 mb-1 font-medium">Seller Action</label>
@@ -395,13 +398,27 @@ async function saveRemark() {
                             disabled={isDropped}
                             onChange={async (e) => {
                               const newStatus = e.target.value;
-                              setBuyers((prev) =>
-                                prev.map((b) => (b.buyer_id === buyer.buyer_id ? { ...b, status: newStatus } : b))
-                              );
-                              const raw = localStorage.getItem("loggedUser");
-                              if (!raw) return;
-                              const user = JSON.parse(raw);
-                              const tenantId = user.tenant_id ?? user.tenantId;
+                              await fetch(`/api/buyers/${buyer.buyer_id}/property-status`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "x-tenant-id": String(tenantId),
+  },
+  body: JSON.stringify({ sellerId, status: newStatus }),
+});
+
+// 🔥 re-fetch from DB (single source of truth)
+const buyersRes = await fetch(
+  `/api/sellers/${sellerId}/buyer-status`,
+  { headers: { "x-tenant-id": String(tenantId) } }
+);
+
+if (buyersRes.ok) {
+  const data = await buyersRes.json();
+  setBuyers(data.buyers || []);
+}
+
+                              
                               await fetch(`/api/buyers/${buyer.buyer_id}/property-status`, {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json", "x-tenant-id": String(tenantId) },
@@ -505,14 +522,22 @@ async function saveRemark() {
                         <select
                           value={loan.status}
                           onChange={async (e) => {
-                            const newStatus = e.target.value;
-                            await fetch(`/api/loans/${loan.id}`, {
-                              method: "PUT",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ status: newStatus }),
-                            });
-                            setLoans((prev) => prev.map((l) => (l.id === loan.id ? { ...l, status: newStatus } : l)));
-                          }}
+  const newStatus = e.target.value;
+
+  await fetch(`/api/loans/${loan.id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: newStatus }),
+  });
+
+  setLoans((prev) =>
+    prev.map((l) =>
+      l.id === loan.id ? { ...l, status: newStatus } : l
+    )
+  );
+}}
+
+
                           className="text-xs border rounded px-2 py-1 bg-white"
                         >
                           <option value="INQUIRY">Inquiry</option>

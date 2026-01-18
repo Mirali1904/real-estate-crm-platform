@@ -72,3 +72,49 @@ export async function GET(
     conn.release();
   }
 }
+
+/* POST: Seller updates buyer-property status */
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const sellerId = Number(id);
+  const tenantId = Number(req.headers.get("x-tenant-id"));
+
+  const { buyerId, status } = await req.json();
+
+  if (!sellerId || !buyerId || !tenantId || !status) {
+    return NextResponse.json(
+      { error: "Invalid data" },
+      { status: 400 }
+    );
+  }
+
+  const conn = await pool.getConnection();
+
+  try {
+    await conn.execute(
+      `
+      INSERT INTO buyer_property_status
+        (tenant_id, buyer_id, seller_id, status)
+      VALUES (?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+        status = VALUES(status),
+        updated_at = CURRENT_TIMESTAMP
+      `,
+      [tenantId, buyerId, sellerId, status]
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Seller status POST error:", err);
+    return NextResponse.json(
+      { error: "Failed to update status" },
+      { status: 500 }
+    );
+  } finally {
+    conn.release();
+  }
+}
+

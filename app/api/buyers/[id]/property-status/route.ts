@@ -37,7 +37,7 @@ export async function GET(
   }
 }
 
-/* POST: Update status for a specific property */
+
 /* POST: Update status for a specific property */
 export async function POST(
   req: NextRequest,
