@@ -21,6 +21,8 @@ export default function DashboardPage() {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDueDate, setNewTaskDueDate] = useState("");
   const [reports, setReports] = useState<any[]>([]);
+  const [serverLoad, setServerLoad] = useState<any>(null);
+
 
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
@@ -98,6 +100,15 @@ export default function DashboardPage() {
     });
   }, []);
 
+  useEffect(() => {
+  if (!user) return;
+
+  fetch(`/api/dashboard/server-load?tenantId=${user.tenantId}`)
+    .then((r) => r.json())
+    .then(setServerLoad);
+}, [user]);
+
+
   if (!user || loading) return null;
 
   const createManualTask = async () => {
@@ -129,9 +140,10 @@ export default function DashboardPage() {
     setTasks(data);
   };
 
-  const usageGB = buyers.length * 10 + properties.length * 25;
-  const spaceGB = 320;
-  const cpuPercent = Math.min(30 + tasks.length * 5, 95);
+  const usageGB = serverLoad?.usageGB ?? 0;
+const spaceGB = serverLoad?.spaceGB ?? 500;
+const cpuPercent = serverLoad?.cpuPercent ?? 0;
+
 
   const statCards = [
     {

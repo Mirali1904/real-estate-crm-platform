@@ -48,14 +48,27 @@ export default function AnalyticsScatterChart() {
 
       <div className="h-[320px]">
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart>
-            <CartesianGrid />
-            <XAxis dataKey="x" name="Actions" />
-            <YAxis dataKey="y" name="Users" />
-            <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-            <Scatter data={data} fill="#6366f1" />
-          </ScatterChart>
-        </ResponsiveContainer>
+  <ScatterChart>
+    <CartesianGrid />
+    <XAxis type="number" dataKey="x" name="Actions" />
+   <YAxis
+  dataKey="y"
+  name="User"
+  allowDecimals={false}
+/>
+
+    <Tooltip
+  formatter={(value, name, props) => {
+    if (name === "x") return [`${value} actions`, "Total"];
+    return value;
+  }}
+  labelFormatter={() => ""}
+/>
+
+    <Scatter data={data} fill="#2563eb" />
+  </ScatterChart>
+</ResponsiveContainer>
+
       </div>
     </div>
   );

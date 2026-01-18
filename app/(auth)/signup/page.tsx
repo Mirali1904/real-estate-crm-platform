@@ -17,32 +17,75 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<{
+  agencyName?: string;
+  name?: string;
+  email?: string;
+  password?: string;
+}>({});
+
+function validateForm() {
+  const newErrors: typeof errors = {};
+
+  if (!agencyName.trim()) {
+    newErrors.agencyName = "Agency name is required";
+  } else if (agencyName.length < 3) {
+    newErrors.agencyName = "Agency name must be at least 3 characters";
+  }
+
+  if (!name.trim()) {
+    newErrors.name = "Your name is required";
+  } else if (name.length < 2) {
+    newErrors.name = "Name must be at least 2 characters";
+  }
+
+  if (!email.trim()) {
+    newErrors.email = "Email is required";
+  } else if (!/^\S+@\S+\.\S+$/.test(email)) {
+    newErrors.email = "Invalid email address";
+  }
+
+  const password = passwordRef.current?.value || "";
+  if (!password) {
+    newErrors.password = "Password is required";
+  } else if (password.length < 8) {
+    newErrors.password = "Password must be at least 8 characters";
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+}
+
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  e.preventDefault();
+  setError("");
 
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tenantName: agencyName,
-        name,
-        email,
-        password: passwordRef.current?.value || "",
-      }),
-    });
+  if (!validateForm()) return; //  STOP if invalid
 
-    if (res.ok) {
-      router.push("/login");
-    } else {
-      const data = await res.json().catch(() => null);
-      setError(data?.message || "Signup failed");
-    }
+  setLoading(true);
 
-    setLoading(false);
+  const res = await fetch("/api/auth/signup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      tenantName: agencyName,
+      name,
+      email,
+      password: passwordRef.current?.value || "",
+    }),
+  });
+
+  if (res.ok) {
+    router.push("/login");
+  } else {
+    const data = await res.json().catch(() => null);
+    setError(data?.message || "Signup failed");
   }
+
+  setLoading(false);
+}
+
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center px-4
@@ -115,6 +158,10 @@ outline-none
 
                 required
               />
+              {errors.agencyName && (
+  <p className="text-sm text-red-500">{errors.agencyName}</p>
+)}
+
             </div>
 
             {/* Your Name */}
@@ -143,6 +190,10 @@ outline-none
 
                 required
               />
+              {errors.agencyName && (
+  <p className="text-sm text-red-500">{errors.agencyName}</p>
+)}
+
             </div>
 
             {/* Email */}
@@ -171,6 +222,10 @@ outline-none
 
                 required
               />
+              {errors.email && (
+  <p className="text-sm text-red-500">{errors.email}</p>
+)}
+
             </div>
 
             {/* Password */}
@@ -199,6 +254,10 @@ outline-none
 
 
                 />
+                {errors.password && (
+  <p className="text-sm text-red-500">{errors.password}</p>
+)}
+
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}

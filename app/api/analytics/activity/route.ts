@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { conn } from "@/lib/db"; // tumhara mysql pool/connection
+import { conn } from "@/lib/db"; 
+
+const normalize = (d: any) =>
+  new Date(d).toISOString().split("T")[0];
+
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -55,12 +59,13 @@ export async function GET(req: Request) {
 
   // Merge all into chart format
   const result = days.map((day) => ({
-    day,
-    tasks: tasks.find((t: any) => t.day === day)?.count || 0,
-    followUps: followUps.find((f: any) => f.day === day)?.count || 0,
-    appointments:
-      appointments.find((a: any) => a.day === day)?.count || 0,
-  }));
+  day,
+  tasks: tasks.find((t: any) => normalize(t.day) === day)?.count || 0,
+  followUps: followUps.find((f: any) => normalize(f.day) === day)?.count || 0,
+  appointments:
+    appointments.find((a: any) => normalize(a.day) === day)?.count || 0,
+}));
+
 
   return NextResponse.json(result);
 }

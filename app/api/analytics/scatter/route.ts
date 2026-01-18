@@ -6,45 +6,63 @@ export async function GET(req: Request) {
   const tenantId = searchParams.get("tenantId");
 
   if (!tenantId) {
-    return NextResponse.json({ error: "tenantId required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "tenantId required" },
+      { status: 400 }
+    );
   }
 
-  // Get agents
-  const [users]: any = await conn.query(
+  const [rows]: any = await conn.query(
     `
-    SELECT id
-    FROM users
-    WHERE tenant_id = ?
-  `,
+    SELECT 
+      u.id AS userId,
+      u.name AS name,
+
+      /* TASKS → NO user_id, so count ALL tenant tasks */
+      (
+        SELECT COUNT(*) 
+        FROM tasks t 
+        WHERE t.tenant_id = u.tenant_id
+      ) AS tasks,
+
+      /* FOLLOW UPS → agent_id = user */
+      (
+        SELECT COUNT(*) 
+        FROM follow_ups f 
+        WHERE f.agent_id = u.id 
+          AND f.tenant_id = u.tenant_id
+      ) AS followUps,
+
+      /* APPOINTMENTS → user_id */
+      (
+        SELECT COUNT(*) 
+        FROM appointments a 
+        WHERE a.user_id = u.id 
+          AND a.tenant_id = u.tenant_id
+      ) AS appointments
+
+    FROM users u
+    WHERE u.tenant_id = ?
+    `,
     [tenantId]
   );
 
-  const data = [];
+  const data = rows
+    .map((r: any) => {
+      const total =
+        Number(r.tasks) +
+        Number(r.followUps) +
+        Number(r.appointments);
 
-  for (const user of users) {
-    const [[taskCount]]: any = await conn.query(
-      `SELECT COUNT(*) as c FROM tasks WHERE tenant_id = ?`,
-      [tenantId]
-    );
-
-    const [[followCount]]: any = await conn.query(
-      `SELECT COUNT(*) as c FROM follow_ups WHERE tenant_id = ?`,
-      [tenantId]
-    );
-
-    const [[appointmentCount]]: any = await conn.query(
-      `SELECT COUNT(*) as c FROM appointments WHERE tenant_id = ?`,
-      [tenantId]
-    );
-
-    const totalActions =
-      taskCount.c + followCount.c + appointmentCount.c;
-
-    data.push({
-      x: totalActions,
-      y: user.id,
-    });
-  }
+      return total > 0
+        ? {
+            x: total,
+            y: r.userId,
+            name: r.name,
+          }
+        : null;
+    })
+    .filter(Boolean);
 
   return NextResponse.json(data);
 }

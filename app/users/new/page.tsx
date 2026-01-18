@@ -23,6 +23,8 @@ export default function NewUserPage() {
   const [role, setRole] = useState("AGENT");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
 
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
@@ -38,8 +40,44 @@ export default function NewUserPage() {
     }
   }, [router]);
 
+  function validateForm() {
+  const newErrors: Record<string, string> = {};
+
+  // Name
+  if (!name.trim()) {
+    newErrors.name = "Name is required";
+  } else if (name.trim().length < 2) {
+    newErrors.name = "Name must be at least 2 characters";
+  }
+
+  // Email
+  if (!email.trim()) {
+    newErrors.email = "Email is required";
+  } else if (!/^\S+@\S+\.\S+$/.test(email)) {
+    newErrors.email = "Invalid email address";
+  }
+
+  // Password
+  if (!password) {
+    newErrors.password = "Password is required";
+  } else if (password.length < 8) {
+    newErrors.password = "Password must be at least 8 characters";
+  }
+
+  // Role
+  if (!role) {
+    newErrors.role = "Role is required";
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+}
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateForm()) return; //  STOP if invalid
     if (!currentUser) return;
 
     const tenantId = currentUser.tenantId ?? currentUser.tenant_id;
@@ -123,6 +161,10 @@ export default function NewUserPage() {
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                         required
                       />
+                      {errors.name && (
+  <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+)}
+
                     </div>
                   </div>
 
@@ -140,6 +182,10 @@ export default function NewUserPage() {
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                         required
                       />
+                      {errors.email && (
+  <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+)}
+
                     </div>
                   </div>
                 </div>
@@ -166,6 +212,10 @@ export default function NewUserPage() {
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                         required
                       />
+                      {errors.password && (
+  <p className="text-sm text-red-500 mt-1">{errors.password}</p>
+)}
+
                     </div>
                   </div>
 
@@ -187,6 +237,10 @@ export default function NewUserPage() {
                         <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
+                        {errors.role && (
+  <p className="text-sm text-red-500 mt-1">{errors.role}</p>
+)}
+
                       </div>
                     </div>
                   </div>

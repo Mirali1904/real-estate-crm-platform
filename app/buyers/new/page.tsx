@@ -32,7 +32,7 @@ export default function AddBuyerPage() {
     budget_max: "",
     bedrooms: "",
     brokerage_amount: "",
-   
+
     agentId: null,
   });
 
@@ -41,6 +41,8 @@ export default function AddBuyerPage() {
 
   const debouncedLocation = useDebounce(form.location, 600);
   const lastSearchedRef = useRef<string>("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -91,8 +93,69 @@ export default function AddBuyerPage() {
     });
     setSuggestions([]);
   }
+  function validateForm() {
+    const newErrors: Record<string, string> = {};
+
+    // Name
+    if (!form.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+
+    // Phone (India example)
+    if (!form.phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else if (!/^[6-9]\d{9}$/.test(form.phone)) {
+      newErrors.phone = "Enter valid 10 digit phone number";
+    }
+
+    // Email
+    if (!form.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(form.email)) {
+      newErrors.email = "Invalid email address";
+    }
+
+    // Requirement
+    if (!form.requirement.trim()) {
+      newErrors.requirement = "Requirement is required";
+    }
+
+    // Budget
+    if (form.budget_min && isNaN(Number(form.budget_min))) {
+      newErrors.budget_min = "Budget min must be a number";
+    }
+
+    if (form.budget_max && isNaN(Number(form.budget_max))) {
+      newErrors.budget_max = "Budget max must be a number";
+    }
+
+    if (
+      form.budget_min &&
+      form.budget_max &&
+      Number(form.budget_min) > Number(form.budget_max)
+    ) {
+      newErrors.budget_max = "Max budget must be greater than min budget";
+    }
+
+    // Bedrooms
+    if (form.bedrooms && isNaN(Number(form.bedrooms))) {
+      newErrors.bedrooms = "Bedrooms must be a number";
+    }
+
+    // Location check
+    if (form.location && (!form.lat || !form.lng)) {
+      newErrors.location = "Please select a location from suggestions";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
 
   async function handleSubmit() {
+
+    if (!validateForm()) return; //  STOP if invalid
+
     const raw = localStorage.getItem("loggedUser");
     if (!raw) return alert("Not logged in");
 
@@ -122,8 +185,8 @@ export default function AddBuyerPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="w-full px-6 py-6">
 
-      
-       
+
+
 
         {/* Main Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -164,6 +227,10 @@ export default function AddBuyerPage() {
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                         required
                       />
+                      {errors.name && (
+                        <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+                      )}
+
                     </div>
                   </div>
 
@@ -181,6 +248,10 @@ export default function AddBuyerPage() {
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                         required
                       />
+                      {errors.phone && (
+                        <p className="text-sm text-red-500 mt-1">{errors.phone}</p>
+                      )}
+
                     </div>
                   </div>
 
@@ -199,6 +270,10 @@ export default function AddBuyerPage() {
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                         required
                       />
+                      {errors.email && (
+                        <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+                      )}
+
                     </div>
                   </div>
 
@@ -216,6 +291,10 @@ export default function AddBuyerPage() {
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                         required
                       />
+                      {errors.requirement && (
+                        <p className="text-sm text-red-500 mt-1">{errors.requirement}</p>
+                      )}
+
                     </div>
                   </div>
                 </div>
@@ -241,6 +320,10 @@ export default function AddBuyerPage() {
                         placeholder="e.g., 50,00,000"
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                       />
+                      {errors.budget_min && (
+                        <p className="text-sm text-red-500 mt-1">{errors.budget_min}</p>
+                      )}
+
                     </div>
                   </div>
 
@@ -257,6 +340,10 @@ export default function AddBuyerPage() {
                         placeholder="e.g., 75,00,000"
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                       />
+                      {errors.budget_max && (
+                        <p className="text-sm text-red-500 mt-1">{errors.budget_max}</p>
+                      )}
+
                     </div>
                   </div>
 
@@ -273,6 +360,10 @@ export default function AddBuyerPage() {
                         placeholder="e.g., 2"
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                       />
+                      {errors.bedrooms && (
+                        <p className="text-sm text-red-500 mt-1">{errors.bedrooms}</p>
+                      )}
+
                     </div>
                   </div>
 
@@ -289,6 +380,10 @@ export default function AddBuyerPage() {
                         placeholder="e.g., 5"
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                       />
+                      {errors.radius_km && (
+                        <p className="text-sm text-red-500 mt-1">{errors.radius_km}</p>
+                      )}
+
                     </div>
                   </div>
 
@@ -304,6 +399,10 @@ export default function AddBuyerPage() {
                         placeholder="e.g., Vastrapur, Ahmedabad"
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                       />
+                      {errors.location && (
+                        <p className="text-sm text-red-500 mt-1">{errors.location}</p>
+                      )}
+
                     </div>
                     {loadingLocation && (
                       <p className="text-xs text-gray-500 mt-2">Searching locations...</p>
@@ -378,10 +477,16 @@ export default function AddBuyerPage() {
                         placeholder="e.g., 2.5% or ₹50,000"
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                       />
+                      {errors.brokerage_amount && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {errors.brokerage_amount}
+                        </p>
+                      )}
+
                     </div>
                   </div>
 
-                 
+
                 </div>
               </div>
 

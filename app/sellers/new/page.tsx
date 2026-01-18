@@ -27,7 +27,7 @@ export default function AddSellerPage() {
     price: "",
     bedrooms: "",
     brokerage_amount: "",
-    
+
     agentId: null as number | null,
   });
 
@@ -36,6 +36,8 @@ export default function AddSellerPage() {
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -67,7 +69,7 @@ export default function AddSellerPage() {
         );
         if (!res.ok) return;
         setSuggestions(await res.json());
-      } catch {}
+      } catch { }
       finally {
         setLoadingLocation(false);
       }
@@ -84,8 +86,71 @@ export default function AddSellerPage() {
     setSuggestions([]);
   }
 
+  function validateForm() {
+    const newErrors: Record<string, string> = {};
+
+    // Seller Name
+    if (!form.seller_name.trim()) {
+      newErrors.seller_name = "Seller name is required";
+    }
+
+    // Phone
+    if (!form.owner_contact.trim()) {
+      newErrors.owner_contact = "Phone number is required";
+    } else if (!/^[6-9]\d{9}$/.test(form.owner_contact)) {
+      newErrors.owner_contact = "Enter valid 10 digit phone number";
+    }
+
+    // Email
+    if (!form.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(form.email)) {
+      newErrors.email = "Invalid email address";
+    }
+
+    // Property Type
+    if (!form.property_type.trim()) {
+      newErrors.property_type = "Property type is required";
+    }
+
+    // Price
+    if (!form.price.trim()) {
+      newErrors.price = "Price is required";
+    } else if (isNaN(Number(form.price))) {
+      newErrors.price = "Price must be a number";
+    }
+
+    // Bedrooms
+    if (form.bedrooms && isNaN(Number(form.bedrooms))) {
+      newErrors.bedrooms = "Bedrooms must be a number";
+    }
+
+    // Brokerage
+    if (
+      form.brokerage_amount &&
+      form.brokerage_amount.length < 2
+    ) {
+      newErrors.brokerage_amount = "Enter valid brokerage amount";
+    }
+
+    // Location
+    if (!form.location.trim()) {
+      newErrors.location = "Location is required";
+    }
+
+    if (!form.lat || !form.lng) {
+      newErrors.location = "Please select location from suggestions or map";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
+
   /* ===== SUBMIT (UNCHANGED) ===== */
   async function handleSubmit() {
+
+    if (!validateForm()) return; //  STOP if invalid
     const raw = localStorage.getItem("loggedUser");
     if (!raw) return alert("Not logged in");
 
@@ -110,7 +175,7 @@ export default function AddSellerPage() {
         price: form.price,
         bedrooms: form.bedrooms,
         brokerage_amount: form.brokerage_amount,
-        
+
       }),
     });
 
@@ -120,10 +185,10 @@ export default function AddSellerPage() {
 
   return (
     <div className="w-full px-6 pt-2">
-     
+
 
       {/* ===== BUYER STYLE HEADER ===== */}
-     <div className="w-full mt-4 bg-white rounded-xl overflow-hidden">
+      <div className="w-full mt-4 bg-white rounded-xl overflow-hidden">
 
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
           <div className="flex items-center gap-4">
@@ -153,9 +218,25 @@ export default function AddSellerPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Field label="Seller Name" name="seller_name" value={form.seller_name} onChange={handleChange} />
+              {errors.seller_name && (
+                <p className="text-sm text-red-500 mt-1">{errors.seller_name}</p>
+              )}
+
               <Field label="Phone" name="owner_contact" value={form.owner_contact} onChange={handleChange} />
+              {errors.owner_contact && (
+                <p className="text-sm text-red-500 mt-1">{errors.owner_contact}</p>
+              )}
+
               <Field label="Email" name="email" value={form.email} onChange={handleChange} />
+              {errors.email && (
+                <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+              )}
+
               <Field label="Property Type" name="property_type" value={form.property_type} onChange={handleChange} />
+              {errors.property_type && (
+                <p className="text-sm text-red-500 mt-1">{errors.property_type}</p>
+              )}
+
             </div>
           </section>
 
@@ -168,16 +249,30 @@ export default function AddSellerPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Field label="Price" name="price" value={form.price} onChange={handleChange} />
+              {errors.price && (
+                <p className="text-sm text-red-500 mt-1">{errors.price}</p>
+              )}
+
               <Field label="Bedrooms" name="bedrooms" value={form.bedrooms} onChange={handleChange} />
+              {errors.bedrooms && (
+                <p className="text-sm text-red-500 mt-1">{errors.bedrooms}</p>
+              )}
+
               <Field
                 label="Brokerage Amount (₹ / %)"
                 name="brokerage_amount"
                 value={form.brokerage_amount}
                 onChange={handleChange}
               />
+              {errors.brokerage_amount && (
+                <p className="text-sm text-red-500 mt-1">
+                  {errors.brokerage_amount}
+                </p>
+              )}
+
             </div>
 
-            
+
           </section>
 
           {/* LOCATION */}
@@ -194,6 +289,10 @@ export default function AddSellerPage() {
                 value={form.location}
                 onChange={handleLocationChange}
               />
+              {errors.location && (
+                <p className="text-sm text-red-500 mt-1">{errors.location}</p>
+              )}
+
 
               {loadingLocation && (
                 <p className="text-xs text-gray-400 mt-1">Searching…</p>
