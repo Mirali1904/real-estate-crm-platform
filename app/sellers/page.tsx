@@ -85,6 +85,7 @@ type Seller = {
   property_type: string;
   price: number;
   bedrooms: number;
+   location: string; 
   brokerage_amount?: string | null;
     latest_remark?: string | null;
   assigned_agent_id?: number | null;
@@ -141,20 +142,35 @@ export default function SellersPage() {
 
   /* ================= SEARCH ================= */
   useEffect(() => {
-    if (!search.trim()) {
-      setDisplaySellers(sellers);
-      return;
-    }
+  if (!search.trim()) {
+    setDisplaySellers(sellers);
+    return;
+  }
 
-    const q = search.toLowerCase();
-    setDisplaySellers(
-      sellers.filter(
-        (s) =>
-          s.owner_name?.toLowerCase().includes(q) ||
-          s.property_type?.toLowerCase().includes(q)
-      )
-    );
-  }, [search, sellers]);
+  const q = search.toLowerCase();
+
+  // 💰 budget number (1200000 etc)
+  const budgetValue = !isNaN(Number(q)) ? Number(q) : null;
+
+  // 🏠 bhk (1bhk, 2 bhk)
+  const bhkMatch = q.match(/(\d+)\s*bhk/);
+  const bhkValue = bhkMatch ? Number(bhkMatch[1]) : null;
+
+  setDisplaySellers(
+    sellers.filter((s) =>
+      s.owner_name?.toLowerCase().includes(q) ||
+      s.property_type?.toLowerCase().includes(q) ||
+      s.location?.toLowerCase().includes(q) ||
+
+      // 💰 budget search (less than or equal)
+      (budgetValue !== null && Number(s.price) <= budgetValue) ||
+
+      // 🏠 BHK search
+      (bhkValue !== null && Number(s.bedrooms) === bhkValue)
+    )
+  );
+}, [search, sellers]);
+
 
   async function handleDelete(id: number) {
     if (!confirm("Delete this property?")) return;

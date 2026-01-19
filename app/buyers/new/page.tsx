@@ -347,25 +347,38 @@ export default function AddBuyerPage() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Bedrooms
-                    </label>
-                    <div className="relative">
-                      <Home className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input
-                        name="bedrooms"
-                        value={form.bedrooms}
-                        onChange={handleChange}
-                        placeholder="e.g., 2"
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                      />
-                      {errors.bedrooms && (
-                        <p className="text-sm text-red-500 mt-1">{errors.bedrooms}</p>
-                      )}
+                 <div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Bedrooms
+  </label>
 
-                    </div>
-                  </div>
+  <div className="relative">
+    <Home className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+    <select
+      name="bedrooms"
+      value={form.bedrooms}
+      onChange={(e) =>
+        setForm({ ...form, bedrooms: e.target.value })
+      }
+      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm
+                 bg-white
+                 focus:outline-none focus:ring-2 focus:ring-blue-500
+                 focus:border-transparent transition"
+    >
+      <option value="">Select BHK</option>
+      <option value="1">1 BHK</option>
+      <option value="2">2 BHK</option>
+      <option value="3">3 BHK</option>
+      <option value="4">4+ BHK</option>
+    </select>
+
+    {errors.bedrooms && (
+      <p className="text-sm text-red-500 mt-1">{errors.bedrooms}</p>
+    )}
+  </div>
+</div>
+
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">

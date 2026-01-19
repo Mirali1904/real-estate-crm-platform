@@ -253,22 +253,39 @@ export default function AddSellerPage() {
                 <p className="text-sm text-red-500 mt-1">{errors.price}</p>
               )}
 
-              <Field label="Bedrooms" name="bedrooms" value={form.bedrooms} onChange={handleChange} />
-              {errors.bedrooms && (
-                <p className="text-sm text-red-500 mt-1">{errors.bedrooms}</p>
-              )}
+              <div>
+  <label className="text-sm text-gray-600 mb-1 block">
+    Bedrooms
+  </label>
 
-              <Field
-                label="Brokerage Amount (₹ / %)"
-                name="brokerage_amount"
-                value={form.brokerage_amount}
-                onChange={handleChange}
-              />
-              {errors.brokerage_amount && (
-                <p className="text-sm text-red-500 mt-1">
-                  {errors.brokerage_amount}
-                </p>
-              )}
+  <select
+    name="bedrooms"
+    value={form.bedrooms}
+    onChange={(e) =>
+      setForm({ ...form, bedrooms: e.target.value })
+    }
+    className="
+      w-full rounded-lg border border-gray-300
+      px-4 py-2.5 text-sm
+      focus:outline-none focus:ring-2 focus:ring-blue-500
+      bg-white
+    "
+  >
+    <option value="">Select Bedrooms</option>
+    <option value="1">1 BHK</option>
+    <option value="2">2 BHK</option>
+    <option value="3">3 BHK</option>
+    <option value="4">4 BHK</option>
+    <option value="5">5+ BHK</option>
+  </select>
+
+  {errors.bedrooms && (
+    <p className="text-sm text-red-500 mt-1">
+      {errors.bedrooms}
+    </p>
+  )}
+</div>
+
 
             </div>
 
