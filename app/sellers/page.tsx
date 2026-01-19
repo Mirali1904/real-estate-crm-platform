@@ -82,6 +82,10 @@ function DropdownMenu({ seller, onAssign, onShare, onDelete }: {
 type Seller = {
   id: number;
   owner_name: string;
+
+  owner_contact?: string | null;   
+  owner_email?: string | null;
+   email?: string | null;  
   property_type: string;
   price: number;
   bedrooms: number;
@@ -90,6 +94,7 @@ type Seller = {
     latest_remark?: string | null;
   assigned_agent_id?: number | null;
   assigned_agent_name?: string | null;
+  cover_photo?: string | null;
 };
 
 export default function SellersPage() {
@@ -104,11 +109,22 @@ export default function SellersPage() {
   const [agents, setAgents] = useState<any[]>([]);
   const [assignSellerId, setAssignSellerId] = useState<number | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<number | null>(null);
+  const RESIDENTIAL_TYPES = ["flat", "villa", "house"];
+const COMMERCIAL_TYPES = ["shop", "office"];
+
 
    const totalValue = sellers.reduce(
     (sum, s) => sum + Number(s.price || 0),
     0
   );
+  const residentialCount = sellers.filter((s) =>
+  RESIDENTIAL_TYPES.includes(s.property_type?.toLowerCase())
+).length;
+
+const commercialCount = sellers.filter((s) =>
+  COMMERCIAL_TYPES.includes(s.property_type?.toLowerCase())
+).length;
+
 
   /* ================= FETCH SELLERS ================= */
   useEffect(() => {
@@ -243,21 +259,20 @@ export default function SellersPage() {
             <p className="text-sm text-gray-500 mb-1">Total Properties</p>
             <h4 className="text-3xl font-bold text-gray-900">{sellers.length}</h4>
           </div>
+         <div className="bg-white p-4 rounded-xl border border-gray-200">
+  <p className="text-sm text-gray-500 mb-1">Residential Properties</p>
+  <h4 className="text-3xl font-bold text-blue-600">
+    {residentialCount}
+  </h4>
+</div>
+
           <div className="bg-white p-4 rounded-xl border border-gray-200">
-            <p className="text-sm text-gray-500 mb-1">Active Listings</p>
-            <h4 className="text-3xl font-bold text-blue-600">
-              {sellers.filter(
-  s => s.assigned_agent_id !== null && s.assigned_agent_id !== undefined
-).length
-}
-            </h4>
-          </div>
-          <div className="bg-white p-4 rounded-xl border border-gray-200">
-            <p className="text-sm text-gray-500 mb-1">Unassigned</p>
-            <h4 className="text-3xl font-bold text-orange-600">
-              {sellers.filter(s => !s.assigned_agent_id).length}
-            </h4>
-          </div>
+  <p className="text-sm text-gray-500 mb-1">Commercial Properties</p>
+  <h4 className="text-3xl font-bold text-purple-600">
+    {commercialCount}
+  </h4>
+</div>
+
           <div className="bg-white p-4 rounded-xl border border-gray-200">
   <p className="text-sm text-gray-500 mb-1">Total Value</p>
   <h4 className="text-2xl font-bold text-gray-900">
@@ -275,19 +290,40 @@ export default function SellersPage() {
               className="bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow relative overflow-visible"
 
             >
-              {/* Property Image Placeholder */}
-              <div className="h-48 bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center relative">
-                <Home className="w-12 h-12 text-gray-400" />
-                <div className="absolute top-3 right-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    seller.assigned_agent_id 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-orange-100 text-orange-700'
-                  }`}>
-                    {seller.assigned_agent_id ? 'ASSIGNED' : 'UNASSIGNED'}
-                  </span>
-                </div>
-              </div>
+              {/* Property Image */}
+<div className="relative w-full h-56 md:h-64 overflow-hidden rounded-t-xl bg-gray-100">
+  {seller.cover_photo ? (
+    <>
+      <img
+        src={seller.cover_photo.replace('-thumb.jpg', '.jpg')}
+        alt="property"
+        className="absolute inset-0 w-full h-full object-cover"
+        loading="eager"
+        fetchPriority="high"
+        style={{ 
+          imageRendering: '-webkit-optimize-contrast',
+          filter: 'contrast(1.05) saturate(1.1)'
+         }}
+      />
+
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+    </>
+  ) : (
+    <div className="absolute inset-0 flex items-center justify-center">
+      <Home className="w-12 h-12 text-gray-400" />
+    </div>
+  )}
+
+  <div className="absolute top-3 right-3 z-10">
+    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-500 text-white shadow">
+      ASSIGNED
+    </span>
+  </div>
+</div>
+
+
+
+
 
               {/* Property Details */}
               <div className="p-5 space-y-4 relative">
@@ -324,28 +360,43 @@ export default function SellersPage() {
 
                 {/* Seller & Agent */}
                 <div className="pt-3 border-t border-gray-100 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">{seller.owner_name}</span>
-                    </div>
-                    {seller.assigned_agent_name && (
-                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-50 text-blue-700">
-                        {seller.assigned_agent_name}
-                      </span>
-                    )}
-                  </div>
-                  {seller.latest_remark && (
-  <div className="flex items-start gap-2">
-    <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
-    <span className="text-sm text-gray-500">
-      {seller.latest_remark}
-    </span>
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-2">
+      <User className="w-4 h-4 text-gray-400" />
+      <span className="text-sm text-gray-600">{seller.owner_name}</span>
+    </div>
+
+    {seller.assigned_agent_name && (
+      <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-50 text-blue-700">
+        {seller.assigned_agent_name}
+      </span>
+    )}
+  </div>
+
+  {/* 📞 OWNER CONTACT */}
+  {seller.owner_contact && (
+    <div className="text-sm text-gray-600">
+      📞 {seller.owner_contact}
+    </div>
+  )}
+
+ {(seller.owner_email || seller.email) && (
+  <div className="flex items-center gap-2 text-sm text-gray-600">
+    ✉️ {seller.owner_email || seller.email}
   </div>
 )}
 
+  {/* 📝 LATEST REMARK */}
+  {seller.latest_remark && (
+    <div className="flex items-start gap-2">
+      <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
+      <span className="text-sm text-gray-500">
+        {seller.latest_remark}
+      </span>
+    </div>
+  )}
+</div>
 
-                </div>
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-3">

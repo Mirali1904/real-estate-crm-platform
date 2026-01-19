@@ -32,6 +32,15 @@ export async function GET(req: Request) {
     let query = `
       SELECT
         s.*,
+
+        (
+  SELECT pp.photo_url
+  FROM property_photos pp
+  WHERE pp.seller_id = s.id
+  ORDER BY pp.created_at ASC
+  LIMIT 1
+) AS cover_photo,
+
         COALESCE(NULLIF(TRIM(s.owner_name), ''), s.name) AS owner_name,
 
         -- ✅ LATEST INTERNAL REMARK (SAFE)
@@ -63,6 +72,15 @@ export async function GET(req: Request) {
       query = `
         SELECT
           s.*,
+
+          (
+  SELECT pp.photo_url
+  FROM property_photos pp
+  WHERE pp.seller_id = s.id
+  ORDER BY pp.created_at ASC
+  LIMIT 1
+) AS cover_photo,
+
           COALESCE(NULLIF(TRIM(s.owner_name), ''), s.name) AS owner_name,
 
           -- ✅ LATEST INTERNAL REMARK (SAFE)

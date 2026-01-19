@@ -2,7 +2,15 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Home } from "lucide-react";
+import {
+  Home,
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  DollarSign,
+} from "lucide-react";
+
 import PrimaryButton from "@/components/PrimaryButton";
 import BackButton from "@/components/BackButton";
 import dynamic from "next/dynamic";
@@ -217,22 +225,88 @@ export default function AddSellerPage() {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <Field label="Seller Name" name="seller_name" value={form.seller_name} onChange={handleChange} />
+              <Field
+                label="Seller Name"
+                name="seller_name"
+                value={form.seller_name}
+                onChange={handleChange}
+                placeholder="Seller full name"
+                Icon={User}
+                required
+              />
+
               {errors.seller_name && (
                 <p className="text-sm text-red-500 mt-1">{errors.seller_name}</p>
               )}
 
-              <Field label="Phone" name="owner_contact" value={form.owner_contact} onChange={handleChange} />
+              <Field
+                label="Phone"
+                name="owner_contact"
+                value={form.owner_contact}
+                onChange={handleChange}
+                placeholder="Contact number"
+                Icon={Phone}
+                required
+              />
+
               {errors.owner_contact && (
                 <p className="text-sm text-red-500 mt-1">{errors.owner_contact}</p>
               )}
 
-              <Field label="Email" name="email" value={form.email} onChange={handleChange} />
+              <Field
+                label="Email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="seller@example.com"
+                Icon={Mail}
+                required
+              />
+
               {errors.email && (
                 <p className="text-sm text-red-500 mt-1">{errors.email}</p>
               )}
 
-              <Field label="Property Type" name="property_type" value={form.property_type} onChange={handleChange} />
+              <div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Property Type
+  </label>
+
+  <div className="relative">
+    <Home className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+    <select
+      name="property_type"
+      value={form.property_type}
+      onChange={(e) =>
+        setForm({ ...form, property_type: e.target.value })
+      }
+      className="
+        w-full pl-10 pr-4 py-3
+        border border-gray-300 rounded-xl
+        text-sm bg-white
+        focus:outline-none focus:ring-2 focus:ring-blue-500
+        focus:border-transparent transition
+      "
+    >
+      <option value="">Select Property Type</option>
+      <option value="flat">Flat / Apartment</option>
+      <option value="house">Independent House</option>
+      <option value="villa">Villa</option>
+      <option value="plot">Plot / Land</option>
+      <option value="office">Office</option>
+      <option value="shop">Shop / Commercial</option>
+    </select>
+  </div>
+
+  {errors.property_type && (
+    <p className="text-sm text-red-500 mt-1">
+      {errors.property_type}
+    </p>
+  )}
+</div>
+
+
               {errors.property_type && (
                 <p className="text-sm text-red-500 mt-1">{errors.property_type}</p>
               )}
@@ -248,43 +322,65 @@ export default function AddSellerPage() {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <Field label="Price" name="price" value={form.price} onChange={handleChange} />
+              <Field
+                label="Price (₹)"
+                name="price"
+                value={form.price}
+                onChange={handleChange}
+                placeholder="e.g. 75,00,000"
+                Icon={DollarSign}
+                required
+              />
+
               {errors.price && (
                 <p className="text-sm text-red-500 mt-1">{errors.price}</p>
               )}
 
               <div>
-  <label className="text-sm text-gray-600 mb-1 block">
-    Bedrooms
-  </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Bedrooms
+                </label>
 
-  <select
-    name="bedrooms"
-    value={form.bedrooms}
-    onChange={(e) =>
-      setForm({ ...form, bedrooms: e.target.value })
-    }
-    className="
-      w-full rounded-lg border border-gray-300
-      px-4 py-2.5 text-sm
-      focus:outline-none focus:ring-2 focus:ring-blue-500
-      bg-white
-    "
-  >
-    <option value="">Select Bedrooms</option>
-    <option value="1">1 BHK</option>
-    <option value="2">2 BHK</option>
-    <option value="3">3 BHK</option>
-    <option value="4">4 BHK</option>
-    <option value="5">5+ BHK</option>
-  </select>
+                <div className="relative">
+                  <Home className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
-  {errors.bedrooms && (
-    <p className="text-sm text-red-500 mt-1">
-      {errors.bedrooms}
-    </p>
-  )}
-</div>
+                  <select
+                    name="bedrooms"
+                    value={form.bedrooms}
+                    onChange={(e) =>
+                      setForm({ ...form, bedrooms: e.target.value })
+                    }
+                    className="
+        w-full pl-10 pr-4 py-3
+        border border-gray-300 rounded-xl text-sm bg-white
+        focus:outline-none focus:ring-2 focus:ring-blue-500
+        focus:border-transparent transition
+      "
+                  >
+                    <option value="">Select BHK</option>
+                    <option value="1">1 BHK</option>
+                    <option value="2">2 BHK</option>
+                    <option value="3">3 BHK</option>
+                    <option value="4">4 BHK</option>
+                    <option value="5">5+ BHK</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+
+                <Field
+                  label="Brokerage Amount (₹ / %)"
+                  name="brokerage_amount"
+                  value={form.brokerage_amount}
+                  onChange={handleChange}
+                  placeholder="e.g. 2.5% or ₹50,000"
+                  Icon={DollarSign}
+                />
+
+
+              </div>
+
 
 
             </div>
@@ -301,11 +397,15 @@ export default function AddSellerPage() {
 
             <div className="relative">
               <Field
-                label="Location"
+                label="Location / Area"
                 name="location"
                 value={form.location}
                 onChange={handleLocationChange}
+                placeholder="e.g. Manjalpur, Vadodara"
+                Icon={MapPin}
+                required
               />
+
               {errors.location && (
                 <p className="text-sm text-red-500 mt-1">{errors.location}</p>
               )}
@@ -347,8 +447,22 @@ export default function AddSellerPage() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
-              <Field label="Latitude" name="lat" value={form.lat} onChange={handleChange} />
-              <Field label="Longitude" name="lng" value={form.lng} onChange={handleChange} />
+              <Field
+                label="Latitude"
+                name="lat"
+                value={form.lat}
+                readOnly
+                placeholder="Auto-filled from location"
+              />
+
+              <Field
+                label="Longitude"
+                name="lng"
+                value={form.lng}
+                readOnly
+                placeholder="Auto-filled from location"
+              />
+
             </div>
           </section>
 
@@ -366,20 +480,42 @@ export default function AddSellerPage() {
 }
 
 /* ===== INPUT ===== */
-function Field({ label, name, value, onChange }: any) {
+function Field({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder,
+  Icon,
+  required = false,
+  readOnly = false,
+}: any) {
   return (
     <div>
-      <label className="text-sm text-gray-600 mb-1 block">{label}</label>
-      <input
-        name={name}
-        value={value}
-        onChange={onChange}
-        className="
-          w-full rounded-lg border border-gray-300
-          px-4 py-2.5 text-sm
-          focus:outline-none focus:ring-2 focus:ring-blue-500
-        "
-      />
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+
+      <div className="relative">
+        {Icon && (
+          <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        )}
+
+        <input
+          name={name}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          readOnly={readOnly}
+          className={`
+            w-full ${Icon ? "pl-10" : "pl-4"} pr-4 py-3
+            border border-gray-300 rounded-xl text-sm
+            ${readOnly ? "bg-gray-50 text-gray-600" : "bg-white"}
+            focus:outline-none focus:ring-2 focus:ring-blue-500
+            focus:border-transparent transition
+          `}
+        />
+      </div>
     </div>
   );
 }

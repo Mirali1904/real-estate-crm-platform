@@ -256,11 +256,15 @@ const [savingRemark, setSavingRemark] = useState(false);
 
       {/* KEY INFO CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Info label="Requirement" value={buyer.requirement} />
-        <Info label="Budget Range" value={`₹${buyer.budget_min} – ₹${buyer.budget_max}`} />
-        <Info label="Bedrooms" value={`${buyer.bedrooms} BHK`} />
-        <Info label="Search Radius" value={`${buyer.radius_km} km`} />
-      </div>
+  <Info
+    label="Property Type"
+    value={buyer.requirement || "—"}
+
+  />
+  <Info label="Budget Range" value={`₹${buyer.budget_min} – ₹${buyer.budget_max}`} />
+  <Info label="Bedrooms" value={`${buyer.bedrooms} BHK`} />
+  <Info label="Search Radius" value={`${buyer.radius_km} km`} />
+</div>
 
       {/* TABBED CARD */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -301,9 +305,12 @@ const [savingRemark, setSavingRemark] = useState(false);
                   <p className="text-gray-900 font-medium">₹{buyer.budget_min} – ₹{buyer.budget_max}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Requirement</p>
-                  <p className="text-gray-900 font-medium">{buyer.requirement}</p>
-                </div>
+  <p className="text-sm text-gray-500">Property Type</p>
+  <p className="text-gray-900 font-medium">
+    {buyer.requirement || "—"}
+  </p>
+</div>
+
               </div>
             </div>
           )}
