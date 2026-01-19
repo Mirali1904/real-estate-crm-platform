@@ -211,7 +211,9 @@ export default function GroupDetailPage() {
 
   return (
     <div className="w-full min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-6 pt-3 space-y-6">
+     <div className="w-full px-8 pt-3 space-y-6">
+
+
 
         
         

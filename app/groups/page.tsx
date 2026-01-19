@@ -153,11 +153,13 @@ export default function GroupsPage() {
 
   return (
     <div className="w-full min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
+      <div className="w-full px-6 space-y-6">
+
       
 
         {/* Search + Create Group Row */}
-<div className="flex flex-col md:flex-row md:items-center gap-4 -mt-2">
+<div className="flex flex-col md:flex-row md:items-center gap-4 mt-4">
+
 
   
   {/* Search Bar - Full Width */}

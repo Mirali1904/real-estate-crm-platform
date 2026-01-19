@@ -89,7 +89,7 @@ export default function AppointmentsPage() {
       {/* HEADER */}
       <Header />
 
-        <div className="max-w-7xl mx-auto px-6 pt-3 pb-6">
+       <div className="w-full px-8 pt-3 pb-6">
 
 
    
