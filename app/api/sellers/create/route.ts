@@ -7,8 +7,8 @@ export async function POST(req: NextRequest) {
 
     const {
       tenantId,
-      agentId, 
-      name,               // seller name
+      agentId,
+      name,
       owner_contact,
       email,
       property_type,
@@ -18,12 +18,16 @@ export async function POST(req: NextRequest) {
       price,
       bedrooms,
 
-      // 🔹 NEW (same as buyer)
-      brokerage_amount,
+      // ✅ NEW FIELDS
+      looking_for,
+      furnishing_preference,
+
+      brokerage_type,
+      brokerage_value,
       remarks,
     } = body;
 
-    // ✅ validation
+    // ✅ BASIC VALIDATION
     if (!tenantId || !location) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -31,17 +35,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ✅ GUARANTEE name is never null
+    // ✅ GUARANTEE NAME
     const finalName =
       name?.trim() ||
       email?.split("@")[0] ||
       "Unknown Seller";
 
-    // ✅ INSERT (with brokerage & remarks)
+    // ✅ BROKERAGE VALIDATION
+    if (
+      brokerage_type === "percent" &&
+      Number(brokerage_value) > 100
+    ) {
+      return NextResponse.json(
+        { error: "Brokerage percentage cannot exceed 100" },
+        { status: 400 }
+      );
+    }
+
+    // ✅ INSERT SELLER
     const query = `
       INSERT INTO sellers (
         tenant_id,
-         agent_id,  
+        agent_id,
         name,
         owner_contact,
         email,
@@ -52,18 +67,27 @@ export async function POST(req: NextRequest) {
         price,
         bedrooms,
 
-        brokerage_amount,
-       
+        looking_for,
+        furnishing_preference,
+
+        brokerage_type,
+        brokerage_value,
 
         status,
         created_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  'LISTED', NOW())
+      VALUES (
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?,
+        ?, ?,
+        'LISTED',
+        NOW()
+      )
     `;
 
     await conn.execute(query, [
       tenantId,
-      agentId || null, 
+      agentId || null,
       finalName,
       owner_contact || null,
       email || null,
@@ -74,9 +98,12 @@ export async function POST(req: NextRequest) {
       price ?? null,
       bedrooms ?? null,
 
-      // 🔹 NEW VALUES
-      brokerage_amount || null,
-      
+      // ✅ NEW VALUES
+      looking_for || "SELL",
+      furnishing_preference || null,
+
+      brokerage_type || "percent",
+      brokerage_value ? Number(brokerage_value) : null,
     ]);
 
     return NextResponse.json({ success: true });

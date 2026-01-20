@@ -315,8 +315,8 @@ export default function SellerDetailPage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`px-6 py-4 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id
-                  ? "border-indigo-600 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "border-indigo-600 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
             >
               {tab.label}
@@ -376,11 +376,13 @@ export default function SellerDetailPage() {
                   return (
                     <div
                       key={buyer.buyer_id}
-                      className={`rounded-xl p-5 transition-shadow ${isDropped
-                          ? "bg-gray-50 opacity-50"
-                          : "bg-green-50 shadow-sm hover:shadow-md"
+                      className={`rounded-xl p-5 transition-shadow bg-white ${isDropped
+                          ? "border border-gray-200 opacity-50"
+                          : "border-l-4 border-blue-600 shadow-sm hover:shadow-md"
                         }`}
                     >
+
+
 
                       <div className="flex justify-between gap-6">
                         <div className="space-y-2 flex-1">
@@ -621,17 +623,52 @@ export default function SellerDetailPage() {
           {activeTab === "photos" && (
             <div className="space-y-4">
               <h3 className="font-semibold text-gray-900 text-lg">Property Photos</h3>
-              <div className="mb-4 flex items-center gap-3">
-                <input
-                  type="file"
-                  multiple
-                  onChange={(e) => setSelectedFiles(e.target.files)}
-                  className="text-sm"
-                />
-                <button onClick={uploadPhotos} className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700">
-                  Upload Photos
-                </button>
-              </div>
+              {/* DRAG & DROP UPLOAD BOX */}
+<div
+  className="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center cursor-pointer
+             hover:border-blue-500 transition bg-gray-50"
+  onClick={() => document.getElementById("photoUploadInput")?.click()}
+  onDragOver={(e) => e.preventDefault()}
+  onDrop={(e) => {
+    e.preventDefault();
+    setSelectedFiles(e.dataTransfer.files);
+  }}
+>
+  <div className="text-5xl mb-3">📷</div>
+
+  <p className="text-gray-700 font-medium">
+    Drag & drop property photos here
+  </p>
+
+  <p className="text-sm text-gray-500 mt-1">
+    or click to browse
+  </p>
+
+  <input
+    id="photoUploadInput"
+    type="file"
+    multiple
+    className="hidden"
+    onChange={(e) => setSelectedFiles(e.target.files)}
+  />
+</div>
+
+{/* FILE COUNT + UPLOAD BUTTON */}
+{selectedFiles && selectedFiles.length > 0 && (
+  <div className="flex items-center justify-between mt-4">
+    <p className="text-sm text-gray-600">
+      {selectedFiles.length} file(s) selected
+    </p>
+
+    <button
+      onClick={uploadPhotos}
+      className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+    >
+      Upload Photos
+    </button>
+  </div>
+)}
+
               {photos.length === 0 ? (
                 <div className="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
                   <div className="text-gray-400 text-5xl mb-3">📷</div>

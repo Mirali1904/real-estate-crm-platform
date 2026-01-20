@@ -90,11 +90,17 @@ type Seller = {
   price: number;
   bedrooms: number;
    location: string; 
-  brokerage_amount?: string | null;
+  brokerage_type?: "percent" | "fixed" | null;
+brokerage_value?: number | null;
+
     latest_remark?: string | null;
   assigned_agent_id?: number | null;
   assigned_agent_name?: string | null;
   cover_photo?: string | null;
+
+  looking_for?: "RENT" | "SELL";
+furnishing_preference?: string | null;
+
 };
 
 export default function SellersPage() {
@@ -333,6 +339,26 @@ const commercialCount = sellers.filter((s) =>
                   <p className="text-sm text-gray-500 mt-1">{seller.bedrooms} BHK</p>
                 </div>
 
+                {/* Looking For & Furnishing */}
+<div className="flex flex-wrap gap-2 mt-2">
+  {seller.looking_for && (
+    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+      {seller.looking_for === "RENT" ? "Rent" : "Sell"}
+    </span>
+  )}
+
+  {seller.furnishing_preference && (
+    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+      {seller.furnishing_preference
+        .replace("_", " ")
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase())}
+    </span>
+  )}
+</div>
+
+                
+
                 {/* Key Info */}
                 <div className="grid grid-cols-3 gap-3">
                   <div className="flex items-center gap-2">
@@ -346,7 +372,18 @@ const commercialCount = sellers.filter((s) =>
                     <DollarSign className="w-4 h-4 text-gray-400" />
                     <div>
                       <p className="text-xs text-gray-500">Brokerage</p>
-                      <p className="text-sm font-medium text-gray-900">{seller.brokerage_amount || '—'}</p>
+                      <p className="text-sm font-medium text-gray-900">
+  {seller.brokerage_type && seller.brokerage_value ? (
+    seller.brokerage_type === "percent" ? (
+      `${seller.brokerage_value}%`
+    ) : (
+      `₹${Number(seller.brokerage_value).toLocaleString()}`
+    )
+  ) : (
+    "—"
+  )}
+</p>
+
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -420,6 +457,7 @@ const commercialCount = sellers.filter((s) =>
                   />
                 </div>
               </div>
+              
             </div>
           ))}
         </div>

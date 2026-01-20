@@ -16,11 +16,19 @@ type Buyer = {
   budget_min: number;
   budget_max: number;
   status: string;
+
+    looking_for?: "BUY" | "RENT";
+  furnishing_preference?: string | null;
+
+
+  brokerage_type?: "percent" | "fixed" | null;
+  brokerage_value?: number | null;
+
   assigned_agent_id?: number | null;
   assigned_agent_name?: string | null;
-  brokerage_amount?: string;
   remarks?: string;
 };
+
 
 export default function BuyersPage() {
   const router = useRouter();
@@ -195,9 +203,18 @@ export default function BuyersPage() {
                   <th className="px-6 py-4 text-left font-semibold text-gray-700">
                     Remarks
                   </th>
-                  <th className="px-6 py-4 text-right font-semibold text-gray-700">
-                    Actions
-                  </th>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-700">
+  Looking For
+</th>
+<th className="px-6 py-4 text-left font-semibold text-gray-700">
+  Furnishing
+</th>
+                 <th className="px-6 py-4 text-centre font-semibold text-gray-700">
+  Actions
+</th>
+
+                  
+
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -238,8 +255,17 @@ export default function BuyersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-gray-900">
-                      {buyer.brokerage_amount || "—"}
-                    </td>
+  {buyer.brokerage_value ? (
+    buyer.brokerage_type === "percent" ? (
+      <span>{buyer.brokerage_value}%</span>
+    ) : (
+      <span>₹{buyer.brokerage_value}</span>
+    )
+  ) : (
+    "—"
+  )}
+</td>
+
                     <td className="px-6 py-4">
                       <span
                         className={`px-3 py-1 text-xs rounded-full font-medium ${getStatusColor(
@@ -261,6 +287,23 @@ export default function BuyersPage() {
                     <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
                       {buyer.remarks || "—"}
                     </td>
+                    {/* Looking For */}
+<td className="px-6 py-4">
+  <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
+    {buyer.looking_for === "RENT" ? "Rent" : "Buy"}
+  </span>
+</td>
+
+{/* Furnishing */}
+<td className="px-6 py-4 text-sm text-gray-700">
+  {buyer.furnishing_preference
+    ? buyer.furnishing_preference
+        .replaceAll("_", " ")
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase())
+    : "—"}
+</td>
+
                     <td
                       className="px-6 py-4"
                       onClick={(e) => e.stopPropagation()}

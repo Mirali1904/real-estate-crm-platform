@@ -28,10 +28,15 @@ export async function POST(req: NextRequest) {
       budget_max,
       bedrooms,
 
-      // 🔹 NEW FIELDS
-      brokerage_amount,
+      // ✅ NEW FIELDS
+      looking_for,
+      furnishing_preference,
+
+      brokerage_type,
+      brokerage_value,
+
       remarks,
-       agentId,
+      agentId,
     } = body;
 
     if (!name || !phone) {
@@ -41,15 +46,51 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // ✅ looking_for validation
+    if (
+      looking_for &&
+      !["BUY", "RENT"].includes(looking_for)
+    ) {
+      return NextResponse.json(
+        { error: "Invalid looking_for value" },
+        { status: 400 }
+      );
+    }
+
+    // ✅ furnishing_preference validation
+    if (
+      furnishing_preference &&
+      !["FULLY_FURNISHED", "SEMI_FURNISHED", "UNFURNISHED"].includes(furnishing_preference)
+    ) {
+      return NextResponse.json(
+        { error: "Invalid furnishing preference" },
+        { status: 400 }
+      );
+    }
+
+    if (
+      brokerage_type === "percent" &&
+      Number(brokerage_value) > 100
+    ) {
+      return NextResponse.json(
+        { error: "Brokerage percentage cannot exceed 100" },
+        { status: 400 }
+      );
+    }
+
     await conn.execute(
       `
       INSERT INTO buyers (
         tenant_id,
-         agent_id,  
+        agent_id,
         name,
         phone,
         email,
         requirement,
+
+        looking_for,
+        furnishing_preference,
+
         budget_min,
         budget_max,
         location,
@@ -57,21 +98,24 @@ export async function POST(req: NextRequest) {
         lng,
         radius_km,
         bedrooms,
-        brokerage_amount,
-       
+        brokerage_type,
+        brokerage_value,
         status,
         is_deleted
       )
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  'ENQUIRY', 0)
-
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ENQUIRY', 0)
       `,
       [
         tenantId,
-        agentId || null, 
+        agentId || null,
         name,
         phone,
         email || null,
         requirement || null,
+
+        looking_for || "BUY",          // default BUY
+        furnishing_preference || null,
+
         Number(budget_min) || 0,
         Number(budget_max) || 0,
         location || null,
@@ -80,9 +124,8 @@ export async function POST(req: NextRequest) {
         Number(radius_km) || 0,
         bedrooms ? Number(bedrooms) : null,
 
-        // 🔹 NEW VALUES
-        brokerage_amount || null,
-        
+        brokerage_type || null,
+        brokerage_value ? Number(brokerage_value) : null,
       ]
     );
 

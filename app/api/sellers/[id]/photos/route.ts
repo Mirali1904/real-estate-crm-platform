@@ -75,18 +75,13 @@ await sharp(buffer)
 
       // ✅ SAVE PATH IN DB
      await conn.execute(
-  `INSERT INTO property_photos (seller_id, photo_url)
-   VALUES (?, ?)`,
-  [sellerId, `/uploads/properties/${fullName}`]
-);
+    `INSERT INTO property_photos (seller_id, photo_url)
+     VALUES (?, ?)`,
+    [sellerId, `/uploads/properties/${fullName}`]
+  );
 
 
-      await conn.execute(
-  `UPDATE sellers
-   SET cover_photo = ?
-   WHERE id = ? AND cover_photo IS NULL`,
-  [`/uploads/properties/${thumbName}`, sellerId]
-);
+      
 
 
     }

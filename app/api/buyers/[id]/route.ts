@@ -36,8 +36,9 @@ export async function GET(
         radius_km,
         bedrooms,
 
-        -- 🔹 NEW FIELDS
-        brokerage_amount,
+       brokerage_type,
+brokerage_value,
+
        
 
         status,

@@ -34,7 +34,12 @@ export default function AddSellerPage() {
     lng: "",
     price: "",
     bedrooms: "",
-    brokerage_amount: "",
+    brokerage_type: "percent",
+brokerage_value: "",
+looking_for: "SELL",
+furnishing_preference: "",
+
+
 
     agentId: null as number | null,
   });
@@ -134,12 +139,18 @@ export default function AddSellerPage() {
     }
 
     // Brokerage
-    if (
-      form.brokerage_amount &&
-      form.brokerage_amount.length < 2
-    ) {
-      newErrors.brokerage_amount = "Enter valid brokerage amount";
-    }
+   
+if (form.brokerage_value && isNaN(Number(form.brokerage_value))) {
+  newErrors.brokerage_value = "Brokerage must be a number";
+}
+
+if (
+  form.brokerage_type === "percent" &&
+  Number(form.brokerage_value) > 100
+) {
+  newErrors.brokerage_value = "Percentage cannot be more than 100";
+}
+
 
     // Location
     if (!form.location.trim()) {
@@ -182,7 +193,12 @@ export default function AddSellerPage() {
         lng: form.lng,
         price: form.price,
         bedrooms: form.bedrooms,
-        brokerage_amount: form.brokerage_amount,
+        brokerage_type: form.brokerage_type,
+brokerage_value: form.brokerage_value,
+looking_for: form.looking_for,
+furnishing_preference: form.furnishing_preference,
+
+
 
       }),
     });
@@ -367,19 +383,93 @@ export default function AddSellerPage() {
                 </div>
               </div>
 
-              <div>
+              {/* LOOKING FOR */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Looking For
+  </label>
 
-                <Field
-                  label="Brokerage Amount (₹ / %)"
-                  name="brokerage_amount"
-                  value={form.brokerage_amount}
-                  onChange={handleChange}
-                  placeholder="e.g. 2.5% or ₹50,000"
-                  Icon={DollarSign}
-                />
+  <select
+    name="looking_for"
+    value={form.looking_for}
+    onChange={(e) =>
+      setForm({ ...form, looking_for: e.target.value })
+    }
+    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
+  >
+    <option value="SELL">Sell</option>
+    <option value="RENT">Rent</option>
+  </select>
+</div>
+
+{/* FURNISHING */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Furnishing Preference
+  </label>
+
+  <select
+    name="furnishing_preference"
+    value={form.furnishing_preference}
+    onChange={(e) =>
+      setForm({ ...form, furnishing_preference: e.target.value })
+    }
+    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
+  >
+    <option value="">No Preference</option>
+    <option value="FULLY_FURNISHED">Fully Furnished</option>
+    <option value="SEMI_FURNISHED">Semi Furnished</option>
+    <option value="UNFURNISHED">Unfurnished</option>
+  </select>
+</div>
 
 
-              </div>
+              <div className="md:col-span-2">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      {/* BROKERAGE TYPE */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Brokerage Type
+        </label>
+
+        <select
+          name="brokerage_type"
+          value={form.brokerage_type}
+          onChange={(e) =>
+            setForm({ ...form, brokerage_type: e.target.value })
+          }
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
+        >
+          <option value="percent">Percentage (%)</option>
+          <option value="fixed">Fixed Amount (₹)</option>
+        </select>
+      </div>
+
+      {/* BROKERAGE VALUE */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Brokerage Value
+        </label>
+
+        <input
+          type="number"
+          name="brokerage_value"
+          value={form.brokerage_value}
+          onChange={(e) =>
+            setForm({ ...form, brokerage_value: e.target.value })
+          }
+          placeholder={
+            form.brokerage_type === "percent"
+              ? "e.g. 2.5"
+              : "e.g. 5000"
+          }
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
+        />
+      </div>
+    </div>
+  </div>
+
+
 
 
 

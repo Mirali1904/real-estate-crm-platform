@@ -32,11 +32,11 @@ export default function BuyerDetailPage() {
   const [sellerPhotos, setSellerPhotos] = useState<Record<number, any[]>>({});
   const [openImages, setOpenImages] = useState<Record<number, boolean>>({});
 
- 
+
   const [areaSize, setAreaSize] = useState("");
   const [govtEstimatedPrice, setGovtEstimatedPrice] = useState<number | null>(null);
   const [loans, setLoans] = useState<any[]>([]);
-  
+
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadLoanId, setUploadLoanId] = useState<number | null>(null);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -45,13 +45,13 @@ export default function BuyerDetailPage() {
   const [activeTab, setActiveTab] = useState("properties");
 
   // 🔵 INTERNAL REMARKS (NEW SYSTEM)
-const [latestRemark, setLatestRemark] = useState("");
-const [remarksHistory, setRemarksHistory] = useState<any[]>([]);
-const [savingRemark, setSavingRemark] = useState(false);
+  const [latestRemark, setLatestRemark] = useState("");
+  const [remarksHistory, setRemarksHistory] = useState<any[]>([]);
+  const [savingRemark, setSavingRemark] = useState(false);
 
 
 
-  
+
   async function fetchActivityLogs(tenantId: number) {
     const res = await fetch(
       `/api/activity-logs?tenantId=${tenantId}&entityType=buyer&entityId=${buyerId}`
@@ -71,19 +71,19 @@ const [savingRemark, setSavingRemark] = useState(false);
   ];
 
   async function fetchRemarks() {
-  const res = await fetch(
-    `/api/internal-remarks?entityType=buyer&entityId=${buyerId}`
-  );
-  if (!res.ok) return;
+    const res = await fetch(
+      `/api/internal-remarks?entityType=buyer&entityId=${buyerId}`
+    );
+    if (!res.ok) return;
 
-  const data = await res.json();
-  setRemarksHistory(data);
-  setLatestRemark(data[0]?.remark || "");
-}
+    const data = await res.json();
+    setRemarksHistory(data);
+    setLatestRemark(data[0]?.remark || "");
+  }
 
 
-  
-  
+
+
 
   async function fetchSellerPhotos(sellerId: number) {
     if (sellerPhotos[sellerId]) return;
@@ -112,7 +112,7 @@ const [savingRemark, setSavingRemark] = useState(false);
         if (buyerRes.ok) {
           const data = await buyerRes.json();
           setBuyer(data);
-          
+
         }
 
         fetchRemarks();
@@ -149,7 +149,7 @@ const [savingRemark, setSavingRemark] = useState(false);
     loadData();
   }, [buyerId]);
 
-  
+
 
   async function handleGovtPriceEstimate() {
     if (!areaSize || !buyer?.location) return;
@@ -162,28 +162,28 @@ const [savingRemark, setSavingRemark] = useState(false);
   }
 
   async function saveRemark() {
-  if (!latestRemark.trim()) return;
+    if (!latestRemark.trim()) return;
 
-  const raw = localStorage.getItem("loggedUser");
-  if (!raw) return;
-  const user = JSON.parse(raw);
+    const raw = localStorage.getItem("loggedUser");
+    if (!raw) return;
+    const user = JSON.parse(raw);
 
-  setSavingRemark(true);
+    setSavingRemark(true);
 
-  await fetch("/api/internal-remarks", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      entityType: "buyer",
-      entityId: buyerId,
-      remark: latestRemark,
-      createdBy: user.id,
-    }),
-  });
+    await fetch("/api/internal-remarks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        entityType: "buyer",
+        entityId: buyerId,
+        remark: latestRemark,
+        createdBy: user.id,
+      }),
+    });
 
-  setSavingRemark(false);
-  fetchRemarks(); // reload history
-}
+    setSavingRemark(false);
+    fetchRemarks(); // reload history
+  }
 
 
   function statusBadge(status: string) {
@@ -205,18 +205,18 @@ const [savingRemark, setSavingRemark] = useState(false);
   if (!buyer) return <div className="px-6 pt-4">Buyer not found</div>;
 
   const tabs = [
-   
+
     { id: "properties", label: "Matched Properties" },
     { id: "remarks", label: "Internal Remarks" },
     { id: "documents", label: "Documents" },
     { id: "followups", label: "Follow-ups" },
     { id: "activity", label: "Activity Timeline" },
-     { id: "overview", label: "About" },
+    { id: "overview", label: "About" },
   ];
 
   return (
     <div className="w-full px-6 pt-2 space-y-6">
-      
+
 
       {/* HEADER CARD */}
       <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl shadow-sm p-6 border border-blue-100">
@@ -256,15 +256,15 @@ const [savingRemark, setSavingRemark] = useState(false);
 
       {/* KEY INFO CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-  <Info
-    label="Property Type"
-    value={buyer.requirement || "—"}
+        <Info
+          label="Property Type"
+          value={buyer.requirement || "—"}
 
-  />
-  <Info label="Budget Range" value={`₹${buyer.budget_min} – ₹${buyer.budget_max}`} />
-  <Info label="Bedrooms" value={`${buyer.bedrooms} BHK`} />
-  <Info label="Search Radius" value={`${buyer.radius_km} km`} />
-</div>
+        />
+        <Info label="Budget Range" value={`₹${buyer.budget_min} – ₹${buyer.budget_max}`} />
+        <Info label="Bedrooms" value={`${buyer.bedrooms} BHK`} />
+        <Info label="Search Radius" value={`${buyer.radius_km} km`} />
+      </div>
 
       {/* TABBED CARD */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -274,11 +274,10 @@ const [savingRemark, setSavingRemark] = useState(false);
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-4 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === tab.id
+              className={`px-6 py-4 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id
                   ? "border-blue-600 text-blue-600"
                   : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -305,11 +304,11 @@ const [savingRemark, setSavingRemark] = useState(false);
                   <p className="text-gray-900 font-medium">₹{buyer.budget_min} – ₹{buyer.budget_max}</p>
                 </div>
                 <div>
-  <p className="text-sm text-gray-500">Property Type</p>
-  <p className="text-gray-900 font-medium">
-    {buyer.requirement || "—"}
-  </p>
-</div>
+                  <p className="text-sm text-gray-500">Property Type</p>
+                  <p className="text-gray-900 font-medium">
+                    {buyer.requirement || "—"}
+                  </p>
+                </div>
 
               </div>
             </div>
@@ -333,8 +332,16 @@ const [savingRemark, setSavingRemark] = useState(false);
                   return (
                     <div
                       key={seller.id}
-                      className={`bg-white border-2 rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow ${isDiscarded ? "opacity-50 border-gray-200" : "border-gray-200"}`}
+                      className={`relative overflow-hidden bg-white rounded-xl shadow-sm p-5 transition-shadow
+    ${isDiscarded
+                          ? "opacity-50 border border-gray-200"
+                          : "border border-gray-200 hover:shadow-md"
+                        }`}
+                      style={{
+                        borderLeft: isDiscarded ? undefined : "4px solid #2563eb"
+                      }}
                     >
+
                       <div className="flex justify-between gap-6">
                         <div className="space-y-3 flex-1">
                           <div className="flex gap-4">
@@ -455,58 +462,58 @@ const [savingRemark, setSavingRemark] = useState(false);
             </div>
           )}
 
-        {/* INTERNAL REMARKS TAB */}
-{activeTab === "remarks" && (
-  <div className="space-y-6">
-    <h3 className="font-semibold text-gray-900 text-lg">
-      Internal Remarks
-    </h3>
+          {/* INTERNAL REMARKS TAB */}
+          {activeTab === "remarks" && (
+            <div className="space-y-6">
+              <h3 className="font-semibold text-gray-900 text-lg">
+                Internal Remarks
+              </h3>
 
-    {/* 🔹 Latest Remark */}
-    <textarea
-      value={latestRemark}
-      onChange={(e) => setLatestRemark(e.target.value)}
-      rows={4}
-      className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm
+              {/* 🔹 Latest Remark */}
+              <textarea
+                value={latestRemark}
+                onChange={(e) => setLatestRemark(e.target.value)}
+                rows={4}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm
                  focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      placeholder="Add new internal remark..."
-    />
+                placeholder="Add new internal remark..."
+              />
 
-    <button
-      disabled={savingRemark}
-      onClick={saveRemark}
-      className="px-5 py-2.5 text-sm rounded-lg bg-blue-600 text-white
+              <button
+                disabled={savingRemark}
+                onClick={saveRemark}
+                className="px-5 py-2.5 text-sm rounded-lg bg-blue-600 text-white
                  hover:bg-blue-700 disabled:opacity-50"
-    >
-      {savingRemark ? "Saving..." : "Save Remark"}
-    </button>
+              >
+                {savingRemark ? "Saving..." : "Save Remark"}
+              </button>
 
-    {/* 🔹 History */}
-    {remarksHistory.length > 1 && (
-      <div className="mt-6 space-y-3">
-        <h4 className="text-sm font-semibold text-gray-600">
-          Previous Remarks
-        </h4>
+              {/* 🔹 History */}
+              {remarksHistory.length > 1 && (
+                <div className="mt-6 space-y-3">
+                  <h4 className="text-sm font-semibold text-gray-600">
+                    Previous Remarks
+                  </h4>
 
-        {remarksHistory.map((r) => (
-  <div
-    key={r.id}
-    className="border-l-4 border-blue-500 bg-blue-50 p-3 rounded-r-lg"
-  >
-    <p className="text-sm text-gray-800">{r.remark}</p>
-    <p className="text-xs text-gray-500 mt-1">
-      {new Date(r.created_at).toLocaleString()}
-    </p>
-  </div>
-))}
+                  {remarksHistory.map((r) => (
+                    <div
+                      key={r.id}
+                      className="border-l-4 border-blue-500 bg-blue-50 p-3 rounded-r-lg"
+                    >
+                      <p className="text-sm text-gray-800">{r.remark}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(r.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                  ))}
 
-      </div>
-    )}
-  </div>
-)}
+                </div>
+              )}
+            </div>
+          )}
 
 
-          
+
 
           {/* DOCUMENTS TAB */}
           {activeTab === "documents" && (
@@ -558,62 +565,62 @@ const [savingRemark, setSavingRemark] = useState(false);
         </div>
       </div>
 
-      
+
       {/* MODALS */}
-      
 
-     {showUploadModal && (
-  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-white rounded-2xl p-6 w-[380px] space-y-5 shadow-xl border border-blue-100">
-      
-      <h3 className="text-base font-semibold text-blue-600">
-        Upload Document
-      </h3>
 
-      <label className="block text-sm font-medium text-gray-600">
-        Select file
-      </label>
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-[380px] space-y-5 shadow-xl border border-blue-100">
 
-      <input
-        type="file"
-        accept=".pdf,.jpg,.png"
-        onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-        className="w-full text-sm file:mr-4 file:py-2 file:px-4
+            <h3 className="text-base font-semibold text-blue-600">
+              Upload Document
+            </h3>
+
+            <label className="block text-sm font-medium text-gray-600">
+              Select file
+            </label>
+
+            <input
+              type="file"
+              accept=".pdf,.jpg,.png"
+              onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+              className="w-full text-sm file:mr-4 file:py-2 file:px-4
                    file:rounded-lg file:border-0
                    file:bg-indigo-50 file:text-blue-600
                    hover:file:bg-blue-100"
-      />
+            />
 
-      <div className="flex justify-end gap-2 pt-2">
-        <button
-          onClick={() => setShowUploadModal(false)}
-          className="text-sm px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100"
-        >
-          Cancel
-        </button>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setShowUploadModal(false)}
+                className="text-sm px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
 
-        <button
-          className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          onClick={async () => {
-            if (!uploadFile || !uploadLoanId) return;
-            const formData = new FormData();
-            formData.append("file", uploadFile);
-            await fetch(`/api/loans/${uploadLoanId}/documents`, {
-              method: "POST",
-              body: formData,
-            });
-            setShowUploadModal(false);
-            setUploadFile(null);
-            setUploadLoanId(null);
-          
-          }}
-        >
-          Upload
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+              <button
+                className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                onClick={async () => {
+                  if (!uploadFile || !uploadLoanId) return;
+                  const formData = new FormData();
+                  formData.append("file", uploadFile);
+                  await fetch(`/api/loans/${uploadLoanId}/documents`, {
+                    method: "POST",
+                    body: formData,
+                  });
+                  setShowUploadModal(false);
+                  setUploadFile(null);
+                  setUploadLoanId(null);
+
+                }}
+              >
+                Upload
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
 
       {showFollowUpModal && tenantId && agentId && (

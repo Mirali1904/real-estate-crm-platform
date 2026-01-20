@@ -12,7 +12,7 @@ export async function GET(req: Request) {
       return NextResponse.json([], { status: 200 });
     }
 
-    // 🔒 ROLE FROM DB
+    // 🔒 GET USER ROLE
     const [userRows]: any = await conn.execute(
       `SELECT role FROM users WHERE id = ? AND tenant_id = ?`,
       [userId, tenantId]
@@ -25,8 +25,29 @@ export async function GET(req: Request) {
     const role = userRows[0].role;
 
     let query = `
-      SELECT 
-        b.*,
+      SELECT
+        b.id,
+        b.name,
+        b.email,
+        b.phone,
+        b.requirement,
+
+        -- ✅ NEW FIELDS
+        b.looking_for,
+        b.furnishing_preference,
+
+        b.budget_min,
+        b.budget_max,
+        b.location,
+        b.lat,
+        b.lng,
+        b.radius_km,
+        b.bedrooms,
+        b.status,
+
+        -- ✅ BROKERAGE
+        b.brokerage_type,
+        b.brokerage_value,
 
         -- 🔹 LATEST BUYER REMARK
         (
@@ -42,7 +63,7 @@ export async function GET(req: Request) {
         u.name AS assigned_agent_name
 
       FROM buyers b
-      LEFT JOIN users u 
+      LEFT JOIN users u
         ON u.id = b.agent_id
        AND u.tenant_id = b.tenant_id
 
@@ -57,8 +78,29 @@ export async function GET(req: Request) {
     // 🔐 AGENT → ONLY OWN BUYERS
     if (role === "AGENT") {
       query = `
-        SELECT 
-          b.*,
+        SELECT
+          b.id,
+          b.name,
+          b.email,
+          b.phone,
+          b.requirement,
+
+          -- ✅ NEW FIELDS
+          b.looking_for,
+          b.furnishing_preference,
+
+          b.budget_min,
+          b.budget_max,
+          b.location,
+          b.lat,
+          b.lng,
+          b.radius_km,
+          b.bedrooms,
+          b.status,
+
+          -- ✅ BROKERAGE
+          b.brokerage_type,
+          b.brokerage_value,
 
           (
             SELECT ir.remark
@@ -73,7 +115,7 @@ export async function GET(req: Request) {
           u.name AS assigned_agent_name
 
         FROM buyers b
-        LEFT JOIN users u 
+        LEFT JOIN users u
           ON u.id = b.agent_id
          AND u.tenant_id = b.tenant_id
 

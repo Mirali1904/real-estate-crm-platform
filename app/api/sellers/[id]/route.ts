@@ -35,9 +35,9 @@ export async function GET(_req: Request, context: any) {
         price,
         bedrooms,
 
-        -- 🔹 NEW (same as buyer)
-        brokerage_amount,
-       
+        brokerage_type,
+        brokerage_value,
+
 
         status,
         selected_buyer_id
@@ -91,8 +91,9 @@ export async function PUT(req: Request, context: any) {
     "property_address",
     "selected_buyer_id",
 
-    // 🔹 NEW
-    "brokerage_amount",
+    "brokerage_type",
+"brokerage_value",
+
     
   ];
 
@@ -135,7 +136,9 @@ export async function PUT(req: Request, context: any) {
     lng,
     price,
     bedrooms,
-    brokerage_amount,
+    brokerage_type,
+brokerage_value,
+
     status,
     selected_buyer_id
   FROM sellers
