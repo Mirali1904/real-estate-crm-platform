@@ -68,6 +68,13 @@ export default function SellerDetailPage() {
   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
   const [activeTab, setActiveTab] = useState("buyers");
 
+ const [shareLink, setShareLink] = useState("");
+const [showToast, setShowToast] = useState(false);
+const [copied, setCopied] = useState(false);
+
+
+
+
 
   const STATUS_OPTIONS = ["New", "Contacted", "Site Visit Done", "Dropped"];
 
@@ -289,12 +296,87 @@ export default function SellerDetailPage() {
 
             </div>
           </div>
-          <button
-            onClick={() => setShowFollowUpModal(true)}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            + Follow-up
-          </button>
+          
+          <div className="flex items-center gap-3">
+  {/* Follow-up Button */}
+  <button
+    onClick={() => setShowFollowUpModal(true)}
+    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-1"
+  >
+    + Follow-up
+  </button>
+
+  {/* Share Property Button */}
+  <button
+    onClick={async () => {
+      const res = await fetch(`/api/sellers/${sellerId}/share`, {
+        method: "POST",
+        headers: {
+          "x-user": localStorage.getItem("loggedUser")!,
+        },
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed");
+        return;
+      }
+
+      setShareLink(data.shareUrl);
+      setShowToast(true);
+      setCopied(false);
+    }}
+    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-1"
+  >
+    🔗 Share Property
+  </button>
+</div>
+
+
+
+
+{showToast && (
+  <div className="fixed top-5 right-5 z-[9999] w-[420px] bg-white border shadow-xl rounded-lg p-4 animate-slide-in">
+    <div className="flex justify-between items-center mb-2">
+      <span className="font-semibold text-sm">Share Property Link</span>
+      <button
+        onClick={() => setShowToast(false)}
+        className="text-gray-500 hover:text-black"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div className="flex items-center gap-2">
+      <input
+        value={shareLink}
+        readOnly
+        className="flex-1 px-2 py-1 border rounded text-sm"
+      />
+
+      <button
+        onClick={async () => {
+          await navigator.clipboard.writeText(shareLink);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        }}
+        className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
+      >
+        Copy
+      </button>
+    </div>
+
+    {copied && (
+      <div className="mt-2 text-green-600 text-sm">
+        ✓ Link copied
+      </div>
+    )}
+  </div>
+)}
+
+
+
+
         </div>
       </div>
 
