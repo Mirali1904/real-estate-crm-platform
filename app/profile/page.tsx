@@ -23,74 +23,83 @@ export default function ProfilePage() {
   const [country, setCountry] = useState("");
   const [bio, setBio] = useState("");
 
-  useEffect(() => {
-    const raw = localStorage.getItem("loggedUser");
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      setUser(parsed);
-      
-      // Split name into first and last
-      const nameParts = (parsed.name || "").split(" ");
+ useEffect(() => {
+  const raw = localStorage.getItem("loggedUser");
+  if (!raw) return;
+
+  const loggedUser = JSON.parse(raw);
+
+const tenantId = loggedUser.tenant_id || loggedUser.tenantId;
+
+fetch(`/api/profile?userId=${loggedUser.id}&tenantId=${tenantId}`)
+
+    .then((res) => res.json())
+    .then((data) => {
+      setUser(data);
+
+      const nameParts = (data.name || "").split(" ");
       setFirstName(nameParts[0] || "");
       setLastName(nameParts.slice(1).join(" ") || "");
-      
-      setEmail(parsed.email || "");
-      setPhone(parsed.phone || "");
-      setCompanyName(parsed.companyName || "RealEstate Pro");
-      setPosition(parsed.position || "Real Estate Agent");
-      setStreetAddress(parsed.streetAddress || "123 Main Street");
-      setCity(parsed.city || "New York");
-      setState(parsed.state || "NY");
-      setZipCode(parsed.zipCode || "10001");
-      setCountry(parsed.country || "United States");
-      setBio(parsed.bio || "Experienced real estate professional with 5+ years in the industry.");
-    }
-  }, []);
 
-  const handleSave = () => {
-    const updatedUser = {
-      ...user,
+      setEmail(data.email || "");
+      setPhone(data.phone || "");
+      setCompanyName(data.company_name || "");
+      setPosition(data.position || "");
+      setStreetAddress(data.street_address || "");
+      setCity(data.city || "");
+      setState(data.state || "");
+      setZipCode(data.zip_code || "");
+      setCountry(data.country || "");
+      setBio(data.bio || "");
+    });
+}, []);
+
+
+  const handleSave = async () => {
+  const raw = localStorage.getItem("loggedUser");
+  if (!raw) return;
+
+  const loggedUser = JSON.parse(raw);
+  const tenantId = loggedUser.tenant_id || loggedUser.tenantId;
+
+  await fetch("/api/profile", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      userId: loggedUser.id,
+      tenantId, // ✅ IMPORTANT
       name: `${firstName} ${lastName}`.trim(),
-      firstName,
-      lastName,
       phone,
-      companyName,
+      company_name: companyName,
       position,
-      streetAddress,
+      street_address: streetAddress,
       city,
       state,
-      zipCode,
+      zip_code: zipCode,
       country,
       bio,
-    };
+    }),
+  });
 
-    localStorage.setItem("loggedUser", JSON.stringify(updatedUser));
-    setUser(updatedUser);
-    setIsEditing(false);
-  };
+  setIsEditing(false);
+};
+
+
+
 
   const handleCancel = () => {
-    // Reset to saved values
-    const raw = localStorage.getItem("loggedUser");
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      const nameParts = (parsed.name || "").split(" ");
-      setFirstName(nameParts[0] || "");
-      setLastName(nameParts.slice(1).join(" ") || "");
-      setPhone(parsed.phone || "");
-      setCompanyName(parsed.companyName || "RealEstate Pro");
-      setPosition(parsed.position || "Real Estate Agent");
-      setStreetAddress(parsed.streetAddress || "123 Main Street");
-      setCity(parsed.city || "New York");
-      setState(parsed.state || "NY");
-      setZipCode(parsed.zipCode || "10001");
-      setCountry(parsed.country || "United States");
-      setBio(parsed.bio || "Experienced real estate professional with 5+ years in the industry.");
-    }
-    setIsEditing(false);
-  };
+  setIsEditing(false);
+};
 
-  if (!user) return null;
+
+  if (!user) {
+  return (
+    <div className="flex items-center justify-center h-screen text-gray-500">
+      Loading profile...
+    </div>
+  );
+}
+
 
   return (
     <div className="w-full">
