@@ -9,6 +9,8 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname() || "";
 
+
+
    const isBuyerDetailPage =
     pathname.startsWith("/buyers/") && pathname.split("/").length === 3;
 
@@ -47,6 +49,7 @@ export default function Header() {
   if (pathname.startsWith("/properties")) return "Properties";
   if (pathname.startsWith("/groups")) return "Groups";
   if (pathname.startsWith("/appointments")) return "Appointments";
+  if (pathname.startsWith("/profile")) return "Profile";
 
   if (pathname.startsWith("/follow-ups")) return "Follow Ups";
   if (pathname.startsWith("/users")) return "Team";
@@ -88,41 +91,13 @@ export default function Header() {
     {getPageTitle()}
   </h1>
 </div>
-
+        
 
 
         {/* RIGHT — SEARCH + ACTIONS */}
         <div className="flex items-center gap-4">
 
-          {/* SEARCH BAR */}
-          <div className="relative hidden md:block">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="
-                w-64 h-10 pl-10 pr-4 rounded-lg
-                bg-gray-50 text-gray-700 text-sm placeholder-gray-400
-                border border-gray-200
-                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white
-                transition
-              "
-            />
-            <svg
-              className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </div>
+          
 
           {/* NOTIFICATION BELL */}
           <button

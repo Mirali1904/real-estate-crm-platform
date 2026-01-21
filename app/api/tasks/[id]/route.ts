@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { conn } from "@/lib/db";
 
 /* =========================
-   MARK TASK AS DONE
+   DELETE TASK (PERMANENT)
 ========================= */
-export async function PUT(
+export async function DELETE(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await context.params; // ✅ IMPORTANT
+    const { id } = await context.params;
     const taskId = Number(id);
 
     if (isNaN(taskId)) {
@@ -21,8 +21,7 @@ export async function PUT(
 
     await conn.execute(
       `
-      UPDATE tasks
-      SET status = 'done'
+      DELETE FROM tasks
       WHERE id = ?
       `,
       [taskId]
@@ -30,9 +29,9 @@ export async function PUT(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("UPDATE task error:", error);
+    console.error("DELETE task error:", error);
     return NextResponse.json(
-      { error: "Failed to update task" },
+      { error: "Failed to delete task" },
       { status: 500 }
     );
   }

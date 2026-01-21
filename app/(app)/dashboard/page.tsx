@@ -133,12 +133,17 @@ export default function DashboardPage() {
     setTasks(data);
   };
 
-  const markTaskDone = async (id: number) => {
-    await fetch(`/api/tasks/${id}`, { method: "PUT" });
-    const res = await fetch(`/api/tasks?tenantId=${user.tenantId}`);
-    const data = await res.json();
-    setTasks(data);
-  };
+  const deleteTask = async (id: number) => {
+  await fetch(`/api/tasks/${id}`, {
+    method: "DELETE",
+  });
+
+  // UI refresh
+  const res = await fetch(`/api/tasks?tenantId=${user.tenantId}`);
+  const data = await res.json();
+  setTasks(data);
+};
+
 
   const usageGB = serverLoad?.usageGB ?? 0;
 const spaceGB = serverLoad?.spaceGB ?? 500;
@@ -437,10 +442,11 @@ const cpuPercent = serverLoad?.cpuPercent ?? 0;
                     >
                       <div className="flex items-center gap-3">
                         <input
-                          type="checkbox"
-                          onChange={() => markTaskDone(task.id)}
-                          className="w-5 h-5 rounded border-slate-300 text-blue-600 cursor-pointer"
-                        />
+  type="checkbox"
+  onChange={() => deleteTask(task.id)}
+  className="w-5 h-5 rounded border-slate-300 text-blue-600 cursor-pointer"
+/>
+
                         <div className="flex-1 min-w-0">
                           <h3 className="text-slate-900 font-semibold text-sm">{task.title}</h3>
                           <p className="text-slate-600 text-xs">Pending task</p>

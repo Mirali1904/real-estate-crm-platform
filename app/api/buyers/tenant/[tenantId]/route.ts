@@ -17,40 +17,42 @@ export async function GET(
     }
 
     const [rows]: any = await conn.execute(
-      `
-      SELECT
-        b.id,
-        b.tenant_id,
-        b.name,
-        b.phone,
-        b.email,
-        b.requirement,
-        b.budget_min,
-        b.budget_max,
-        b.location,
-        b.bedrooms,
+  `
+  SELECT
+    b.id,
+    b.tenant_id,
+    b.name,
+    b.phone,
+    b.email,
+    b.requirement,
+    b.budget_min,
+    b.budget_max,
+    b.location,
+    b.bedrooms,
 
-        b.brokerage_amount,
-       
-        b.status,
-        b.created_at,
+    -- ✅ Correct brokerage columns
+    b.brokerage_type,
+    b.brokerage_value,
 
-        -- ✅ Assigned Agent
-        u.id   AS assigned_agent_id,
-        u.name AS assigned_agent_name
+    b.status,
+    b.created_at,
 
-      FROM buyers b
-      LEFT JOIN users u
-        ON u.id = b.agent_id
-       AND u.tenant_id = b.tenant_id
+    u.id   AS assigned_agent_id,
+    u.name AS assigned_agent_name
 
-      WHERE b.tenant_id = ?
-        AND b.is_deleted = 0
+  FROM buyers b
+  LEFT JOIN users u
+    ON u.id = b.agent_id
+   AND u.tenant_id = b.tenant_id
 
-      ORDER BY b.created_at DESC
-      `,
-      [tenantIdNum]
-    );
+  WHERE b.tenant_id = ?
+    AND b.is_deleted = 0
+
+  ORDER BY b.created_at DESC
+  `,
+  [tenantIdNum]
+);
+
 
     return NextResponse.json(rows);
   } catch (error) {
