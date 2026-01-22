@@ -144,52 +144,54 @@ export class GroupService {
      DELETE GROUP (HARD DELETE)
   ====================================== */
   async deleteGroup(groupId: number, tenantId: number) {
-    const connection = await conn.getConnection();
-    try {
-      await connection.beginTransaction();
+  const connection = await conn.getConnection();
 
-      await connection.query(
-        `
-        DELETE FROM group_post_responses
-        WHERE post_id IN (
-          SELECT id FROM group_posts WHERE group_id = ?
-        )
-        `,
-        [groupId]
-      );
+  try {
+    await connection.beginTransaction();
 
-      await connection.query(
-        `DELETE FROM group_posts WHERE group_id = ?`,
-        [groupId]
-      );
+    // 1️⃣ Delete post responses
+    await connection.query(
+      `
+      DELETE FROM group_post_responses
+      WHERE post_id IN (
+        SELECT id FROM group_posts WHERE group_id = ?
+      )
+      `,
+      [groupId]
+    );
 
-      await connection.query(
-        `DELETE FROM group_agencies WHERE group_id = ?`,
-        [groupId]
-      );
+    // 2️⃣ Delete posts
+    await connection.query(
+      `DELETE FROM group_posts WHERE group_id = ?`,
+      [groupId]
+    );
 
-      await connection.query(
-        `DELETE FROM group_members WHERE group_id = ?`,
-        [groupId]
-      );
+    // 3️⃣ Delete group agencies (members)
+    await connection.query(
+      `DELETE FROM group_agencies WHERE group_id = ?`,
+      [groupId]
+    );
 
-      const [result] = await connection.query<ResultSetHeader>(
-        `
-        DELETE FROM groups
-        WHERE id = ? AND tenant_id = ?
-        `,
-        [groupId, tenantId]
-      );
+    // 4️⃣ Delete group
+    const [result] = await connection.query<ResultSetHeader>(
+      `
+      DELETE FROM groups
+      WHERE id = ? AND tenant_id = ?
+      `,
+      [groupId, tenantId]
+    );
 
-      await connection.commit();
-      return result.affectedRows > 0;
-    } catch (error) {
-      await connection.rollback();
-      throw error;
-    } finally {
-      connection.release();
-    }
+    await connection.commit();
+    return result.affectedRows > 0;
+
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
   }
+}
+
 
   /* ======================================
      GET GROUP AGENCIES

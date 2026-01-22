@@ -67,6 +67,9 @@ export default function GroupDetailPage() {
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [activePostId, setActivePostId] = useState<number | null>(null);
 
+  const [messageCount, setMessageCount] = useState(0);
+
+
   /* ================= SAFE FETCH ================= */
   const safeFetch = async (url: string) => {
     const res = await fetch(url);
@@ -78,34 +81,49 @@ export default function GroupDetailPage() {
 
   /* ================= INIT ================= */
   useEffect(() => {
-    const raw = localStorage.getItem("loggedUser");
-    if (!raw) return;
-    const u = JSON.parse(raw);
-    setUser(u);
-    fetchAll(u.id);
-  }, [groupId]);
+  const raw = localStorage.getItem("loggedUser");
+  if (!raw) return;
+
+  const u = JSON.parse(raw);
+  setUser(u);
+
+  // ✅ pass tenantId also
+  fetchAll(u.id, u.tenantId);
+}, [groupId]);
+
 
   /* ================= FETCH ALL ================= */
-  const fetchAll = async (userId: number) => {
-    setLoading(true);
-
-    const g = await safeFetch(`/api/groups/${groupId}`);
-    if (!g) {
-      setLoading(false);
-      return;
-    }
-
-    setGroup(g);
-    setIsAdmin(g.created_by === userId);
-
-    const p = await safeFetch(`/api/groups/posts?groupId=${groupId}`);
-    setPosts(Array.isArray(p) ? p : Object.values(p || {}));
-
-    const m = await safeFetch(`/api/groups/agencies?groupId=${groupId}`);
-    setMembers(m || []);
-
+  const fetchAll = async (userId: number, tenantId?: number) => {
+  if (!tenantId) {
     setLoading(false);
-  };
+    return;
+  }
+
+  setLoading(true);
+
+  const g = await safeFetch(`/api/groups/${groupId}`);
+  if (!g) {
+    setLoading(false);
+    return;
+  }
+
+  setGroup(g);
+  setIsAdmin(g.created_by === userId);
+
+  const p = await safeFetch(`/api/groups/posts?groupId=${groupId}`);
+  setPosts(Array.isArray(p) ? p : Object.values(p || {}));
+
+  const m = await safeFetch(`/api/groups/agencies?groupId=${groupId}`);
+  setMembers(m || []);
+
+  const msgs = await safeFetch(
+    `/api/groups/messages?groupId=${groupId}&tenantId=${tenantId}`
+  );
+  setMessageCount((msgs?.messages || []).length);
+
+  setLoading(false);
+};
+
 
   /* ================= AVAILABLE AGENCIES ================= */
   const fetchAvailableUsers = async () => {
@@ -219,7 +237,7 @@ export default function GroupDetailPage() {
         
 
         {/* Group Info Card */}
-        {/* Group Info Card */}
+   
 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-gray-200">
   <div className="flex items-start justify-between gap-4">
 
@@ -290,7 +308,8 @@ export default function GroupDetailPage() {
               <MessageSquare className="w-4 h-4" />
               <span>Messages</span>
             </div>
-            <p className="text-4xl font-bold text-gray-900">0</p>
+           <p className="text-4xl font-bold text-gray-900">{messageCount}</p>
+
           </div>
         </div>
 
@@ -406,14 +425,20 @@ export default function GroupDetailPage() {
                 )}
               </div>
             )}
+{activeTab === "chat" && (
+  <GroupChat
+    groupId={groupId}
+    tenantId={user?.tenantId}
+    userId={user?.id}
+   onMessageChange={() => {
+  if (user) {
+    fetchAll(user.id, user.tenantId);
+  }
+}}
 
-            {activeTab === "chat" && (
-              <GroupChat
-                groupId={groupId}
-                tenantId={user?.tenantId}
-                userId={user?.id}
-              />
-            )}
+  />
+)}
+
           </div>
         </div>
       </div>

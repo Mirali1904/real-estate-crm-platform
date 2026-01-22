@@ -1,56 +1,53 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { conn } from "@/lib/db";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
-    const groupId = Number(searchParams.get("groupId"));
-    const tenantId = Number(searchParams.get("tenantId"));
+    const groupId = searchParams.get("groupId");
+    const tenantId = searchParams.get("tenantId");
 
-    if (!groupId || !tenantId) {
-      return NextResponse.json({ messages: [] });
+    if (!groupId) {
+      return NextResponse.json(
+        { error: "groupId required" },
+        { status: 400 }
+      );
     }
 
-    // 🔐 permission check: tenant must be in group_agencies
-    const [memberRows]: any = await conn.query(
-      `
-      SELECT 1
-      FROM group_agencies
-      WHERE group_id = ? AND tenant_id = ? AND status = 'active'
-      `,
-      [groupId, tenantId]
-    );
-
-    if (memberRows.length === 0) {
-      return NextResponse.json({ messages: [] });
-    }
-
-    // 📥 fetch messages
-    const [rows]: any = await conn.query(
+    // ✅ Fetch ALL messages from this group (not just current tenant)
+    const [rows] = await conn.query(
       `
       SELECT
-        gm.id,
-        gm.message,
-        gm.created_at,
-        u.name AS sender_name,
-        gm.sender_tenant_id
-      FROM group_messages gm
-      JOIN users u ON u.id = gm.sender_user_id
-      WHERE gm.group_id = ?
-      ORDER BY gm.created_at ASC
+        id,
+        group_id,
+        sender_tenant_id,
+        sender_user_id,
+        sender_name,
+        message,
+        created_at
+      FROM group_messages
+      WHERE group_id = ?
+      ORDER BY created_at ASC
       `,
-      [groupId]
+      [groupId] // ✅ Only filter by groupId, not tenantId
     );
 
-    return NextResponse.json({ messages: rows });
-  } catch (error) {
-    console.error("GET /api/groups/messages error:", error);
-    return NextResponse.json({ messages: [] }, { status: 500 });
+    return NextResponse.json({
+      success: true,
+      messages: rows,
+    });
+  } catch (err) {
+    console.error("GET messages error:", err);
+    return NextResponse.json(
+      { error: "Failed to fetch messages" },
+      { status: 500 }
+    );
   }
 }
 
-export async function POST(req: Request) {
+// POST - save new group message
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
@@ -58,48 +55,40 @@ export async function POST(req: Request) {
       groupId,
       tenantId,
       userId,
+      sender_name,
       message,
     } = body;
 
-    if (!groupId || !tenantId || !userId || !message?.trim()) {
+    if (!groupId || !tenantId || !userId || !message) {
       return NextResponse.json(
-        { success: false, error: "Invalid payload" },
+        { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // 🔐 permission check: tenant must be active member of group
-    const [memberRows]: any = await conn.query(
-      `
-      SELECT 1
-      FROM group_agencies
-      WHERE group_id = ? AND tenant_id = ? AND status = 'active'
-      `,
-      [groupId, tenantId]
-    );
-
-    if (memberRows.length === 0) {
-      return NextResponse.json(
-        { success: false, error: "Not allowed" },
-        { status: 403 }
-      );
-    }
-
-    // 📝 insert message
-    await conn.query(
+    const [result]: any = await conn.query(
       `
       INSERT INTO group_messages
-        (group_id, sender_tenant_id, sender_user_id, message)
-      VALUES (?, ?, ?, ?)
+        (group_id, sender_tenant_id, sender_user_id, sender_name, message, created_at)
+      VALUES (?, ?, ?, ?, ?, NOW())
       `,
-      [groupId, tenantId, userId, message]
+      [
+        groupId,
+        tenantId,
+        userId,
+        sender_name || "Unknown",
+        message,
+      ]
     );
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      id: result.insertId,
+    });
   } catch (error) {
-    console.error("POST /api/groups/messages error:", error);
+    console.error("POST message error:", error);
     return NextResponse.json(
-      { success: false },
+      { error: "Failed to save message" },
       { status: 500 }
     );
   }
