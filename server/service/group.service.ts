@@ -368,4 +368,23 @@ export class GroupService {
     );
     return responses;
   }
+
+
+  
+async getGroupMembers(groupId: number) {
+  const [rows]: any = await conn.query(
+    `
+    SELECT gm.*, u.name, u.email
+    FROM group_members gm
+    JOIN users u ON u.id = gm.user_id
+    WHERE gm.group_id = ?
+    `,
+    [groupId]
+  );
+
+  return rows;
 }
+}
+
+
+

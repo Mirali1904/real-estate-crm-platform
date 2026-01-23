@@ -379,6 +379,8 @@ export default function BuyerDetailPage() {
                             </div>
                           )}
 
+
+
                           {openMap[seller.id] && lat && lng && (
                             <div className="h-[240px] rounded-lg overflow-hidden border-2 border-gray-200">
                               <PropertyMap lat={Number(lat)} lng={Number(lng)} label={seller.location} />
