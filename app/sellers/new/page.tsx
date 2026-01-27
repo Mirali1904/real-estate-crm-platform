@@ -2,6 +2,9 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+
 import {
   Home,
   User,
@@ -50,6 +53,41 @@ furnishing_preference: "",
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const searchParams = useSearchParams();
+const sellerId = searchParams?.get("id") ?? null;
+
+const isEdit = !!sellerId;
+
+
+useEffect(() => {
+  if (!sellerId) return;
+
+  fetch(`/api/sellers/${sellerId}`)
+    .then((res) => res.json())
+    .then((data) => {
+      setForm({
+        seller_name: data.name ?? "",
+        owner_contact: data.owner_contact ?? "",
+        email: data.email ?? "",
+        property_type: data.property_type ?? "",
+        location: data.location ?? "",
+        lat: data.lat ?? "",
+        lng: data.lng ?? "",
+        price: data.price ? String(data.price) : "",
+        bedrooms: data.bedrooms ? String(data.bedrooms) : "",
+        brokerage_type: data.brokerage_type ?? "percent",
+        brokerage_value: data.brokerage_value
+          ? String(data.brokerage_value)
+          : "",
+        looking_for: "SELL",          
+        furnishing_preference: "",      
+        agentId: null,
+      });
+    });
+}, [sellerId]);
+
+
 
 
   function handleChange(
@@ -178,30 +216,34 @@ if (
 
     form.agentId = user.id;
 
-    const res = await fetch("/api/sellers/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tenantId,
-        agentId: form.agentId,
-        name: form.seller_name,
-        owner_contact: form.owner_contact,
-        email: form.email,
-        property_type: form.property_type,
-        location: form.location,
-        lat: form.lat,
-        lng: form.lng,
-        price: form.price,
-        bedrooms: form.bedrooms,
-        brokerage_type: form.brokerage_type,
-brokerage_value: form.brokerage_value,
-looking_for: form.looking_for,
-furnishing_preference: form.furnishing_preference,
+   const url = isEdit
+  ? `/api/sellers/${sellerId}`
+  : "/api/sellers/create";
 
+const method = isEdit ? "PUT" : "POST";
 
+const res = await fetch(url, {
+  method,
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    tenantId,
+    agentId: form.agentId,
+    name: form.seller_name,
+    owner_contact: form.owner_contact,
+    email: form.email,
+    property_type: form.property_type,
+    location: form.location,
+    lat: form.lat,
+    lng: form.lng,
+    price: form.price,
+    bedrooms: form.bedrooms,
+    brokerage_type: form.brokerage_type,
+    brokerage_value: form.brokerage_value,
+    looking_for: form.looking_for,
+    furnishing_preference: form.furnishing_preference,
+  }),
+});
 
-      }),
-    });
 
     if (res.ok) router.push("/sellers");
     else alert("Failed to save property");
@@ -224,8 +266,9 @@ furnishing_preference: form.furnishing_preference,
                 RealEstateCRM
               </h1>
               <p className="text-blue-100 text-sm">
-                Add New Property
-              </p>
+  {isEdit ? "Edit Property" : "Add New Property"}
+</p>
+
             </div>
           </div>
         </div>
@@ -559,8 +602,9 @@ furnishing_preference: form.furnishing_preference,
           {/* ACTION */}
           <div className="flex justify-end pt-6 border-t">
             <PrimaryButton onClick={handleSubmit}>
-              Save Property
-            </PrimaryButton>
+  {isEdit ? "Update Property" : "Save Property"}
+</PrimaryButton>
+
           </div>
 
         </div>

@@ -8,10 +8,11 @@ import { FileText } from "lucide-react";
 
 
 // Dropdown Menu Component
-function DropdownMenu({ seller, onAssign, onShare, onDelete }: { 
+function DropdownMenu({ seller, onAssign, onShare, onEdit,  onDelete }: { 
   seller: Seller; 
   onAssign: () => void; 
   onShare: () => void; 
+  onEdit: () => void;
   onDelete: () => void; 
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -61,6 +62,16 @@ function DropdownMenu({ seller, onAssign, onShare, onDelete }: {
             >
               Share
             </button>
+
+            <button
+    onClick={() => {
+      setIsOpen(false);
+      onEdit();
+    }}
+    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+  >
+    Edit
+  </button>
 
             <button
               onClick={() => {
@@ -453,6 +464,7 @@ const commercialCount = sellers.filter((s) =>
                       setSelectedAgent(seller.assigned_agent_id || null);
                     }}
                     onShare={() => setShareSellerId(seller.id)}
+                     onEdit={() => router.push(`/sellers/new?id=${seller.id}`)}
                     onDelete={() => handleDelete(seller.id)}
                   />
                 </div>

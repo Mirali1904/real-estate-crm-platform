@@ -80,22 +80,29 @@ export async function PUT(req: Request, context: any) {
   const body = await req.json();
 
   // ✅ Allowed fields (brokerage & remarks added)
-  const allowedFields = [
-    "status",
-    "owner_user_id",
-    "lat",
-    "lng",
-    "price",
-    "bedrooms",
-    "property_type",
-    "property_address",
-    "selected_buyer_id",
+ const allowedFields = [
+  // basic info
+  "name",
+  "email",
+  "owner_contact",
 
-    "brokerage_type",
-"brokerage_value",
+  // property info
+  "property_type",
+  "location",
+  "lat",
+  "lng",
+  "price",
+  "bedrooms",
 
-    
-  ];
+  // brokerage
+  "brokerage_type",
+  "brokerage_value",
+
+  // status related
+  "status",
+  "selected_buyer_id",
+];
+
 
   const keys = Object.keys(body).filter(k => allowedFields.includes(k));
 
