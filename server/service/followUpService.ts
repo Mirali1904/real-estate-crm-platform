@@ -75,15 +75,21 @@ if (filter === "overdue") {
 
 
   const sql = `
-  SELECT fu.*, b.name AS buyer_name, s.name AS seller_name
+  SELECT
+    fu.*,
+    b.name AS buyer_name,
+    s.name AS seller_name,
+    u.name AS agent_name
   FROM follow_ups fu
   LEFT JOIN buyers b ON b.id = fu.buyer_id
   LEFT JOIN sellers s ON s.id = fu.seller_id
+  LEFT JOIN users u ON u.id = fu.agent_id
   WHERE fu.agent_id = ?
     AND fu.tenant_id = ?
     ${filterSql}
-  ORDER BY fu.follow_up_date ASC
+  ORDER BY fu.follow_up_date ASC, fu.follow_up_time ASC
 `;
+
 
 
 

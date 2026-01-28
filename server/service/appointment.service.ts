@@ -33,27 +33,31 @@ export class AppointmentService {
   /* =========================
      GET APPOINTMENTS (FIXED)
   ========================= */
-   async getAppointments(tenantId: number) {
-    const [rows]: any = await conn.query(
-      `
-      SELECT
-        a.id,
-        a.customer_id,              -- 🔥 VERY IMPORTANT
-        a.appointment_date,
-        a.appointment_time,
-        a.purpose,
-        a.status,
-        b.name AS customer_name
-      FROM appointments a
-      INNER JOIN buyers b ON b.id = a.customer_id
-      WHERE a.tenant_id = ?
-      ORDER BY a.appointment_date ASC, a.appointment_time ASC
-      `,
-      [tenantId]
-    );
+async getAppointments(tenantId: number) {
+  const [rows]: any = await conn.query(
+    `
+    SELECT
+      a.id,
+      a.user_id,                     -- ✅ ADD THIS
+      a.customer_id,
+      a.appointment_date,
+      a.appointment_time,
+      a.purpose,
+      a.status,
+      b.name AS customer_name,
+      u.name AS created_by_name      -- ✅ ADD THIS
+    FROM appointments a
+    INNER JOIN buyers b ON b.id = a.customer_id
+    INNER JOIN users u ON u.id = a.user_id   -- ✅ ADD THIS
+    WHERE a.tenant_id = ?
+    ORDER BY a.appointment_date ASC, a.appointment_time ASC
+    `,
+    [tenantId]
+  );
 
-    return rows;
-  }
+  return rows;
+}
+
 
 
  async getNextAppointment(tenantId: number) {

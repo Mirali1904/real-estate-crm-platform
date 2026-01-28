@@ -20,7 +20,8 @@ export default function AppointmentCalendar({
   /* ================= EVENTS ================= */
   const events = appointments.map((a: any) => ({
     id: String(a.id),
-    title: a.customer_name || "Appointment",
+    title: `${a.customer_name} • ${a.created_by_name}`,
+
     start: `${a.appointment_date.split("T")[0]}T${a.appointment_time}`,
     backgroundColor: statusColorMap[a.status] || "#2563eb",
     borderColor: statusColorMap[a.status] || "#2563eb",

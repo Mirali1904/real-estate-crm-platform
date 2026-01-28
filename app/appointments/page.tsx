@@ -66,14 +66,17 @@ export default function AppointmentsPage() {
   };
 
   const getStatusColor = (status: string) => {
-    const colors: any = {
-      confirmed: "bg-green-100 text-green-700",
-      pending: "bg-yellow-100 text-yellow-700",
-      cancelled: "bg-red-100 text-red-700",
-      completed: "bg-blue-100 text-blue-700",
-    };
-    return colors[status?.toLowerCase()] || "bg-gray-100 text-gray-700";
+  const colors: any = {
+    scheduled: "bg-blue-100 text-blue-700",
+    confirmed: "bg-green-100 text-green-700",
+    pending: "bg-yellow-100 text-yellow-700",
+    cancelled: "bg-red-100 text-red-700",
+    completed: "bg-purple-100 text-purple-700",
   };
+
+  return colors[status?.toLowerCase()] || "bg-gray-100 text-gray-700";
+};
+
 
   if (!user) return null;
 
@@ -164,26 +167,18 @@ export default function AppointmentsPage() {
         {view === "list" && (
           <>
             {/* Table Header */}
-            <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200">
-              <div className="col-span-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Name
-              </div>
-              <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Date
-              </div>
-              <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Time
-              </div>
-              <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Purpose
-              </div>
-              <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Status
-              </div>
-              <div className="col-span-1 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
-                Actions
-              </div>
-            </div>
+           <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200">
+  <div className="col-span-3 text-xs font-semibold text-gray-600 uppercase">Name</div>
+  <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase">Date</div>
+  <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase">Time</div>
+  <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase">Purpose</div>
+  <div className="col-span-1 text-xs font-semibold text-gray-600 uppercase">Status</div>
+  <div className="col-span-1 text-xs font-semibold text-gray-600 uppercase">Create By</div>
+  <div className="col-span-1 text-xs font-semibold text-gray-600 uppercase text-right">
+    Actions
+  </div>
+</div>
+
 
             {/* Table Body */}
             <div className="divide-y divide-gray-200">
@@ -204,68 +199,58 @@ export default function AppointmentsPage() {
 
               {!loading &&
                 appointments.map((a) => (
-                  <div
-                    key={a.id}
-                    className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition-colors"
-                  >
-                    {/* Name */}
-                    <div className="col-span-3 flex items-center">
-                      <div className="font-medium text-gray-900 capitalize">
-                        {a.customer_name}
-                      </div>
-                    </div>
+                 <div key={a.id} className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50">
+  <div className="col-span-3 font-medium">{a.customer_name}</div>
 
-                    {/* Date */}
-                    <div className="col-span-2 flex items-center text-gray-700">
-                      {new Date(a.appointment_date).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                      })}
-                    </div>
+  <div className="col-span-2">
+    {new Date(a.appointment_date).toLocaleDateString()}
+  </div>
 
-                    {/* Time */}
-                    <div className="col-span-2 flex items-center text-gray-700">
-                      {a.appointment_time}
-                    </div>
+  <div className="col-span-2">{a.appointment_time}</div>
 
-                    {/* Purpose */}
-                    <div className="col-span-2 flex items-center text-gray-600">
-                      {a.purpose || "-"}
-                    </div>
+  <div className="col-span-2">{a.purpose || "-"}</div>
 
-                    {/* Status */}
-                    <div className="col-span-2 flex items-center">
-                      <span
-                        className={`inline-flex px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(
-                          a.status
-                        )}`}
-                      >
-                        {a.status}
-                      </span>
-                    </div>
+  <div className="col-span-1">
+    <span className={`px-3 py-1 rounded-full text-xs ${getStatusColor(a.status)}`}>
+      {a.status}
+    </span>
+  </div>
 
-                    {/* Actions */}
-                    <div className="col-span-1 flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => {
-                          setEditAppointment(a);
-                          setShowModal(true);
-                        }}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Edit"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(a.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
+  <div className="col-span-1 text-sm text-gray-700">
+    {a.created_by_name}
+  </div>
+
+  <div className="col-span-1 flex justify-end gap-2 relative z-10">
+  {user.id === a.user_id && (
+    <>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setEditAppointment(a);
+          setShowModal(true);
+        }}
+        className="p-1 rounded hover:bg-blue-50"
+        title="Edit"
+      >
+        <Edit2 className="w-4 h-4 text-blue-600" />
+      </button>
+
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          handleDelete(a.id);
+        }}
+        className="p-1 rounded hover:bg-red-50"
+        title="Delete"
+      >
+        <Trash2 className="w-4 h-4 text-red-600" />
+      </button>
+    </>
+  )}
+</div>
+
+</div>
+
                 ))}
             </div>
           </>

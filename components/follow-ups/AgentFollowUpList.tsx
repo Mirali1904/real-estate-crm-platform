@@ -226,7 +226,9 @@ export default function AgentFollowUpList({
                         {followUp.entity_name ||
                           followUp.buyer_name ||
                           followUp.seller_name ||
+                          followUp.agent_name ||
                           "Unknown"}
+
                       </h3>
 
                       {followUp.priority && (

@@ -15,12 +15,13 @@ export async function POST(req: Request) {
       sellerId = null,
       agentId,
       followUpType,
+      followUpTime,
       followUpDate,
       note,
     } = body;
 
     // 🔒 Basic validation
-    if (!tenantId || !agentId || !followUpDate || !followUpType) {
+    if (!tenantId || !agentId || !followUpDate || !followUpTime || !followUpType) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
       agentId,
       followUpType,
       followUpDate,
+       followUpTime,
       note,
     });
 

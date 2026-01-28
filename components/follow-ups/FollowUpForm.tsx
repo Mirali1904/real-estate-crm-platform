@@ -23,15 +23,17 @@ export default function FollowUpForm({
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [followUpTime, setFollowUpTime] = useState("");
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    if (!followUpDate) {
-      setError("Follow-up date is required");
-      return;
-    }
+    if (!followUpDate || !followUpTime) {
+  setError("Follow-up date and time are required");
+  return;
+}
 
     try {
       setLoading(true);
@@ -46,6 +48,7 @@ export default function FollowUpForm({
           agentId,
           followUpType,
           followUpDate,
+          followUpTime,
           note,
         }),
       });
@@ -58,6 +61,8 @@ export default function FollowUpForm({
       setFollowUpDate("");
       setNote("");
       setFollowUpType("CALL");
+      setFollowUpTime("");
+
 
       onSuccess?.();
     } catch (err) {
@@ -114,6 +119,20 @@ export default function FollowUpForm({
           className="w-full border rounded px-3 py-2"
         />
       </div>
+
+      {/* Follow-up Time */}
+<div>
+  <label className="block text-sm font-medium mb-1">
+    Follow-up Time
+  </label>
+  <input
+    type="time"
+    value={followUpTime}
+    onChange={(e) => setFollowUpTime(e.target.value)}
+    className="w-full border rounded px-3 py-2"
+  />
+</div>
+
 
       {/* Note */}
       <div>
