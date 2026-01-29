@@ -12,7 +12,7 @@ interface Group {
   member_count: number;
   user_role?: string;
   created_at: string;
-   post_count?: number; 
+  post_count?: number;
 }
 
 function timeAgo(dateString: string) {
@@ -36,7 +36,7 @@ function timeAgo(dateString: string) {
 
 function GroupCard({ group, onClick }: { group: Group; onClick: () => void }) {
   const isPrivate = true; // You can adjust based on your data
-  
+
   return (
     <div
       onClick={onClick}
@@ -64,11 +64,10 @@ function GroupCard({ group, onClick }: { group: Group; onClick: () => void }) {
 
       {/* Privacy & Admin */}
       <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
-        <span className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
-          isPrivate 
-            ? "bg-orange-100 text-orange-800" 
+        <span className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${isPrivate
+            ? "bg-orange-100 text-orange-800"
             : "bg-blue-100 text-blue-800"
-        }`}>
+          }`}>
           {isPrivate ? <Lock className="w-3 h-3" /> : <Globe className="w-3 h-3" />}
           {isPrivate ? "Private" : "Public"}
         </span>
@@ -86,15 +85,15 @@ function GroupCard({ group, onClick }: { group: Group; onClick: () => void }) {
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <p className="text-xs text-gray-500 mb-1">Posts</p>
           <p className="text-xl font-bold text-gray-900">
-  {group.post_count ?? 0}
-</p>
+            {group.post_count ?? 0}
+          </p>
 
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <p className="text-xs text-gray-500 mb-1">Active</p>
           <p className="text-sm font-bold text-teal-600 truncate">
-  {timeAgo(group.created_at)}
-</p>
+            {timeAgo(group.created_at)}
+          </p>
 
         </div>
       </div>
@@ -155,40 +154,40 @@ export default function GroupsPage() {
     <div className="w-full min-h-screen bg-gray-50">
       <div className="w-full px-6 space-y-6">
 
-      
+
 
         {/* Search + Create Group Row */}
-<div className="flex flex-col md:flex-row md:items-center gap-4 mt-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-4 mt-4">
 
 
-  
-  {/* Search Bar - Full Width */}
-  <div className="relative flex-1">
-    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-    <input
-      type="text"
-      placeholder="Search groups..."
-      value={search}
-      onChange={(e) => setSearch(e.target.value)}
-      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm
-                 focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+
+          {/* Search Bar - Full Width */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search groups..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm
+                 focus:ring-2 focus:ring-blue-300 focus:border-blue-400
                  outline-none bg-white"
-    />
-  </div>
+            />
+          </div>
 
-  {/* Create Group Button */}
-  {user && user.role !== "AGENT" && (
-    <button
-      onClick={() => router.push("/groups/create")}
-      className="bg-blue-600 text-white px-5 py-2.5 rounded-lg
+          {/* Create Group Button */}
+          {user && user.role !== "AGENT" && (
+            <button
+              onClick={() => router.push("/groups/create")}
+              className="bg-blue-600 text-white px-5 py-2.5 rounded-lg
                  text-sm font-medium hover:bg-blue-700 transition
                  flex items-center gap-2 whitespace-nowrap"
-    >
-      <Plus className="w-4 h-4" />
-      Create Group
-    </button>
-  )}
-</div>
+            >
+              <Plus className="w-4 h-4" />
+              Create Group
+            </button>
+          )}
+        </div>
 
 
         {/* Content */}

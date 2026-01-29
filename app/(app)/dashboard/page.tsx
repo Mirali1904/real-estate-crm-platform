@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Users, Home, Users2, Calendar, TrendingUp, ArrowUpRight } from "lucide-react";
+import { Users, Home, Users2, Calendar, TrendingUp, ArrowUpRight, X, Check, Activity } from "lucide-react";
 import ActivityBarChart from "@/components/dashboard/ActivityBarChart";
 import AnalyticsScatterChart from "@/components/dashboard/AnalyticsScatterChart";
 
@@ -22,7 +22,6 @@ export default function DashboardPage() {
   const [newTaskDueDate, setNewTaskDueDate] = useState("");
   const [reports, setReports] = useState<any[]>([]);
   const [serverLoad, setServerLoad] = useState<any>(null);
-
 
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
@@ -101,13 +100,12 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-  if (!user) return;
+    if (!user) return;
 
-  fetch(`/api/dashboard/server-load?tenantId=${user.tenantId}`)
-    .then((r) => r.json())
-    .then(setServerLoad);
-}, [user]);
-
+    fetch(`/api/dashboard/server-load?tenantId=${user.tenantId}`)
+      .then((r) => r.json())
+      .then(setServerLoad);
+  }, [user]);
 
   if (!user || loading) return null;
 
@@ -134,94 +132,95 @@ export default function DashboardPage() {
   };
 
   const deleteTask = async (id: number) => {
-  await fetch(`/api/tasks/${id}`, {
-    method: "DELETE",
-  });
+    await fetch(`/api/tasks/${id}`, {
+      method: "DELETE",
+    });
 
-  // UI refresh
-  const res = await fetch(`/api/tasks?tenantId=${user.tenantId}`);
-  const data = await res.json();
-  setTasks(data);
-};
-
+    const res = await fetch(`/api/tasks?tenantId=${user.tenantId}`);
+    const data = await res.json();
+    setTasks(data);
+  };
 
   const usageGB = serverLoad?.usageGB ?? 0;
-const spaceGB = serverLoad?.spaceGB ?? 500;
-const cpuPercent = serverLoad?.cpuPercent ?? 0;
-
+  const spaceGB = serverLoad?.spaceGB ?? 500;
+  const cpuPercent = serverLoad?.cpuPercent ?? 0;
 
   const statCards = [
     {
       title: "Total Buyers",
       value: buyers.length,
       subtitle: "Customers",
+      change: "+8%",
       icon: Users,
-      bgColor: "bg-blue-50",
-      iconColor: "text-blue-600",
+      gradient: "from-blue-500 to-cyan-500",
+      lightBg: "bg-blue-50",
       onClick: () => router.push("/buyers"),
     },
     {
       title: "Listed Properties",
       value: properties.length,
       subtitle: "Properties",
+      change: "+12%",
       icon: Home,
-      bgColor: "bg-emerald-50",
-      iconColor: "text-emerald-600",
+      gradient: "from-emerald-500 to-teal-500",
+      lightBg: "bg-emerald-50",
       onClick: () => router.push("/sellers"),
     },
     {
       title: "Active Groups",
       value: groups.length,
       subtitle: "Groups",
+      change: "+5%",
       icon: Users2,
-      bgColor: "bg-purple-50",
-      iconColor: "text-purple-600",
+      gradient: "from-purple-500 to-pink-500",
+      lightBg: "bg-purple-50",
       onClick: () => router.push("/groups"),
     },
     {
       title: "Total Scheduled",
       value: appointments.length,
       subtitle: "Appointments",
+      change: "+15%",
       icon: Calendar,
-      bgColor: "bg-orange-50",
-      iconColor: "text-orange-600",
+      gradient: "from-orange-500 to-amber-500",
+      lightBg: "bg-orange-50",
       onClick: () => router.push("/appointments"),
     },
   ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 px-6 pt-3 pb-6 md:px-8 md:pt-4 md:pb-8">
-
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 px-6 pt-3 pb-6 md:px-8 md:pt-4 md:pb-8">
       
-
       {/* Task Modal */}
       {showTaskModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl">
-            <h3 className="text-xl font-bold mb-4 text-slate-900">Add Task</h3>
-            <input
-              type="text"
-              placeholder="Task title"
-              value={newTaskTitle}
-              onChange={(e) => setNewTaskTitle(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg px-4 py-3 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <input
-              type="date"
-              value={newTaskDueDate}
-              onChange={(e) => setNewTaskDueDate(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg px-4 py-3 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <div className="flex justify-end gap-3">
+        <div className="fixed inset-0 bg-gradient-to-br from-black/60 to-slate-900/60 flex items-center justify-center z-50 backdrop-blur-md">
+          <div className="bg-white rounded-2xl w-full max-w-md p-8 shadow-2xl border border-gray-100 transform transition-all">
+            <h3 className="text-2xl font-bold mb-6 text-gray-900">Add New Task</h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Task title"
+                value={newTaskTitle}
+                onChange={(e) => setNewTaskTitle(e.target.value)}
+                className="w-full border-2 border-gray-200 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              />
+              <input
+                type="date"
+                value={newTaskDueDate}
+                onChange={(e) => setNewTaskDueDate(e.target.value)}
+                className="w-full border-2 border-gray-200 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              />
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowTaskModal(false)}
-                className="text-sm text-slate-600 hover:text-slate-800 px-4 py-2 rounded-lg hover:bg-slate-100 transition"
+                className="px-6 py-3 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={createManualTask}
-                className="bg-blue-600 text-white text-sm px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium"
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/30"
               >
                 Save Task
               </button>
@@ -238,53 +237,56 @@ const cpuPercent = serverLoad?.cpuPercent ?? 0;
             <div
               key={idx}
               onClick={card.onClick}
-              className="group relative bg-white border border-slate-200 rounded-xl p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-300 overflow-hidden cursor-pointer"
+              className="group relative bg-white rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-100 overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10">
+              {/* Animated Background Gradient */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}></div>
+              
+              <div className="relative">
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`${card.bgColor} p-4 rounded-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon className={`w-6 h-6 ${card.iconColor}`} />
-                  </div>
+                 <div className={`${card.lightBg} p-4 rounded-2xl`}>
+  <Icon className="w-7 h-7 text-gray-700" />
+</div>
+
+                  
                 </div>
-                <h3 className="text-3xl font-bold text-slate-900 mb-1">{card.value}</h3>
-                <p className="text-slate-600 text-sm font-medium">{card.title}</p>
-                <p className="text-slate-500 text-xs mt-2">{card.subtitle}</p>
+                
+                <div className="space-y-1">
+                  <h3 className="text-4xl font-extrabold text-gray-900">{card.value}</h3>
+                  <p className="text-gray-600 text-sm font-semibold">{card.title}</p>
+                  <p className="text-gray-400 text-xs">{card.subtitle}</p>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Charts */}
+      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300">
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 mb-1">Activity Overview</h2>
-                <p className="text-slate-500 text-sm">Last 7 Days</p>
-              </div>
-              <div className="flex items-center gap-2 text-green-600">
-                <TrendingUp className="w-4 h-4" />
-                <span className="text-sm font-semibold">+12%</span>
-              </div>
+        <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100">
+          <div className="flex items-start justify-between mb-8">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Activity Overview</h2>
+              <p className="text-gray-500 text-sm">Last 7 Days Performance</p>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+              <Activity className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-bold text-green-600">+12%</span>
             </div>
           </div>
           <ActivityBarChart />
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300">
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 mb-1">User Activity Analytics</h2>
-                <p className="text-slate-500 text-sm">Last Week</p>
-              </div>
-              <div className="flex items-center gap-2 text-blue-600">
-                <ArrowUpRight className="w-4 h-4" />
-                <span className="text-sm font-semibold">+8%</span>
-              </div>
+        <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100">
+          <div className="flex items-start justify-between mb-8">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">User Activity Analytics</h2>
+              <p className="text-gray-500 text-sm">Weekly Insights</p>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+              <TrendingUp className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-bold text-blue-600">+8%</span>
             </div>
           </div>
           <AnalyticsScatterChart />
@@ -293,87 +295,114 @@ const cpuPercent = serverLoad?.cpuPercent ?? 0;
 
       {/* Recent Properties & Server Load */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
-          <div className="p-6 border-b border-slate-100">
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
+          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50/30">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-900">Recent Properties</h2>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Recent Properties</h2>
+                <p className="text-gray-500 text-sm mt-1">Latest listings</p>
+              </div>
               <button
                 onClick={() => router.push("/sellers")}
-                className="text-blue-600 hover:text-blue-700 text-sm font-semibold transition-colors"
+                className="group flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-bold transition-all bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl"
               >
-                View All →
+                View All
+                <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </button>
             </div>
           </div>
           <div className="p-6">
             {properties.length > 0 ? (
               <div className="space-y-4">
-                {properties.slice(0, 3).map((p) => (
+                {properties.slice(0, 3).map((p, idx) => (
                   <div
                     key={p.id}
-                    className="group bg-gradient-to-br from-slate-50 to-white hover:from-blue-50 hover:to-slate-50 border border-slate-200 hover:border-blue-300 rounded-lg p-5 transition-all duration-300"
+                    className="group relative flex items-center gap-5 p-5 bg-gradient-to-r from-gray-50 to-emerald-50/20 border-2 border-gray-100 rounded-2xl hover:border-emerald-300 hover:shadow-xl transition-all duration-300"
+                    style={{animationDelay: `${idx * 100}ms`}}
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="bg-emerald-100 p-3 rounded-lg group-hover:bg-emerald-200 transition-colors flex-shrink-0">
-                        <Home className="w-6 h-6 text-emerald-600" />
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl blur-lg opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                      <div className="relative bg-gradient-to-br from-emerald-500 to-teal-600 p-4 rounded-2xl flex-shrink-0 group-hover:scale-110 transition-transform">
+                        <Home className="w-7 h-7 text-white" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-slate-900 font-semibold mb-1 capitalize">{p.property_type}</h3>
-                        <p className="text-slate-600 text-sm line-clamp-2">{p.location}</p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-slate-900 font-bold text-lg">₹{p.price}</p>
-                        <p className="text-slate-500 text-xs">Listed recently</p>
-                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-gray-900 font-bold text-lg mb-1 capitalize">{p.property_type}</h3>
+                      <p className="text-gray-600 text-sm line-clamp-2">{p.location}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-gray-900 font-extrabold text-xl mb-1">₹{p.price}</p>
+                      <p className="text-gray-500 text-xs">Listed recently</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-slate-400">No properties available</div>
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Home className="w-10 h-10 text-gray-400" />
+                </div>
+                <p className="text-gray-500 font-medium">No properties available</p>
+              </div>
             )}
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
-          <div className="p-6 border-b border-slate-100">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
+          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-emerald-50/30">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-900">Server Load</h2>
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">OPTIMAL</span>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Server Load</h2>
+                <p className="text-gray-500 text-sm mt-1">System status</p>
+              </div>
+              <span className="text-xs font-bold text-emerald-700 bg-gradient-to-r from-emerald-100 to-emerald-200 px-4 py-2 rounded-xl shadow-sm">
+                OPTIMAL
+              </span>
             </div>
           </div>
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-7">
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-slate-700 text-sm font-semibold">Usage</span>
-                <span className="text-slate-900 font-bold">{usageGB}GB</span>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-gray-700 text-sm font-bold">Storage Usage</span>
+                <span className="text-gray-900 font-extrabold text-lg">{usageGB}GB</span>
               </div>
-              <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+              <div className="relative w-full bg-gray-200 rounded-full h-3.5 overflow-hidden shadow-inner">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-200/50 to-indigo-200/50"></div>
                 <div
-                  className="h-full bg-gradient-to-r from-blue-600 to-blue-500 rounded-full transition-all duration-500"
+                  className="relative h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full transition-all duration-700 shadow-lg"
                   style={{ width: `${Math.min((usageGB / spaceGB) * 100, 100)}%` }}
-                ></div>
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent rounded-full"></div>
+                </div>
               </div>
             </div>
+
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-slate-700 text-sm font-semibold">Space</span>
-                <span className="text-slate-900 font-bold">{spaceGB}GB</span>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-gray-700 text-sm font-bold">Total Space</span>
+                <span className="text-gray-900 font-extrabold text-lg">{spaceGB}GB</span>
               </div>
-              <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-full transition-all duration-500" style={{ width: "100%" }}></div>
+              <div className="relative w-full bg-gray-200 rounded-full h-3.5 overflow-hidden shadow-inner">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-200/50 to-teal-200/50"></div>
+                <div className="relative h-full bg-gradient-to-r from-emerald-600 to-teal-600 rounded-full transition-all duration-700 shadow-lg" style={{ width: "100%" }}>
+                  <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent rounded-full"></div>
+                </div>
               </div>
             </div>
+
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-slate-700 text-sm font-semibold">CPU</span>
-                <span className="text-slate-900 font-bold">{cpuPercent}%</span>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-gray-700 text-sm font-bold">CPU Usage</span>
+                <span className="text-gray-900 font-extrabold text-lg">{cpuPercent}%</span>
               </div>
-              <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+              <div className="relative w-full bg-gray-200 rounded-full h-3.5 overflow-hidden shadow-inner">
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-200/50 to-amber-200/50"></div>
                 <div
-                  className="h-full bg-gradient-to-r from-orange-600 to-orange-500 rounded-full transition-all duration-500"
+                  className="relative h-full bg-gradient-to-r from-orange-600 to-amber-600 rounded-full transition-all duration-700 shadow-lg"
                   style={{ width: `${cpuPercent}%` }}
-                ></div>
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent rounded-full"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -382,49 +411,74 @@ const cpuPercent = serverLoad?.cpuPercent ?? 0;
 
       {/* Reports & Tasks */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
-          <div className="p-6 border-b border-slate-100">
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
+          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50/30">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-900">Reports</h2>
-              <button onClick={() => router.push("/buyers")} className="text-blue-600 hover:text-blue-700 text-sm font-semibold transition-colors">
-                See All →
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Recent Reports</h2>
+                <p className="text-gray-500 text-sm mt-1">Latest activity</p>
+              </div>
+              <button 
+                onClick={() => router.push("/buyers")} 
+                className="group flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-bold transition-all bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl"
+              >
+                See All
+                <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </button>
             </div>
           </div>
           <div className="p-6 space-y-3">
             {reports.map((activity, idx) => {
-              const iconMap: any = {
-                user: <Users className="w-5 h-5 text-blue-600" />,
-                home: <Home className="w-5 h-5 text-blue-600" />,
-                task: <Calendar className="w-5 h-5 text-blue-600" />,
+              const iconConfig: any = {
+                user: { icon: <Users className="w-5 h-5 text-white" />, gradient: "from-blue-500 to-cyan-500", bg: "bg-blue-50" },
+                home: { icon: <Home className="w-5 h-5 text-white" />, gradient: "from-emerald-500 to-teal-500", bg: "bg-emerald-50" },
+                task: { icon: <Calendar className="w-5 h-5 text-white" />, gradient: "from-purple-500 to-pink-500", bg: "bg-purple-50" },
               };
+              const config = iconConfig[activity.icon];
+              
               return (
                 <div
                   key={idx}
-                  className="group bg-gradient-to-br from-slate-50 to-white hover:from-blue-50 hover:to-slate-50 border border-slate-200 hover:border-blue-300 rounded-lg p-4 transition-all duration-300"
+                  className="group flex items-center gap-4 p-5 bg-gradient-to-r from-gray-50 to-white border-2 border-gray-100 rounded-2xl hover:border-blue-200 hover:shadow-lg transition-all duration-300"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 p-2.5 rounded-lg group-hover:bg-blue-200 transition-colors flex-shrink-0">
-                      {iconMap[activity.icon]}
+                  <div className="relative">
+                    <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient} rounded-xl blur-md opacity-30 group-hover:opacity-50 transition-opacity`}></div>
+                    <div className={`relative bg-gradient-to-br ${config.gradient} p-3 rounded-xl flex-shrink-0 group-hover:scale-110 transition-transform shadow-lg`}>
+                      {config.icon}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-slate-900 font-semibold text-sm">{activity.title}</h3>
-                      <p className="text-slate-600 text-xs truncate">{activity.subtitle}</p>
-                    </div>
-                    <span className="text-slate-500 text-xs whitespace-nowrap flex-shrink-0">{activity.time}</span>
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-gray-900 font-bold text-sm mb-0.5">{activity.title}</h3>
+                    <p className="text-gray-500 text-xs truncate">{activity.subtitle}</p>
+                  </div>
+                  <span className="text-gray-400 text-xs font-semibold whitespace-nowrap flex-shrink-0 bg-gray-100 px-3 py-1.5 rounded-lg">
+                    {activity.time}
+                  </span>
                 </div>
               );
             })}
-            {reports.length === 0 && <div className="text-center py-8 text-slate-400">No reports available</div>}
+            {reports.length === 0 && (
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="w-10 h-10 text-gray-400" />
+                </div>
+                <p className="text-gray-500 font-medium">No reports available</p>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
-          <div className="p-6 border-b border-slate-100">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
+          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-yellow-50/30">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-900">Tasks to Do</h2>
-              <button onClick={() => setShowTaskModal(true)} className="text-blue-600 hover:text-blue-700 text-sm font-semibold transition-colors">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Tasks to Do</h2>
+                <p className="text-gray-500 text-sm mt-1">Pending items</p>
+              </div>
+              <button 
+                onClick={() => setShowTaskModal(true)} 
+                className="text-blue-600 hover:text-blue-700 text-sm font-bold transition-all bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl"
+              >
                 + Add
               </button>
             </div>
@@ -438,30 +492,28 @@ const cpuPercent = serverLoad?.cpuPercent ?? 0;
                   .map((task) => (
                     <div
                       key={task.id}
-                      className="group bg-gradient-to-br from-slate-50 to-white hover:from-yellow-50 hover:to-slate-50 border border-slate-200 hover:border-yellow-300 rounded-lg p-4 transition-all duration-300"
+                      className="group flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-yellow-50/30 border-2 border-gray-100 rounded-2xl hover:border-yellow-300 hover:shadow-lg transition-all duration-300"
                     >
-                      <div className="flex items-center gap-3">
-                        <input
-  type="checkbox"
-  onChange={() => deleteTask(task.id)}
-  className="w-5 h-5 rounded border-slate-300 text-blue-600 cursor-pointer"
-/>
-
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-slate-900 font-semibold text-sm">{task.title}</h3>
-                          <p className="text-slate-600 text-xs">Pending task</p>
-                        </div>
-                        <span className="text-xs font-bold text-yellow-700 bg-yellow-100 px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0">
-                          Pending
-                        </span>
+                      <input
+                        type="checkbox"
+                        onChange={() => deleteTask(task.id)}
+                        className="w-5 h-5 rounded-lg border-2 border-gray-300 text-blue-600 cursor-pointer focus:ring-2 focus:ring-blue-500 transition-all"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-gray-900 font-bold text-sm mb-0.5">{task.title}</h3>
+                        <p className="text-gray-500 text-xs">Pending task</p>
                       </div>
+                      <span className="text-xs font-bold text-yellow-700 bg-gradient-to-r from-yellow-100 to-amber-100 px-3 py-1.5 rounded-xl whitespace-nowrap flex-shrink-0 shadow-sm">
+                        Pending
+                      </span>
                     </div>
                   ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-slate-400">
-                <span className="text-2xl mb-2 block">🎉</span>
-                <span className="text-sm">You're all caught up!</span>
+              <div className="text-center py-16">
+                <span className="text-6xl mb-4 block">🎉</span>
+                <p className="text-gray-900 font-bold text-lg mb-1">All caught up!</p>
+                <p className="text-gray-500 text-sm">No pending tasks</p>
               </div>
             )}
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Calendar, List, Edit2, Trash2 } from "lucide-react";
+import { Search, Calendar, List, Edit2, Trash2, Plus } from "lucide-react";
 import CreateAppointmentModal from "@/components/appointments/CreateAppointmentModal";
 import AppointmentCalendar from "@/components/appointments/AppointmentCalendar";
 
@@ -66,220 +66,212 @@ export default function AppointmentsPage() {
   };
 
   const getStatusColor = (status: string) => {
-  const colors: any = {
-    scheduled: "bg-blue-100 text-blue-700",
-    confirmed: "bg-green-100 text-green-700",
-    pending: "bg-yellow-100 text-yellow-700",
-    cancelled: "bg-red-100 text-red-700",
-    completed: "bg-purple-100 text-purple-700",
-  };
+    const colors: any = {
+      scheduled: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
+      confirmed: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+      pending: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+      cancelled: "bg-red-50 text-red-700 ring-1 ring-red-200",
+      completed: "bg-purple-50 text-purple-700 ring-1 ring-purple-200",
+    };
 
-  return colors[status?.toLowerCase()] || "bg-gray-100 text-gray-700";
-};
+    return colors[status?.toLowerCase()] || "bg-gray-50 text-gray-700 ring-1 ring-gray-200";
+  };
 
 
   if (!user) return null;
 
   return (
-  <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
 
-    {/* SIDEBAR */}
-    <Sidebar />
+      {/* SIDEBAR */}
+      <Sidebar />
 
-    {/* RIGHT SIDE */}
-    <div className="flex-1 ml-56">
+      {/* RIGHT SIDE */}
+      <div className="flex-1 ml-56">
 
-      {/* HEADER */}
-      <Header />
+        {/* HEADER */}
+        <Header />
 
-       <div className="w-full px-8 pt-3 pb-6">
+        <div className="w-full px-8 pt-3 pb-6">
 
-
-   
-      
-      {/* View Toggle Buttons */}
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={() => setView("list")}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-            view === "list"
-              ? "bg-white text-gray-900 shadow-md"
-              : "bg-transparent text-gray-600 hover:bg-white/50"
-          }`}
-        >
-          <List className="w-4 h-4" />
-          List View
-        </button>
-        <button
-          onClick={() => setView("calendar")}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-            view === "calendar"
-              ? "bg-white text-gray-900 shadow-md"
-              : "bg-transparent text-gray-600 hover:bg-white/50"
-          }`}
-        >
-          <Calendar className="w-4 h-4" />
-          Calendar
-        </button>
-      </div>
-
-      {/* SEARCH + NEW APPOINTMENT */}
-<div className="flex items-center gap-4 mb-6">
-
-  {/* SEARCH – FULL WIDTH */}
-  <div className="relative flex-1">
-    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-    <input
-      type="text"
-      placeholder="Search by name or purpose..."
-      value={search}
-      onChange={(e) => setSearch(e.target.value)}
-      className="
-        w-full
-        pl-12 pr-4 py-3
-        bg-white
-        border border-gray-200
-        rounded-lg
-        text-sm
-        focus:outline-none
-        focus:ring-2 focus:ring-blue-500
-      "
-    />
-  </div>
-
-  {/* NEW APPOINTMENT BUTTON */}
-  <button
-    onClick={() => {
-      setEditAppointment(null);
-      setShowModal(true);
-    }}
-    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg text-sm font-medium whitespace-nowrap"
-  >
-    + New Appointment
-  </button>
-
-</div>
-
-
-      {/* Content Area */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        {/* LIST VIEW */}
-        {view === "list" && (
-          <>
-            {/* Table Header */}
-           <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200">
-  <div className="col-span-3 text-xs font-semibold text-gray-600 uppercase">Name</div>
-  <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase">Date</div>
-  <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase">Time</div>
-  <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase">Purpose</div>
-  <div className="col-span-1 text-xs font-semibold text-gray-600 uppercase">Status</div>
-  <div className="col-span-1 text-xs font-semibold text-gray-600 uppercase">Create By</div>
-  <div className="col-span-1 text-xs font-semibold text-gray-600 uppercase text-right">
-    Actions
-  </div>
-</div>
-
-
-            {/* Table Body */}
-            <div className="divide-y divide-gray-200">
-              {loading && (
-                <div className="px-6 py-12 text-center text-gray-500">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-blue-600"></div>
-                  <p className="mt-3">Loading appointments...</p>
-                </div>
-              )}
-
-              {!loading && appointments.length === 0 && (
-                <div className="px-6 py-12 text-center text-gray-500">
-                  <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p className="text-lg font-medium text-gray-900 mb-1">No appointments found</p>
-                  <p className="text-sm text-gray-500">Create your first appointment to get started</p>
-                </div>
-              )}
-
-              {!loading &&
-                appointments.map((a) => (
-                 <div key={a.id} className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50">
-  <div className="col-span-3 font-medium">{a.customer_name}</div>
-
-  <div className="col-span-2">
-    {new Date(a.appointment_date).toLocaleDateString()}
-  </div>
-
-  <div className="col-span-2">{a.appointment_time}</div>
-
-  <div className="col-span-2">{a.purpose || "-"}</div>
-
-  <div className="col-span-1">
-    <span className={`px-3 py-1 rounded-full text-xs ${getStatusColor(a.status)}`}>
-      {a.status}
-    </span>
-  </div>
-
-  <div className="col-span-1 text-sm text-gray-700">
-    {a.created_by_name}
-  </div>
-
-  <div className="col-span-1 flex justify-end gap-2 relative z-10">
-  {user.id === a.user_id && (
-    <>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setEditAppointment(a);
-          setShowModal(true);
-        }}
-        className="p-1 rounded hover:bg-blue-50"
-        title="Edit"
-      >
-        <Edit2 className="w-4 h-4 text-blue-600" />
-      </button>
-
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          handleDelete(a.id);
-        }}
-        className="p-1 rounded hover:bg-red-50"
-        title="Delete"
-      >
-        <Trash2 className="w-4 h-4 text-red-600" />
-      </button>
-    </>
-  )}
-</div>
-
-</div>
-
-                ))}
+          {/* View Toggle & Search Bar */}
+          <div className="flex items-center justify-between gap-4 mb-6">
+            
+            {/* View Toggle Buttons */}
+            <div className="flex items-center gap-2 bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+              <button
+                onClick={() => setView("list")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm transition-all ${
+                  view === "list"
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-gray-600 hover:text-blue-600"
+                }`}
+              >
+                <List className="w-4 h-4" />
+                List
+              </button>
+              <button
+                onClick={() => setView("calendar")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm transition-all ${
+                  view === "calendar"
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-blue-600 hover:text-blue-600"
+                }`}
+              >
+                <Calendar className="w-4 h-4" />
+                Calendar
+              </button>
             </div>
-          </>
-        )}
 
-        {/* CALENDAR VIEW */}
-        {view === "calendar" && (
-          <div className="p-6">
-            <AppointmentCalendar
-              appointments={appointments}
-              onEventClick={(appointment: any) => {
-                setEditAppointment(appointment);
-                setShowModal(true);
-              }}
-            />
+            {/* Search & New Button */}
+            <div className="flex items-center gap-3 flex-1 max-w-2xl">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by name or purpose..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                />
+              </div>
+
+              <button
+                onClick={() => {
+                  setEditAppointment(null);
+                  setShowModal(true);
+                }}
+                className="bg-blue-600 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                New Appointment
+              </button>
+            </div>
           </div>
-        )}
-      </div>
 
-      {/* Modal */}
-      <CreateAppointmentModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        user={user}
-        appointment={editAppointment}
-        onCreated={() => fetchAppointments(user.tenantId)}
-      />
-    </div>
-    </div>
+          {/* Content Area */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            
+            {/* LIST VIEW */}
+            {view === "list" && (
+              <>
+                {/* Table Header */}
+                <div className="grid grid-cols-12 gap-4 px-6 py-3.5 bg-gray-50 border-b border-gray-200">
+                  <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</div>
+                  <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</div>
+                  <div className="col-span-1 text-xs font-semibold text-gray-600 uppercase tracking-wider">Time</div>
+                  <div className="col-span-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Purpose</div>
+                  <div className="col-span-1 text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</div>
+                  <div className="col-span-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">Created By</div>
+                  <div className="col-span-1 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
+                    Actions
+                  </div>
+                </div>
+
+                {/* Table Body */}
+                <div className="divide-y divide-gray-200">
+                  {loading && (
+                    <div className="px-6 py-16 text-center">
+                      <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-gray-900 mb-4"></div>
+                      <p className="text-gray-600 font-medium">Loading appointments...</p>
+                    </div>
+                  )}
+
+                  {!loading && appointments.length === 0 && (
+                    <div className="px-6 py-16 text-center">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Calendar className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <p className="text-lg font-semibold text-gray-900 mb-1">No appointments found</p>
+                      <p className="text-sm text-gray-500">Create your first appointment to get started</p>
+                    </div>
+                  )}
+
+                  {!loading &&
+                    appointments.map((a) => (
+                      <div key={a.id} className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition-colors">
+                        <div className="col-span-2 font-medium text-gray-900">{a.customer_name}</div>
+
+                        <div className="col-span-2 text-sm text-gray-600">
+                          {new Date(a.appointment_date).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric"
+                          })}
+                        </div>
+
+                        <div className="col-span-1 text-sm text-gray-600">{a.appointment_time}</div>
+
+                        <div className="col-span-3 text-sm text-gray-600">{a.purpose || "—"}</div>
+
+                        <div className="col-span-1">
+                          <span className={`inline-block px-2.5 py-1 rounded-md text-xs font-medium ${getStatusColor(a.status)}`}>
+                            {a.status}
+                          </span>
+                        </div>
+
+                        <div className="col-span-2 text-sm text-gray-600">
+                          {a.created_by_name}
+                        </div>
+
+                        <div className="col-span-1 flex justify-end gap-1">
+                          {user.id === a.user_id && (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditAppointment(a);
+                                  setShowModal(true);
+                                }}
+                                className="p-2 rounded-lg hover:bg-blue-50 transition-colors group"
+                                title="Edit"
+                              >
+                                <Edit2 className="w-4 h-4 text-gray-500 group-hover:text-blue-600" />
+                              </button>
+
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(a.id);
+                                }}
+                                className="p-2 rounded-lg hover:bg-red-50 transition-colors group"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4 text-gray-500 group-hover:text-red-600" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </>
+            )}
+
+            {/* CALENDAR VIEW */}
+            {view === "calendar" && (
+              <div className="p-6">
+                <AppointmentCalendar
+                  appointments={appointments}
+                  onEventClick={(appointment: any) => {
+                    setEditAppointment(appointment);
+                    setShowModal(true);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Modal */}
+          <CreateAppointmentModal
+            isOpen={showModal}
+            onClose={() => setShowModal(false)}
+            user={user}
+            appointment={editAppointment}
+            onCreated={() => fetchAppointments(user.tenantId)}
+          />
+        </div>
+      </div>
     </div>
   );
 }

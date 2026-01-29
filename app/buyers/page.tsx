@@ -160,7 +160,7 @@ export default function BuyersPage() {
 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-11 pl-10 pr-4 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full h-11 pl-10 pr-4 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
               />
             </div>
             <button className="h-11 w-11 flex items-center justify-center border border-gray-300 rounded-lg bg-white hover:bg-gray-50">

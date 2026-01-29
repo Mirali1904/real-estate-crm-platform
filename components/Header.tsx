@@ -128,7 +128,7 @@ export default function Header() {
               className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-100 transition"
               aria-label="User menu"
             >
-              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-semibold shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center text-sm font-semibold shadow-sm">
                 {user?.name?.[0]?.toUpperCase() || "M"}
               </div>
             </button>
@@ -146,7 +146,7 @@ export default function Header() {
                   {/* USER INFO */}
                   <div className="p-4 border-b border-gray-100">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-semibold">
+                      <div className="w-10 h-10 rounded-full bg-blue-900 text-white flex items-center justify-center text-sm font-semibold">
                         {user?.name?.[0]?.toUpperCase() || "M"}
                       </div>
                       <div className="flex-1 min-w-0">

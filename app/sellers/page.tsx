@@ -6,9 +6,8 @@ import { Plus, Search, Filter, MoreHorizontal, MapPin, Home, DollarSign, User } 
 import ShareToGroupModal from "@/components/groups/ShareToGroupModal";
 import { FileText } from "lucide-react";
 
-
 // Dropdown Menu Component
-function DropdownMenu({ seller, onAssign, onShare, onEdit,  onDelete }: { 
+function DropdownMenu({ seller, onAssign, onShare, onEdit, onDelete }: { 
   seller: Seller; 
   onAssign: () => void; 
   onShare: () => void; 
@@ -24,9 +23,9 @@ function DropdownMenu({ seller, onAssign, onShare, onEdit,  onDelete }: {
           e.stopPropagation();
           setIsOpen((p) => !p);
         }}
-        className="h-9 w-9 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50"
+        className="h-10 w-10 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors"
       >
-        <MoreHorizontal className="h-4 w-4 text-gray-600" />
+        <MoreHorizontal className="h-5 w-5 text-gray-600" />
       </button>
 
       {isOpen && (
@@ -39,8 +38,7 @@ function DropdownMenu({ seller, onAssign, onShare, onEdit,  onDelete }: {
 
           {/* MENU */}
           <div
-            className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-[9999]"
-
+            className="absolute right-0 bottom-full mb-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-[9999]"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <button
@@ -48,9 +46,9 @@ function DropdownMenu({ seller, onAssign, onShare, onEdit,  onDelete }: {
                 setIsOpen(false);
                 onAssign();
               }}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+              className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
             >
-              {seller.assigned_agent_id ? "Reassign" : "Assign"}
+              👤 {seller.assigned_agent_id ? "Reassign Agent" : "Assign Agent"}
             </button>
 
             <button
@@ -58,29 +56,29 @@ function DropdownMenu({ seller, onAssign, onShare, onEdit,  onDelete }: {
                 setIsOpen(false);
                 onShare();
               }}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+              className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
             >
-              Share
+              👥 Share with Group
             </button>
 
             <button
-    onClick={() => {
-      setIsOpen(false);
-      onEdit();
-    }}
-    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
-  >
-    Edit
-  </button>
+              onClick={() => {
+                setIsOpen(false);
+                onEdit();
+              }}
+              className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+            >
+              ✏️ Edit Property
+            </button>
 
             <button
               onClick={() => {
                 setIsOpen(false);
                 onDelete();
               }}
-              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+              className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
             >
-              Delete
+              🗑️ Delete
             </button>
           </div>
         </>
@@ -89,29 +87,24 @@ function DropdownMenu({ seller, onAssign, onShare, onEdit,  onDelete }: {
   );
 }
 
-
 type Seller = {
   id: number;
   owner_name: string;
-
   owner_contact?: string | null;   
   owner_email?: string | null;
-   email?: string | null;  
+  email?: string | null;  
   property_type: string;
   price: number;
   bedrooms: number;
-   location: string; 
+  location: string; 
   brokerage_type?: "percent" | "fixed" | null;
-brokerage_value?: number | null;
-
-    latest_remark?: string | null;
+  brokerage_value?: number | null;
+  latest_remark?: string | null;
   assigned_agent_id?: number | null;
   assigned_agent_name?: string | null;
   cover_photo?: string | null;
-
   looking_for?: "RENT" | "SELL";
-furnishing_preference?: string | null;
-
+  furnishing_preference?: string | null;
 };
 
 export default function SellersPage() {
@@ -126,22 +119,21 @@ export default function SellersPage() {
   const [agents, setAgents] = useState<any[]>([]);
   const [assignSellerId, setAssignSellerId] = useState<number | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<number | null>(null);
+
   const RESIDENTIAL_TYPES = ["flat", "villa", "house"];
-const COMMERCIAL_TYPES = ["shop", "office"];
+  const COMMERCIAL_TYPES = ["shop", "office"];
 
-
-   const totalValue = sellers.reduce(
+  const totalValue = sellers.reduce(
     (sum, s) => sum + Number(s.price || 0),
     0
   );
   const residentialCount = sellers.filter((s) =>
-  RESIDENTIAL_TYPES.includes(s.property_type?.toLowerCase())
-).length;
+    RESIDENTIAL_TYPES.includes(s.property_type?.toLowerCase())
+  ).length;
 
-const commercialCount = sellers.filter((s) =>
-  COMMERCIAL_TYPES.includes(s.property_type?.toLowerCase())
-).length;
-
+  const commercialCount = sellers.filter((s) =>
+    COMMERCIAL_TYPES.includes(s.property_type?.toLowerCase())
+  ).length;
 
   /* ================= FETCH SELLERS ================= */
   useEffect(() => {
@@ -175,35 +167,30 @@ const commercialCount = sellers.filter((s) =>
 
   /* ================= SEARCH ================= */
   useEffect(() => {
-  if (!search.trim()) {
-    setDisplaySellers(sellers);
-    return;
-  }
+    if (!search.trim()) {
+      setDisplaySellers(sellers);
+      return;
+    }
 
-  const q = search.toLowerCase();
+    const q = search.toLowerCase();
 
-  // 💰 budget number (1200000 etc)
-  const budgetValue = !isNaN(Number(q)) ? Number(q) : null;
+    // 💰 budget number (1200000 etc)
+    const budgetValue = !isNaN(Number(q)) ? Number(q) : null;
 
-  // 🏠 bhk (1bhk, 2 bhk)
-  const bhkMatch = q.match(/(\d+)\s*bhk/);
-  const bhkValue = bhkMatch ? Number(bhkMatch[1]) : null;
+    // 🏠 bhk (1bhk, 2 bhk)
+    const bhkMatch = q.match(/(\d+)\s*bhk/);
+    const bhkValue = bhkMatch ? Number(bhkMatch[1]) : null;
 
-  setDisplaySellers(
-    sellers.filter((s) =>
-      s.owner_name?.toLowerCase().includes(q) ||
-      s.property_type?.toLowerCase().includes(q) ||
-      s.location?.toLowerCase().includes(q) ||
-
-      // 💰 budget search (less than or equal)
-      (budgetValue !== null && Number(s.price) <= budgetValue) ||
-
-      // 🏠 BHK search
-      (bhkValue !== null && Number(s.bedrooms) === bhkValue)
-    )
-  );
-}, [search, sellers]);
-
+    setDisplaySellers(
+      sellers.filter((s) =>
+        s.owner_name?.toLowerCase().includes(q) ||
+        s.property_type?.toLowerCase().includes(q) ||
+        s.location?.toLowerCase().includes(q) ||
+        (budgetValue !== null && Number(s.price) <= budgetValue) ||
+        (bhkValue !== null && Number(s.bedrooms) === bhkValue)
+      )
+    );
+  }, [search, sellers]);
 
   async function handleDelete(id: number) {
     if (!confirm("Delete this property?")) return;
@@ -234,276 +221,297 @@ const commercialCount = sellers.filter((s) =>
     location.reload();
   }
 
-  if (loading) return <p className="p-6">Loading...</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen bg-gray-50">
       {/* Main Content */}
-      <div className="flex-1 p-4 space-y-3">
-        {/* Top Actions */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          
-          
-          <div className="flex items-center gap-3 flex-1">
+      <div className="w-full px-6 sm:px-8 lg:px-10 pt-4 pb-12 space-y-8">
 
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search properties by name or location..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-10 pl-10 pr-4 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <button className="h-10 w-10 flex items-center justify-center border border-gray-200 rounded-lg bg-white hover:bg-gray-50">
-              <Filter className="w-4 h-4 text-gray-600" />
-            </button>
+        
+        {/* Search Bar and Add Button in One Line */}
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search properties by name, location, budget, or BHK (e.g., 2 BHK, 1500000)..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full h-12 pl-12 pr-4 text-sm rounded-lg border border-blue-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-600 transition-all"
+            />
           </div>
-          
+          <button className="h-12 w-12 flex items-center justify-center border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-all flex-shrink-0">
+            <Filter className="w-5 h-5 text-blue-600" />
+          </button>
           <button
             onClick={() => router.push("/sellers/new")}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+            className="px-6 py-3 h-12 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-800 active:bg-gray-700 transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0"
           >
             <Plus className="w-4 h-4" />
             Add Property
           </button>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white p-4 rounded-xl border border-gray-200">
-            <p className="text-sm text-gray-500 mb-1">Total Properties</p>
-            <h4 className="text-3xl font-bold text-gray-900">{sellers.length}</h4>
+        {/* Quick Stats - Professional Landscape Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Total Properties */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-all">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Total Properties</p>
+                <h4 className="text-3xl font-bold text-gray-900">{sellers.length}</h4>
+              </div>
+              <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
+                <Home className="w-6 h-6 text-gray-600" />
+              </div>
+            </div>
           </div>
-         <div className="bg-white p-4 rounded-xl border border-gray-200">
-  <p className="text-sm text-gray-500 mb-1">Residential Properties</p>
-  <h4 className="text-3xl font-bold text-blue-600">
-    {residentialCount}
-  </h4>
-</div>
 
-          <div className="bg-white p-4 rounded-xl border border-gray-200">
-  <p className="text-sm text-gray-500 mb-1">Commercial Properties</p>
-  <h4 className="text-3xl font-bold text-purple-600">
-    {commercialCount}
-  </h4>
-</div>
+          {/* Residential */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-all">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Residential</p>
+                <h4 className="text-3xl font-bold text-gray-900">{residentialCount}</h4>
+              </div>
+              <div className="w-12 h-12 rounded-lg bg-emerald-50 flex items-center justify-center">
+                <Home className="w-6 h-6 text-emerald-600" />
+              </div>
+            </div>
+          </div>
 
-          <div className="bg-white p-4 rounded-xl border border-gray-200">
-  <p className="text-sm text-gray-500 mb-1">Total Value</p>
-  <h4 className="text-2xl font-bold text-gray-900">
-    ₹{(totalValue / 10000000).toFixed(1)} Cr
-  </h4>
-</div>
+          {/* Commercial */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-all">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Commercial</p>
+                <h4 className="text-3xl font-bold text-gray-900">{commercialCount}</h4>
+              </div>
+              <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+            </div>
+          </div>
 
+          {/* Total Value */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-all">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Total Value</p>
+                <h4 className="text-2xl font-bold text-gray-900">₹{(totalValue / 10000000).toFixed(1)} Cr</h4>
+              </div>
+              <div className="w-12 h-12 rounded-lg bg-amber-50 flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-amber-600" />
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Properties Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Properties Grid - Full Width with Smaller Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {displaySellers.map((seller) => (
             <div
               key={seller.id}
-              className="bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow relative overflow-visible"
-
+              className="bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-all relative overflow-hidden group"
             >
-              {/* Property Image */}
-<div className="relative w-full h-56 md:h-64 overflow-hidden rounded-t-xl bg-gray-100">
-  {seller.cover_photo ? (
-    <>
-      <img
-        src={seller.cover_photo.replace('-thumb.jpg', '.jpg')}
-        alt="property"
-        className="absolute inset-0 w-full h-full object-cover"
-        loading="eager"
-        fetchPriority="high"
-        style={{ 
-          imageRendering: '-webkit-optimize-contrast',
-          filter: 'contrast(1.05) saturate(1.1)'
-         }}
-      />
+              {/* Property Image - Smaller */}
+              <div className="relative w-full h-40 overflow-hidden rounded-t-lg bg-gray-100">
+                {seller.cover_photo ? (
+                  <>
+                    <img
+                      src={seller.cover_photo.replace('-thumb.jpg', '.jpg') || "/placeholder.svg"}
+                      alt="property"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="eager"
+                      fetchPriority="high"
+                      style={{ 
+                        imageRendering: '-webkit-optimize-contrast',
+                        filter: 'contrast(1.05) saturate(1.1)'
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                  </>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Home className="w-12 h-12 text-gray-300" />
+                  </div>
+                )}
+                {seller.assigned_agent_id && (
+                  <div className="absolute top-2 right-2 z-10">
+                    <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-500 text-white shadow-md">
+                      ✓ Assigned
+                    </span>
+                  </div>
+                )}
+              </div>
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
-    </>
-  ) : (
-    <div className="absolute inset-0 flex items-center justify-center">
-      <Home className="w-12 h-12 text-gray-400" />
-    </div>
-  )}
-
-  <div className="absolute top-3 right-3 z-10">
-    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-500 text-white shadow">
-      ASSIGNED
-    </span>
-  </div>
-</div>
-
-
-
-
-
-              {/* Property Details */}
-              <div className="p-5 space-y-4 relative">
+              {/* Property Details - Compact */}
+              <div className="p-4 space-y-3 relative">
                 {/* Title and Type */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{seller.property_type}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{seller.bedrooms} BHK</p>
+                  <h3 className="text-lg font-bold text-gray-900 capitalize">{seller.property_type}</h3>
+                  <p className="text-xs font-semibold text-gray-600 mt-1">{seller.bedrooms} BHK</p>
                 </div>
 
                 {/* Looking For & Furnishing */}
-<div className="flex flex-wrap gap-2 mt-2">
-  {seller.looking_for && (
-    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-      {seller.looking_for === "RENT" ? "Rent" : "Sell"}
-    </span>
-  )}
+                <div className="flex flex-wrap gap-1.5">
+                  {seller.looking_for && (
+                    <span className="px-2 py-1 rounded-md text-xs font-semibold bg-gray-100 text-gray-700">
+                      {seller.looking_for === "RENT" ? "Rent" : "Sell"}
+                    </span>
+                  )}
+                  {seller.furnishing_preference && (
+                    <span className="px-2 py-1 rounded-md text-xs font-semibold bg-gray-100 text-gray-700">
+                      {seller.furnishing_preference
+                        .replace("_", " ")
+                        .toLowerCase()
+                        .replace(/\b\w/g, (c) => c.toUpperCase())}
+                    </span>
+                  )}
+                </div>
 
-  {seller.furnishing_preference && (
-    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-      {seller.furnishing_preference
-        .replace("_", " ")
-        .toLowerCase()
-        .replace(/\b\w/g, (c) => c.toUpperCase())}
-    </span>
-  )}
-</div>
-
-                
-
-                {/* Key Info */}
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="flex items-center gap-2">
-                    <Home className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <p className="text-xs text-gray-500">Beds</p>
-                      <p className="text-sm font-medium text-gray-900">{seller.bedrooms}</p>
-                    </div>
+                {/* Key Info Cards - Compact */}
+                <div className="grid grid-cols-3 gap-2 bg-gray-50 rounded-lg p-3 border border-gray-200">
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Beds</p>
+                    <p className="text-lg font-bold text-gray-900">{seller.bedrooms}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <p className="text-xs text-gray-500">Brokerage</p>
-                      <p className="text-sm font-medium text-gray-900">
-  {seller.brokerage_type && seller.brokerage_value ? (
-    seller.brokerage_type === "percent" ? (
-      `${seller.brokerage_value}%`
-    ) : (
-      `₹${Number(seller.brokerage_value).toLocaleString()}`
-    )
-  ) : (
-    "—"
-  )}
-</p>
-
-                    </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Brokerage</p>
+                    <p className="text-sm font-bold text-gray-900">
+                      {seller.brokerage_type && seller.brokerage_value ? (
+                        seller.brokerage_type === "percent" ? (
+                          `${seller.brokerage_value}%`
+                        ) : (
+                          `₹${Number(seller.brokerage_value).toLocaleString()}`
+                        )
+                      ) : (
+                        "—"
+                      )}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <p className="text-xs text-gray-500">Price</p>
-                      <p className="text-sm font-medium text-gray-900">₹{seller.price}</p>
-                    </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Price</p>
+                    <p className="text-sm font-bold text-gray-900">₹{seller.price}</p>
                   </div>
                 </div>
 
-                {/* Seller & Agent */}
-                <div className="pt-3 border-t border-gray-100 space-y-2">
-  <div className="flex items-center justify-between">
-    <div className="flex items-center gap-2">
-      <User className="w-4 h-4 text-gray-400" />
-      <span className="text-sm text-gray-600">{seller.owner_name}</span>
-    </div>
+                {/* Seller & Agent Info - Compact */}
+                <div className="pt-3 border-t border-gray-200 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <User className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <span className="font-semibold text-gray-900 text-sm truncate">{seller.owner_name}</span>
+                    </div>
+                    {seller.assigned_agent_name && (
+                      <span className="text-xs font-semibold px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 whitespace-nowrap">
+                        {seller.assigned_agent_name}
+                      </span>
+                    )}
+                  </div>
+                  {seller.owner_contact && (
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-gray-600">
+                      <span>📞</span>
+                      <span className="truncate">{seller.owner_contact}</span>
+                    </div>
+                  )}
+                  {(seller.owner_email || seller.email) && (
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-gray-600">
+                      <span>✉️</span>
+                      <span className="truncate">{seller.owner_email || seller.email}</span>
+                    </div>
+                  )}
+                  {seller.latest_remark && (
+                    <div className="flex items-start gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200">
+                      <FileText className="w-3.5 h-3.5 text-gray-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-xs text-gray-700 font-medium line-clamp-2">
+                        {seller.latest_remark}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-    {seller.assigned_agent_name && (
-      <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-50 text-blue-700">
-        {seller.assigned_agent_name}
-      </span>
-    )}
-  </div>
-
-  {/* 📞 OWNER CONTACT */}
-  {seller.owner_contact && (
-    <div className="text-sm text-gray-600">
-      📞 {seller.owner_contact}
-    </div>
-  )}
-
- {(seller.owner_email || seller.email) && (
-  <div className="flex items-center gap-2 text-sm text-gray-600">
-    ✉️ {seller.owner_email || seller.email}
-  </div>
-)}
-
-  {/* 📝 LATEST REMARK */}
-  {seller.latest_remark && (
-    <div className="flex items-start gap-2">
-      <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
-      <span className="text-sm text-gray-500">
-        {seller.latest_remark}
-      </span>
-    </div>
-  )}
-</div>
-
-
-                {/* Actions */}
-                <div className="flex gap-2 pt-3">
+                {/* Actions - Compact */}
+                <div className="flex gap-2 pt-3 border-t border-gray-200">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       router.push(`/sellers/${seller.id}`);
                     }}
-                    className="flex-1 border border-gray-200 bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"
+                    className="flex-1 border border-gray-300 bg-white text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-gray-50 active:bg-gray-100 transition-all"
                   >
                     View Details
                   </button>
                   
-                  <DropdownMenu seller={seller} 
+                  <DropdownMenu 
+                    seller={seller} 
                     onAssign={() => {
                       setAssignSellerId(seller.id);
                       setSelectedAgent(seller.assigned_agent_id || null);
                     }}
                     onShare={() => setShareSellerId(seller.id)}
-                     onEdit={() => router.push(`/sellers/new?id=${seller.id}`)}
+                    onEdit={() => router.push(`/sellers/new?id=${seller.id}`)}
                     onDelete={() => handleDelete(seller.id)}
                   />
                 </div>
               </div>
-              
             </div>
           ))}
         </div>
+
+        {/* Empty State */}
+        {displaySellers.length === 0 && !loading && (
+          <div className="bg-white rounded-lg p-12 text-center border border-gray-200">
+            <div className="text-gray-300 text-5xl mb-3">🏠</div>
+            <p className="text-gray-600 font-semibold text-base">No properties found</p>
+            <p className="text-gray-500 text-sm mt-1">Try adjusting your search or add a new property</p>
+          </div>
+        )}
       </div>
 
       {/* ASSIGN MODAL */}
       {assignSellerId && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-[400px]">
-            <h2 className="text-lg font-semibold mb-4">Assign Agent</h2>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-8 w-full max-w-md space-y-6 shadow-2xl border border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-900">👤 Assign Agent</h2>
 
-            <select
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 mb-4"
-              value={selectedAgent || ""}
-              onChange={(e) => setSelectedAgent(Number(e.target.value))}
-            >
-              <option value="">Select Agent</option>
-              {agents.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Select Agent</label>
+              <select
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 font-medium focus:ring-2 focus:ring-gray-400 focus:border-gray-400"
+                value={selectedAgent || ""}
+                onChange={(e) => setSelectedAgent(Number(e.target.value))}
+              >
+                <option value="">Choose an agent...</option>
+                {agents.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
               <button
                 onClick={() => setAssignSellerId(null)}
-                className="px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50"
+                className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAssignSeller}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-5 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 active:bg-gray-700 font-semibold transition-all"
               >
                 Assign
               </button>
@@ -515,7 +523,7 @@ const commercialCount = sellers.filter((s) =>
       {/* Share Modal */}
       {shareSellerId && (
         <ShareToGroupModal
-          open
+          open={true}
           onClose={() => setShareSellerId(null)}
           entityType="seller"
           entityId={shareSellerId}

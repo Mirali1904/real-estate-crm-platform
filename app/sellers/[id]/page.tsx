@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-
 import { useParams, useRouter } from "next/navigation";
 import FollowUpForm from "@/components/follow-ups/FollowUpForm";
 import FollowUpList from "@/components/follow-ups/FollowUpList";
 import DocumentSection from "@/components/DocumentSection";
 import dynamic from "next/dynamic";
-
 
 type Seller = {
   id: number;
@@ -35,17 +33,12 @@ const LOAN_CARD_STYLE: Record<string, string> = {
 };
 
 export default function SellerDetailPage() {
-  // ✅ DYNAMIC SELLER ID - URL se lena (Next.js useParams jaisa)
   const [sellerId, setSellerId] = useState<number | null>(null);
-
   const [seller, setSeller] = useState<Seller | null>(null);
   const [buyers, setBuyers] = useState<any[]>([]);
   const [latestRemark, setLatestRemark] = useState("");
   const [remarksHistory, setRemarksHistory] = useState<any[]>([]);
   const [savingRemark, setSavingRemark] = useState(false);
-
-
-
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [photos, setPhotos] = useState<any[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
@@ -67,20 +60,13 @@ export default function SellerDetailPage() {
   const [sellerFollowUps, setSellerFollowUps] = useState<any[]>([]);
   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
   const [activeTab, setActiveTab] = useState("buyers");
-
- const [shareLink, setShareLink] = useState("");
-const [showToast, setShowToast] = useState(false);
-const [copied, setCopied] = useState(false);
-
-
-
-
+  const [shareLink, setShareLink] = useState("");
+  const [showToast, setShowToast] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const STATUS_OPTIONS = ["New", "Contacted", "Site Visit Done", "Dropped"];
 
-  // ✅ URL se seller ID extract karna
   useEffect(() => {
-    // Browser URL se ID nikalna (e.g., /sellers/131)
     const pathSegments = window.location.pathname.split('/');
     const idFromUrl = Number(pathSegments[pathSegments.length - 1]);
 
@@ -141,25 +127,19 @@ const [copied, setCopied] = useState(false);
 
   async function fetchRemarks() {
     if (!sellerId) return;
-
-    const res = await fetch(
-      `/api/internal-remarks?entityType=seller&entityId=${sellerId}`
-    );
+    const res = await fetch(`/api/internal-remarks?entityType=seller&entityId=${sellerId}`);
     if (!res.ok) return;
-
     const data = await res.json();
     setRemarksHistory(data);
     setLatestRemark(data[0]?.remark || "");
   }
+
   async function saveRemark() {
     if (!latestRemark.trim()) return;
-
     const raw = localStorage.getItem("loggedUser");
     if (!raw) return;
     const user = JSON.parse(raw);
-
     setSavingRemark(true);
-
     await fetch("/api/internal-remarks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -170,12 +150,9 @@ const [copied, setCopied] = useState(false);
         createdBy: user.id,
       }),
     });
-
     setSavingRemark(false);
     fetchRemarks();
   }
-
-
 
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
@@ -193,7 +170,6 @@ const [copied, setCopied] = useState(false);
           const data = await sellerRes.json();
           setSeller(data);
           await fetchRemarks();
-
         }
         const buyersRes = await fetch(`/api/sellers/${sellerId}/buyer-status`, {
           headers: { "x-tenant-id": String(tenantId) },
@@ -242,11 +218,23 @@ const [copied, setCopied] = useState(false);
     }
   }
 
-  if (loading) return <div className="px-6 pt-4">Loading...</div>;
-  if (!seller) return <div className="px-6 pt-4">Seller not found</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!seller) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-500">Seller not found</div>
+      </div>
+    );
+  }
 
   const tabs = [
-
     { id: "buyers", label: "Matched Buyers" },
     { id: "remarks", label: "Internal Remarks" },
     { id: "loans", label: "Loan Details" },
@@ -258,769 +246,739 @@ const [copied, setCopied] = useState(false);
   ];
 
   return (
-    <div className="w-full px-6 pt-2 space-y-6">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <div className="w-full px-4 lg:px-6 pt-4 pb-8 space-y-6">
 
 
-      {/* HEADER CARD */}
-      <div className="bg-gradient-to-r from-blue-50 to-blue-50 rounded-xl shadow-sm p-6 border border-blue-100">
-        <div className="flex justify-between items-start">
-          <div className="flex gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-lg">
-              {(seller.owner_name || seller.name)?.[0]?.toUpperCase() || "S"}
+        {/* HEADER CARD - PREMIUM DESIGN */}
+        <div className="relative overflow-hidden bg-white rounded-2xl shadow-lg border border-blue-100 p-4">
 
+          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-b from-blue-50 to-transparent rounded-full -mr-20 -mt-20 opacity-60"></div>
+          
+          <div className="relative flex justify-between items-start gap-6">
+            <div className="flex gap-6 flex-1">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center font-bold text-xl shadow-md flex-shrink-0">
+                {(seller.owner_name || seller.name)?.[0]?.toUpperCase() || "S"}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <h1 className="text-3xl font-bold text-gray-900">{seller.property_type || "Property"}</h1>
+                  <span className={`px-2.5 py-0.5 text-[11px] rounded-full font-medium ${statusBadge(seller.status)}`}>
+  {seller.status}
+</span>
+
+                </div>
+               <div className="flex flex-wrap gap-6 mt-3">
+
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="text-lg">👤</span>
+                    <span className="font-medium">{seller.owner_name || seller.name}</span>
+                  </div>
+                  {seller.email && (
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <span className="text-lg">✉️</span>
+                      <span className="font-medium">{seller.email}</span>
+                    </div>
+                  )}
+                  {seller.owner_contact && (
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <span className="text-lg">📞</span>
+                      <span className="font-medium">{seller.owner_contact}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl font-bold text-gray-900">{seller.property_type || "Property"}</h1>
-                <span className={`px-3 py-1 text-xs rounded-full font-medium ${statusBadge(seller.status)}`}>
-                  {seller.status}
-                </span>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 mt-3">
-                <p className="text-sm text-gray-600 flex items-center gap-2">
-                  👤 Seller: {seller.owner_name || seller.name}
-                </p>
-
-                {seller.email && (
-                  <p className="text-sm text-gray-600 flex items-center gap-2">
-                    ✉️ {seller.email}
-                  </p>
-                )}
-
-                {seller.owner_contact && (
-                  <p className="text-sm text-gray-600 flex items-center gap-2">
-                    📞 {seller.owner_contact}
-                  </p>
-                )}
-              </div>
-
+            <div className="flex gap-3 flex-shrink-0">
+              <button
+                onClick={() => setShowFollowUpModal(true)}
+                className="px-6 py-3 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all shadow-md hover:shadow-lg"
+              >
+                + Follow-up
+              </button>
+              <button
+                onClick={async () => {
+                  const res = await fetch(`/api/sellers/${sellerId}/share`, {
+                    method: "POST",
+                    headers: {
+                      "x-user": localStorage.getItem("loggedUser")!,
+                    },
+                  });
+                  const data = await res.json();
+                  if (!res.ok) {
+                    alert(data.error || "Failed");
+                    return;
+                  }
+                  setShareLink(data.shareUrl);
+                  setShowToast(true);
+                  setCopied(false);
+                }}
+                className="px-6 py-3 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all shadow-md hover:shadow-lg"
+              >
+                🔗 Share
+              </button>
             </div>
           </div>
-          
-          <div className="flex items-center gap-3">
-  {/* Follow-up Button */}
-  <button
-    onClick={() => setShowFollowUpModal(true)}
-    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-1"
-  >
-    + Follow-up
-  </button>
-
-  {/* Share Property Button */}
-  <button
-    onClick={async () => {
-      const res = await fetch(`/api/sellers/${sellerId}/share`, {
-        method: "POST",
-        headers: {
-          "x-user": localStorage.getItem("loggedUser")!,
-        },
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || "Failed");
-        return;
-      }
-
-      setShareLink(data.shareUrl);
-      setShowToast(true);
-      setCopied(false);
-    }}
-    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-1"
-  >
-    🔗 Share Property
-  </button>
-</div>
-
-
-
-
-{showToast && (
-  <div className="fixed top-5 right-5 z-[9999] w-[420px] bg-white border shadow-xl rounded-lg p-4 animate-slide-in">
-    <div className="flex justify-between items-center mb-2">
-      <span className="font-semibold text-sm">Share Property Link</span>
-      <button
-        onClick={() => setShowToast(false)}
-        className="text-gray-500 hover:text-black"
-      >
-        ✕
-      </button>
-    </div>
-
-    <div className="flex items-center gap-2">
-      <input
-        value={shareLink}
-        readOnly
-        className="flex-1 px-2 py-1 border rounded text-sm"
-      />
-
-      <button
-        onClick={async () => {
-          await navigator.clipboard.writeText(shareLink);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-        }}
-        className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
-      >
-        Copy
-      </button>
-    </div>
-
-    {copied && (
-      <div className="mt-2 text-green-600 text-sm">
-        ✓ Link copied
-      </div>
-    )}
-  </div>
-)}
-
-
-
-
         </div>
-      </div>
 
-      {/* KEY INFO CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Info label="Price" value={`₹${seller.price}`} />
-        <Info label="Bedrooms" value={`${seller.bedrooms} BHK`} />
-        <Info label="Contact" value={seller.owner_contact || "-"} />
-        <Info label="Status" value={seller.status} />
-      </div>
+        {/* TOAST NOTIFICATION */}
+        {showToast && (
+          <div className="fixed top-5 right-5 z-[9999] w-[420px] bg-white border border-blue-200 shadow-2xl rounded-2xl p-6 animate-slide-in">
+            <div className="flex justify-between items-center mb-3">
+              <span className="font-bold text-gray-900">Share Property Link</span>
+              <button
+                onClick={() => setShowToast(false)}
+                className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                value={shareLink}
+                readOnly
+                className="flex-1 px-4 py-2.5 border-2 border-blue-200 rounded-lg text-sm font-medium bg-blue-50"
+              />
+              <button
+                onClick={async () => {
+                  await navigator.clipboard.writeText(shareLink);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all shadow-md"
+              >
+                Copy
+              </button>
+            </div>
+            {copied && (
+              <div className="mt-3 text-emerald-600 text-sm font-semibold">
+                ✓ Link copied to clipboard
+              </div>
+            )}
+          </div>
+        )}
 
-      {/* TABBED CARD */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        {/* TAB HEADERS */}
-        <div className="flex border-b border-gray-200 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-4 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id
-                ? "border-indigo-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+        {/* KEY INFO CARDS - MODERN GRID */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <InfoCard label="Price" value={`₹${seller.price}`} />
+          <InfoCard label="Bedrooms" value={`${seller.bedrooms} BHK`} />
+          <InfoCard label="Contact" value={seller.owner_contact || "—"} />
+          <InfoCard label="Status" value={seller.status} />
+        </div>
+
+        {/* TABBED CARD - PREMIUM DESIGN */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+          {/* TAB HEADERS */}
+          <div className="flex border-b border-gray-200 overflow-x-auto bg-gradient-to-r from-gray-50 to-white">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-6 py-4 font-semibold text-sm whitespace-nowrap border-b-2 transition-all ${
+                  activeTab === tab.id
+                    ? "border-blue-600 text-blue-600 bg-blue-50/30"
+                    : "border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50/50"
                 }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-        {/* TAB CONTENT */}
-        <div className="p-6">
-          {/* OVERVIEW TAB */}
-          {activeTab === "overview" && (
-            <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900 mb-3">Seller Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Seller Name</p>
-                  <p className="text-gray-900 font-medium">
-                    {seller.owner_name || seller.name || "-"}
-                  </p>
+          {/* TAB CONTENT */}
+          <div className="p-8">
+            {/* OVERVIEW TAB */}
+            {activeTab === "overview" && (
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-gray-900">Seller Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
+                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Seller Name</p>
+                    <p className="text-gray-900 font-semibold text-sm">{seller.owner_name || seller.name || "—"}</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
+                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Property Type</p>
+                    <p className="text-gray-900 font-semibold text-sm">{seller.property_type}</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
+                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Price</p>
+                    <p className="text-gray-900 font-semibold text-sm">₹{seller.price}</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
+                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Bedrooms</p>
+                    <p className="text-gray-900 font-semibold text-sm">{seller.bedrooms} BHK</p>
+                  </div>
+                  {seller.location && (
+                    <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100 col-span-full">
+                      <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Location</p>
+                      <p className="text-gray-900 font-semibold text-sm">{seller.location}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
+            {/* MATCHED BUYERS TAB */}
+            {activeTab === "buyers" && (
+              <div className="space-y-6">
+                {buyers.length === 0 ? (
+                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-2xl p-16 text-center border-2 border-dashed border-blue-200">
+                    <div className="text-blue-300 text-6xl mb-4">👥</div>
+                    <p className="text-gray-600 font-semibold text-lg">No matched buyers yet</p>
+                    <p className="text-gray-500 text-sm mt-2">Buyers will appear here as they match property criteria</p>
+                  </div>
+                ) : (
+                  buyers.map((buyer) => {
+                    const status = buyer.status || "New";
+                    const isDropped = status === "Dropped";
+                    return (
+                      <div
+                        key={buyer.buyer_id}
+                        className={`relative overflow-hidden bg-white rounded-2xl shadow-lg border transition-all ${
+                          isDropped
+                            ? "opacity-60 border-gray-300"
+                            : "border-blue-200 hover:shadow-xl hover:border-blue-300"
+                        }`}
+                        style={{
+                          borderLeft: isDropped ? undefined : "5px solid #2563eb"
+                        }}
+                      >
+                        <div className="p-6">
+                          <div className="flex justify-between gap-6 flex-wrap">
+                            <div className="space-y-3 flex-1 min-w-[300px]">
+                              <div className="mb-3">
+                                <p className="font-bold text-gray-900 text-xl">{buyer.name}</p>
+                                <p className="text-gray-600 text-sm mt-1">{buyer.email} • {buyer.phone}</p>
+                              </div>
+                              <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                                <div>
+                                  <p className="text-xs font-semibold text-gray-500 uppercase">Budget Range</p>
+                                  <p className="text-gray-900 font-medium">₹{buyer.budget_min} – ₹{buyer.budget_max}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-gray-500 uppercase">Buyer–Property Status</p>
+                                  <p className="text-gray-900 font-medium">{status}</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              <label className="text-xs font-bold text-gray-700 uppercase tracking-wide">Seller Action</label>
+                              <select
+                                value={status}
+                                disabled={isDropped}
+                                onChange={async (e) => {
+                                  const newStatus = e.target.value;
+                                  await fetch(`/api/buyers/${buyer.buyer_id}/property-status`, {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                      "x-tenant-id": String(tenantId),
+                                    },
+                                    body: JSON.stringify({ sellerId, status: newStatus }),
+                                  });
+                                  const buyersRes = await fetch(
+                                    `/api/sellers/${sellerId}/buyer-status`,
+                                    { headers: { "x-tenant-id": String(tenantId) } }
+                                  );
+                                  if (buyersRes.ok) {
+                                    const data = await buyersRes.json();
+                                    setBuyers(data.buyers || []);
+                                  }
+                                }}
+                                className={`border border-blue-300 rounded-lg px-4 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                  isDropped ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white text-gray-900 hover:bg-blue-50"
+                                }`}
+                              >
+                                {STATUS_OPTIONS.map((opt) => (
+                                  <option key={opt}>{opt}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+
+            {/* INTERNAL REMARKS TAB */}
+            {activeTab === "remarks" && (
+              <div className="space-y-8">
+                <h3 className="text-2xl font-bold text-gray-900">Internal Remarks</h3>
+                <div className="space-y-3">
+                  <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Add New Remark</label>
+                  <textarea
+                    value={latestRemark}
+                    onChange={(e) => setLatestRemark(e.target.value)}
+                    rows={5}
+                    className="w-full border-2 border-blue-200 rounded-xl px-5 py-4 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none bg-blue-50 placeholder-gray-400"
+                    placeholder="Write your internal notes and observations here..."
+                  />
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">Property Type</p>
-                  <p className="text-gray-900 font-medium">{seller.property_type}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Price</p>
-                  <p className="text-gray-900 font-medium">₹{seller.price}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Bedrooms</p>
-                  <p className="text-gray-900 font-medium">{seller.bedrooms} BHK</p>
-                </div>
-                {seller.location && (
-                  <div>
-                    <p className="text-sm text-gray-500">Location</p>
-                    <p className="text-gray-900 font-medium">{seller.location}</p>
+                <button
+                  disabled={savingRemark}
+                  onClick={saveRemark}
+                  className="px-6 py-3 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+                >
+                  {savingRemark ? "💾 Saving..." : "✓ Save Remark"}
+                </button>
+                {remarksHistory.length > 0 && (
+                  <div className="mt-8 space-y-4">
+                    <h4 className="text-lg font-bold text-gray-800">Remark History ({remarksHistory.length})</h4>
+                    <div className="space-y-3">
+                      {remarksHistory.map((r, idx) => (
+                        <div
+                          key={r.id}
+                          className="relative border-l-4 border-blue-500 bg-gradient-to-r from-blue-50 to-white p-5 rounded-r-xl shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          <div className="absolute -left-1.5 top-5 w-3 h-3 rounded-full bg-blue-600 border-2 border-white"></div>
+                          <p className="text-sm text-gray-800 font-medium leading-relaxed">{r.remark}</p>
+                          <p className="text-xs text-gray-500 mt-3 font-semibold">
+                            {new Date(r.created_at).toLocaleString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* MATCHED BUYERS TAB */}
-          {activeTab === "buyers" && (
-            <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900 text-lg mb-4">Matched Buyers</h3>
-              {buyers.length === 0 ? (
-                <div className="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
-                  <div className="text-gray-400 text-5xl mb-3">👥</div>
-                  <p className="text-gray-500 font-medium">No matched buyers yet</p>
+            {/* LOAN DETAILS TAB */}
+            {activeTab === "loans" && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-2xl font-bold text-gray-900">Loan Details</h3>
+                  <button
+                    onClick={() => setShowLoanModal(true)}
+                    className="text-sm px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all font-semibold shadow-md hover:shadow-lg"
+                  >
+                    + Add Loan
+                  </button>
                 </div>
-              ) : (
-                buyers.map((buyer) => {
-                  const status = buyer.status || "New";
-                  const isDropped = status === "Dropped";
-                  return (
-                    <div
-                      key={buyer.buyer_id}
-                      className={`rounded-xl p-5 transition-shadow bg-white ${isDropped
-                          ? "border border-gray-200 opacity-50"
-                          : "border-l-4 border-blue-600 shadow-sm hover:shadow-md"
-                        }`}
-                    >
-
-
-
-                      <div className="flex justify-between gap-6">
-                        <div className="space-y-2 flex-1">
-                          <p className="font-semibold text-gray-900 text-lg">{buyer.name}</p>
-                          <p className="text-gray-600">{buyer.email} • {buyer.phone}</p>
-                          <p className="text-sm text-gray-700">Budget: ₹{buyer.budget_min} – ₹{buyer.budget_max}</p>
-                          <p className="text-xs text-gray-500">
-                            <span className="font-medium">Buyer–Property Status:</span> {status}
-                          </p>
-
-                        </div>
-                        <div className="flex flex-col">
-                          <label className="text-xs text-gray-500 mb-1 font-medium">Seller Action</label>
+                {loans.length === 0 ? (
+                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-2xl p-16 text-center border-2 border-dashed border-blue-200">
+                    <div className="text-blue-300 text-6xl mb-4">💰</div>
+                    <p className="text-gray-600 font-semibold text-lg">No loans added yet</p>
+                    <p className="text-gray-500 text-sm mt-2">Add loan details to track financing progress</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {loans.map((loan: any) => (
+                      <div
+                        key={loan.id}
+                        className={`border-2 rounded-xl p-5 space-y-3 transition-shadow hover:shadow-md ${LOAN_CARD_STYLE[loan.status?.toUpperCase()] || "border-gray-300"}`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h3 className="text-base font-bold text-gray-900">{loan.loan_type.replace("_", " ")}</h3>
+                            <p className="text-sm text-gray-600 mt-1">Bank: {loan.bank_name || "—"}</p>
+                          </div>
                           <select
-                            value={status}
-                            disabled={isDropped}
+                            value={loan.status}
                             onChange={async (e) => {
                               const newStatus = e.target.value;
-                              await fetch(`/api/buyers/${buyer.buyer_id}/property-status`, {
-                                method: "POST",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                  "x-tenant-id": String(tenantId),
-                                },
-                                body: JSON.stringify({ sellerId, status: newStatus }),
+                              await fetch(`/api/loans/${loan.id}`, {
+                                method: "PUT",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ status: newStatus }),
                               });
-
-                              // 🔥 re-fetch from DB (single source of truth)
-                              const buyersRes = await fetch(
-                                `/api/sellers/${sellerId}/buyer-status`,
-                                { headers: { "x-tenant-id": String(tenantId) } }
+                              setLoans((prev) =>
+                                prev.map((l) =>
+                                  l.id === loan.id ? { ...l, status: newStatus } : l
+                                )
                               );
-
-                              if (buyersRes.ok) {
-                                const data = await buyersRes.json();
-                                setBuyers(data.buyers || []);
-                              }
-
-
-                              await fetch(`/api/buyers/${buyer.buyer_id}/property-status`, {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json", "x-tenant-id": String(tenantId) },
-                                body: JSON.stringify({ sellerId, status: newStatus }),
-                              });
                             }}
-                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                            className="text-sm border-2 border-gray-300 rounded-lg px-3 py-2 bg-white font-semibold focus:ring-2 focus:ring-blue-500"
                           >
-                            {STATUS_OPTIONS.map((opt) => (
-                              <option key={opt}>{opt}</option>
-                            ))}
+                            <option value="INQUIRY">Inquiry</option>
+                            <option value="PROCESSING">Processing</option>
+                            <option value="DOCUMENTS_PENDING">Documents Pending</option>
+                            <option value="APPROVED">Approved</option>
+                            <option value="REJECTED">Rejected</option>
                           </select>
                         </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          )}
-
-          {/* INTERNAL REMARKS TAB */}
-          {activeTab === "remarks" && (
-            <div className="space-y-6">
-              <h3 className="font-semibold text-gray-900 text-lg">
-                Internal Remarks
-              </h3>
-
-              {/* Latest Remark */}
-              <textarea
-                value={latestRemark}
-                onChange={(e) => setLatestRemark(e.target.value)}
-                rows={4}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm
-                 focus:ring-2 focus:ring-blue-500"
-                placeholder="Add new internal remark..."
-              />
-
-              <button
-                disabled={savingRemark}
-                onClick={saveRemark}
-                className="px-5 py-2.5 text-sm rounded-lg bg-blue-600 text-white
-                 hover:bg-blue-700 disabled:opacity-50"
-              >
-                {savingRemark ? "Saving..." : "Save Remark"}
-              </button>
-
-              {/* History */}
-              {remarksHistory.length > 1 && (
-                <div className="mt-6 space-y-3">
-                  <h4 className="text-sm font-semibold text-gray-600">
-                    Previous Remarks
-                  </h4>
-
-                  {remarksHistory.slice(1).map((r) => (
-                    <div
-                      key={r.id}
-                      className="border-l-4 border-blue-500 bg-blue-50 p-3 rounded-r-lg"
-                    >
-                      <p className="text-sm text-gray-800">{r.remark}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {new Date(r.created_at).toLocaleString()}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-
-          {/* LOAN DETAILS TAB */}
-          {activeTab === "loans" && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-gray-900 text-lg">Loan Details</h3>
-                <button
-                  onClick={() => setShowLoanModal(true)}
-                  className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  + Add Loan
-                </button>
-              </div>
-              {loans.length === 0 ? (
-                <div className="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
-                  <div className="text-gray-400 text-5xl mb-3">💰</div>
-                  <p className="text-gray-500 font-medium">No loans added yet</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {loans.map((loan: any) => (
-                    <div
-                      key={loan.id}
-                      className={`border-2 rounded-lg p-4 space-y-2 ${LOAN_CARD_STYLE[loan.status?.toUpperCase()] || "border-gray-300"}`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h3 className="text-sm font-semibold">{loan.loan_type.replace("_", " ")}</h3>
-                          <p className="text-xs text-gray-500">Bank: {loan.bank_name || "-"}</p>
+                        <div className="bg-white rounded-lg p-3 border border-gray-200">
+                          <p className="text-sm text-gray-700 font-medium">
+                            ₹{loan.loan_amount?.toLocaleString()} • {loan.interest_rate || "—"}% • {loan.tenure_years || "—"} yrs
+                          </p>
                         </div>
-                        <select
-                          value={loan.status}
-                          onChange={async (e) => {
-                            const newStatus = e.target.value;
-
-                            await fetch(`/api/loans/${loan.id}`, {
-                              method: "PUT",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ status: newStatus }),
-                            });
-
-                            setLoans((prev) =>
-                              prev.map((l) =>
-                                l.id === loan.id ? { ...l, status: newStatus } : l
-                              )
-                            );
-                          }}
-
-
-                          className="text-xs border rounded px-2 py-1 bg-white"
-                        >
-                          <option value="INQUIRY">Inquiry</option>
-                          <option value="PROCESSING">Processing</option>
-                          <option value="DOCUMENTS_PENDING">Documents Pending</option>
-                          <option value="APPROVED">Approved</option>
-                          <option value="REJECTED">Rejected</option>
-                        </select>
-                      </div>
-                      <p className="text-xs text-gray-700">
-                        ₹{loan.loan_amount} • {loan.interest_rate || "-"}% • {loan.tenure_years || "-"} yrs
-                      </p>
-                      <div className="text-xs text-gray-500 space-y-1 mt-2">
-                        <p className="font-medium">Documents:</p>
-                        {loan.documents && loan.documents.length > 0 ? (
-                          <ul className="space-y-1">
-                            {loan.documents.map((doc: any) => (
-                              <li key={doc.id} className="flex items-center gap-2">
-                                📄
-                                <a href={doc.file_path} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-                                  {doc.file_name}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-gray-400">No documents</p>
-                        )}
-                        <button
-                          onClick={() => {
-                            setUploadLoanId(loan.id);
-                            loanFileInputRef.current?.click();
-                          }}
-                          className="text-blue-600 underline"
-                        >
-                          Upload
-                        </button>
-                      </div>
-                      <div className="flex gap-4 text-xs text-gray-600 pt-1">
-                        <button
-                          onClick={() => {
-                            setEditingLoan(loan);
-                            setLoanType(loan.loan_type);
-                            setBankName(loan.bank_name || "");
-                            setLoanAmount(String(loan.loan_amount || ""));
-                            setInterestRate(loan.interest_rate !== null ? String(loan.interest_rate) : "");
-                            setTenureYears(loan.tenure_years !== null ? String(loan.tenure_years) : "");
-                            setLoanRemarks(loan.remarks || "");
-                            setShowLoanModal(true);
-                          }}
-                        >
-                          ✏️ Edit
-                        </button>
-                        <button
-                          onClick={async () => {
-                            await fetch(`/api/loans/${loan.id}`, { method: "DELETE" });
-                            setLoans((prev) => prev.filter((l) => l.id !== loan.id));
-                          }}
-                          className="text-red-500"
-                        >
-                          🗑 Delete
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* DOCUMENTS TAB */}
-          {activeTab === "documents" && sellerId && (
-            <div>
-              <DocumentSection entityType="seller" entityId={sellerId} />
-            </div>
-          )}
-
-
-          {/* PROPERTY PHOTOS TAB */}
-          {activeTab === "photos" && (
-            <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900 text-lg">Property Photos</h3>
-              {/* DRAG & DROP UPLOAD BOX */}
-<div
-  className="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center cursor-pointer
-             hover:border-blue-500 transition bg-gray-50"
-  onClick={() => document.getElementById("photoUploadInput")?.click()}
-  onDragOver={(e) => e.preventDefault()}
-  onDrop={(e) => {
-    e.preventDefault();
-    setSelectedFiles(e.dataTransfer.files);
-  }}
->
-  <div className="text-5xl mb-3">📷</div>
-
-  <p className="text-gray-700 font-medium">
-    Drag & drop property photos here
-  </p>
-
-  <p className="text-sm text-gray-500 mt-1">
-    or click to browse
-  </p>
-
-  <input
-    id="photoUploadInput"
-    type="file"
-    multiple
-    className="hidden"
-    onChange={(e) => setSelectedFiles(e.target.files)}
-  />
-</div>
-
-{/* FILE COUNT + UPLOAD BUTTON */}
-{selectedFiles && selectedFiles.length > 0 && (
-  <div className="flex items-center justify-between mt-4">
-    <p className="text-sm text-gray-600">
-      {selectedFiles.length} file(s) selected
-    </p>
-
-    <button
-      onClick={uploadPhotos}
-      className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-    >
-      Upload Photos
-    </button>
-  </div>
-)}
-
-              {photos.length === 0 ? (
-                <div className="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
-                  <div className="text-gray-400 text-5xl mb-3">📷</div>
-                  <p className="text-gray-500 font-medium">No photos uploaded yet</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {photos.map((photo: any) => (
-                    <img key={photo.id} src={photo.photo_url} alt="Property" className="h-32 w-full object-cover rounded-lg border" />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* FOLLOW-UPS TAB */}
-          {activeTab === "followups" && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-gray-900 text-lg">Follow-ups</h3>
-                <button
-                  onClick={() => setShowFollowUpModal(true)}
-                  className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  + Schedule Follow-up
-                </button>
-              </div>
-              {sellerFollowUps.length === 0 ? (
-                <div className="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
-                  <div className="text-gray-400 text-5xl mb-3">📅</div>
-                  <p className="text-gray-500 font-medium">No follow-ups yet</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {sellerFollowUps.map((fu) => (
-                    <div key={fu.id} className="flex justify-between items-center border-2 rounded-lg p-4 border-gray-200">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{fu.follow_up_type}</span>
-                          <span className="text-xs text-gray-500">{new Date(fu.follow_up_date).toDateString()}</span>
-                        </div>
-                        {fu.note && <p className="text-sm text-gray-600 mt-1">{fu.note}</p>}
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`text-xs px-3 py-1 rounded-full font-semibold ${fu.status === "DONE" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
-                            }`}
-                        >
-                          {fu.status}
-                        </span>
-                        {fu.status === "PENDING" && (
-                          <button onClick={() => markSellerFollowUpDone(fu.id)} className="text-xs text-blue-600 hover:underline">
-                            ✔ Mark as Done
+                        <div className="text-sm space-y-2 pt-2 border-t border-gray-200">
+                          <p className="font-semibold text-gray-700">Documents:</p>
+                          {loan.documents && loan.documents.length > 0 ? (
+                            <ul className="space-y-1.5">
+                              {loan.documents.map((doc: any) => (
+                                <li key={doc.id} className="flex items-center gap-2">
+                                  <span className="text-blue-600">📄</span>
+                                  <a href={doc.file_path} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-700 font-medium">
+                                    {doc.file_name}
+                                  </a>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="text-gray-400 text-sm">No documents uploaded</p>
+                          )}
+                          <button
+                            onClick={() => {
+                              setUploadLoanId(loan.id);
+                              loanFileInputRef.current?.click();
+                            }}
+                            className="text-blue-600 underline font-semibold hover:text-blue-700 text-sm"
+                          >
+                            + Upload Document
                           </button>
-                        )}
+                        </div>
+                        <div className="flex gap-4 pt-3 border-t border-gray-200">
+                          <button
+                            onClick={() => {
+                              setEditingLoan(loan);
+                              setLoanType(loan.loan_type);
+                              setBankName(loan.bank_name || "");
+                              setLoanAmount(String(loan.loan_amount || ""));
+                              setInterestRate(loan.interest_rate !== null ? String(loan.interest_rate) : "");
+                              setTenureYears(loan.tenure_years !== null ? String(loan.tenure_years) : "");
+                              setLoanRemarks(loan.remarks || "");
+                              setShowLoanModal(true);
+                            }}
+                            className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            onClick={async () => {
+                              await fetch(`/api/loans/${loan.id}`, { method: "DELETE" });
+                              setLoans((prev) => prev.filter((l) => l.id !== loan.id));
+                            }}
+                            className="text-sm font-semibold text-red-600 hover:text-red-700"
+                          >
+                            🗑 Delete
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
-          {/* ACTIVITY TIMELINE TAB */}
-          {activeTab === "activity" && (
-            <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900 text-lg">Activity Timeline</h3>
-              {activityLogs.length === 0 ? (
-                <div className="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
-                  <div className="text-gray-400 text-5xl mb-3">📋</div>
-                  <p className="text-gray-500 font-medium">No activity yet</p>
+            {/* DOCUMENTS TAB */}
+            {activeTab === "documents" && sellerId && (
+              <div>
+                <DocumentSection entityType="seller" entityId={sellerId} />
+              </div>
+            )}
+
+            {/* PROPERTY PHOTOS TAB */}
+            {activeTab === "photos" && (
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-gray-900">Property Photos</h3>
+                <div
+                  className="border-2 border-dashed border-blue-300 rounded-2xl p-12 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/30 transition-all bg-gradient-to-b from-blue-50 to-white"
+                  onClick={() => document.getElementById("photoUploadInput")?.click()}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setSelectedFiles(e.dataTransfer.files);
+                  }}
+                >
+                  <div className="text-6xl mb-4 text-blue-400">📷</div>
+                  <p className="text-gray-700 font-semibold text-lg">Drag & drop property photos here</p>
+                  <p className="text-sm text-gray-500 mt-2">or click to browse</p>
+                  <input
+                    id="photoUploadInput"
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => setSelectedFiles(e.target.files)}
+                  />
                 </div>
-              ) : (
-                <ul className="space-y-4">
-                  {activityLogs.map((log, idx) => (
-                    <li key={idx} className="border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 rounded-r-lg">
-                      <div className="text-sm text-gray-800 font-medium">{log.description}</div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        by {log.performed_by_name ?? "System"} {log.performed_by_role ? `(${log.performed_by_role})` : ""} •{" "}
-                        {new Date(log.created_at).toLocaleString()}
+                {selectedFiles && selectedFiles.length > 0 && (
+                  <div className="flex items-center justify-between bg-blue-50 rounded-xl p-4 border border-blue-200">
+                    <p className="text-sm text-gray-700 font-semibold">
+                      {selectedFiles.length} file(s) selected
+                    </p>
+                    <button
+                      onClick={uploadPhotos}
+                      className="px-6 py-2.5 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 transition-all shadow-md"
+                    >
+                      Upload Photos
+                    </button>
+                  </div>
+                )}
+                {photos.length === 0 ? (
+                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-2xl p-16 text-center border-2 border-dashed border-blue-200">
+                    <div className="text-blue-300 text-6xl mb-4">📷</div>
+                    <p className="text-gray-600 font-semibold text-lg">No photos uploaded yet</p>
+                    <p className="text-gray-500 text-sm mt-2">Upload property photos to showcase the listing</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {photos.map((photo: any) => (
+                      <img
+                        key={photo.id}
+                        src={photo.photo_url}
+                        alt="Property"
+                        className="h-48 w-full object-cover rounded-xl border-2 border-gray-200 hover:border-blue-400 transition-all shadow-sm hover:shadow-md"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* FOLLOW-UPS TAB */}
+            {activeTab === "followups" && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-2xl font-bold text-gray-900">Follow-ups</h3>
+                  <button
+                    onClick={() => setShowFollowUpModal(true)}
+                    className="text-sm px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all font-semibold shadow-md hover:shadow-lg"
+                  >
+                    + Schedule Follow-up
+                  </button>
+                </div>
+                {sellerFollowUps.length === 0 ? (
+                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-2xl p-16 text-center border-2 border-dashed border-blue-200">
+                    <div className="text-blue-300 text-6xl mb-4">📅</div>
+                    <p className="text-gray-600 font-semibold text-lg">No follow-ups yet</p>
+                    <p className="text-gray-500 text-sm mt-2">Schedule follow-ups to stay on track</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {sellerFollowUps.map((fu) => (
+                      <div key={fu.id} className="flex justify-between items-center border-2 border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-white">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">
+                              {fu.follow_up_type}
+                            </span>
+                            <span className="text-xs text-gray-500 font-medium">
+                              {new Date(fu.follow_up_date).toDateString()}
+                            </span>
+                          </div>
+                          {fu.note && <p className="text-sm text-gray-600 mt-2">{fu.note}</p>}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={`text-xs px-4 py-1.5 rounded-full font-semibold ${
+                              fu.status === "DONE" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                            }`}
+                          >
+                            {fu.status}
+                          </span>
+                          {fu.status === "PENDING" && (
+                            <button
+                              onClick={() => markSellerFollowUpDone(fu.id)}
+                              className="text-sm text-blue-600 hover:text-blue-700 font-semibold hover:underline"
+                            >
+                              ✔ Mark Done
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ACTIVITY TIMELINE TAB */}
+            {activeTab === "activity" && (
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-gray-900">Activity Timeline</h3>
+                {activityLogs.length === 0 ? (
+                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-2xl p-16 text-center border-2 border-dashed border-blue-200">
+                    <div className="text-blue-300 text-6xl mb-4">📋</div>
+                    <p className="text-gray-600 font-semibold text-lg">No activity yet</p>
+                    <p className="text-gray-500 text-sm mt-2">Activity will appear here as interactions occur</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {activityLogs.map((log, idx) => (
+                      <div key={idx} className="relative border-l-4 border-blue-500 bg-gradient-to-r from-blue-50 to-white p-5 rounded-r-xl shadow-sm hover:shadow-md transition-shadow">
+                        <div className="absolute -left-1.5 top-5 w-3 h-3 rounded-full bg-blue-600 border-2 border-white"></div>
+                        <div className="text-sm text-gray-800 font-semibold">{log.description}</div>
+                        <div className="text-xs text-gray-500 mt-2 font-medium">
+                          <span className="font-semibold">by {log.performed_by_name ?? "System"}</span>
+                          {log.performed_by_role && <span className="ml-1 text-gray-400">({log.performed_by_role})</span>}
+                          {" • "}
+                          <time>{new Date(log.created_at).toLocaleString()}</time>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* LOAN MODAL */}
+        {showLoanModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 w-full max-w-md space-y-6 shadow-2xl border border-blue-100">
+              <h3 className="text-xl font-bold text-gray-900">
+                {editingLoan ? "Edit Loan" : "Add Loan"}
+              </h3>
+              <select
+                value={loanType}
+                onChange={(e) => setLoanType(e.target.value)}
+                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="HOME_LOAN">Home Loan</option>
+                <option value="BALANCE_TRANSFER">Balance Transfer</option>
+              </select>
+              <input
+                placeholder="Bank Name"
+                value={bankName}
+                onChange={(e) => setBankName(e.target.value)}
+                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="number"
+                placeholder="Loan Amount"
+                value={loanAmount}
+                onChange={(e) => setLoanAmount(e.target.value)}
+                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-500"
+              />
+              <div className="flex gap-3">
+                <input
+                  type="number"
+                  placeholder="Interest Rate %"
+                  value={interestRate}
+                  onChange={(e) => setInterestRate(e.target.value)}
+                  className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  type="number"
+                  placeholder="Tenure (Years)"
+                  value={tenureYears}
+                  onChange={(e) => setTenureYears(e.target.value)}
+                  className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <textarea
+                rows={3}
+                placeholder="Internal remarks"
+                value={loanRemarks}
+                onChange={(e) => setLoanRemarks(e.target.value)}
+                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-500"
+              />
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    setShowLoanModal(false);
+                    setEditingLoan(null);
+                  }}
+                  className="px-5 py-2.5 rounded-lg text-gray-700 font-semibold hover:bg-gray-100 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 font-semibold transition-all shadow-md hover:shadow-lg"
+                  onClick={async () => {
+                    const payload = {
+                      loan_type: loanType,
+                      bank_name: bankName,
+                      loan_amount: Number(loanAmount),
+                      interest_rate: interestRate ? Number(interestRate) : null,
+                      tenure_years: tenureYears ? Number(tenureYears) : null,
+                      remarks: loanRemarks,
+                    };
+                    if (editingLoan) {
+                      await fetch(`/api/loans/${editingLoan.id}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                      });
+                    } else {
+                      await fetch("/api/loans", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          ...payload,
+                          tenant_id: tenantId,
+                          seller_id: sellerId,
+                        }),
+                      });
+                    }
+                    setShowLoanModal(false);
+                    setEditingLoan(null);
+                    fetchLoans();
+                  }}
+                >
+                  Save Loan
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* FILE INPUT FOR LOANS */}
+        <input
+          type="file"
+          ref={loanFileInputRef}
+          className="hidden"
+          onChange={async (e) => {
+            if (!e.target.files || e.target.files.length === 0) return;
+            if (!uploadLoanId) return;
+            const file = e.target.files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+            await fetch(`/api/loans/${uploadLoanId}/documents`, {
+              method: "POST",
+              body: formData,
+            });
+            e.target.value = "";
+            setUploadLoanId(null);
+            fetchLoans();
+          }}
+        />
+
+        {/* FOLLOW-UP MODAL */}
+        {showFollowUpModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 w-full max-w-md space-y-6 shadow-2xl border border-blue-100">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold text-gray-900">📅 Add Follow-up</h3>
+                <button
+                  onClick={() => setShowFollowUpModal(false)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+                >
+                  ✕
+                </button>
+              </div>
+              <FollowUpForm
+                tenantId={tenantId!}
+                sellerId={sellerId!}
+                agentId={JSON.parse(localStorage.getItem("loggedUser")!).id}
+                onSuccess={() => {
+                  setShowFollowUpModal(false);
+                  fetchSellerFollowUps();
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
-
-
-
-
-
-      {showLoanModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-[420px] space-y-3">
-            <h3 className="text-sm font-semibold">
-              {editingLoan ? "Edit Loan" : "Add Loan"}
-            </h3>
-
-            <select
-              value={loanType}
-              onChange={(e) => setLoanType(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="HOME_LOAN">Home Loan</option>
-              <option value="BALANCE_TRANSFER">Balance Transfer</option>
-            </select>
-
-            <input
-              placeholder="Bank Name"
-              value={bankName}
-              onChange={(e) => setBankName(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
-            />
-
-
-
-            <input
-              type="number"
-              placeholder="Loan Amount"
-              value={loanAmount}
-              onChange={(e) => setLoanAmount(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
-            />
-
-            <div className="flex gap-2">
-              <input
-                type="number"
-                placeholder="Interest Rate %"
-                value={interestRate}
-                onChange={(e) => setInterestRate(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 text-sm"
-              />
-
-              <input
-                type="number"
-                placeholder="Tenure (Years)"
-                value={tenureYears}
-                onChange={(e) => setTenureYears(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-
-            <textarea
-              rows={2}
-              placeholder="Internal remarks"
-              value={loanRemarks}
-              onChange={(e) => setLoanRemarks(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
-            />
-
-            {/* 🔥 SAVE BUTTON — YAHI TUMHARA CODE JAYEGA */}
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => {
-                  setShowLoanModal(false);
-                  setEditingLoan(null);
-                }}
-                className="text-sm px-4 py-2"
-              >
-                Cancel
-              </button>
-
-              {/* 👇👇👇 EXACT YAHAN 👇👇👇 */}
-              <button
-                className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg"
-                onClick={async () => {
-                  const payload = {
-                    loan_type: loanType,
-                    bank_name: bankName,
-                    loan_amount: Number(loanAmount),
-                    interest_rate: interestRate ? Number(interestRate) : null,
-                    tenure_years: tenureYears ? Number(tenureYears) : null,
-                    remarks: loanRemarks,
-                  };
-
-                  if (editingLoan) {
-                    await fetch(`/api/loans/${editingLoan.id}`, {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(payload),
-                    });
-                  } else {
-                    await fetch("/api/loans", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        ...payload,
-                        tenant_id: tenantId,
-                        seller_id: sellerId,
-                      }),
-                    });
-                  }
-
-                  setShowLoanModal(false);
-                  setEditingLoan(null);
-                  fetchLoans();
-                }}
-              >
-                Save Loan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <input
-        type="file"
-        ref={loanFileInputRef}
-        className="hidden"
-        onChange={async (e) => {
-          if (!e.target.files || e.target.files.length === 0) return;
-          if (!uploadLoanId) return;
-
-          const file = e.target.files[0];
-
-          const formData = new FormData();
-          formData.append("file", file);
-
-          await fetch(`/api/loans/${uploadLoanId}/documents`, {
-            method: "POST",
-            body: formData,
-          });
-
-          e.target.value = "";
-          setUploadLoanId(null);
-          fetchLoans();
-        }}
-      />
-
-      {/* ===== SELLER FOLLOW-UP MODAL ===== */}
-      {showFollowUpModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl w-[420px] p-6 relative">
-            <button
-              onClick={() => setShowFollowUpModal(false)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
-
-            <FollowUpForm
-              tenantId={tenantId!}
-              sellerId={sellerId!}
-              agentId={JSON.parse(localStorage.getItem("loggedUser")!).id}
-              onSuccess={() => {
-                setShowFollowUpModal(false);
-                fetchSellerFollowUps();
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-
-
-
     </div>
   );
 }
 
-/* SMALL INFO CARD */
-
-function Info({ label, value }: any) {
+function InfoCard({ label, value }: any) {
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4">
-      <p className="text-xs text-gray-400">{label}</p>
-      <p className="text-sm font-medium mt-1">{value}</p>
+    <div className="bg-white rounded-xl shadow-lg border border-blue-100 p-5 hover:shadow-xl transition-shadow">
+      <p className="text-[11px] font-bold text-blue-600 uppercase tracking-widest mb-2">
+  {label}
+</p>
+<p className="text-lg font-bold text-gray-900">
+  {value}
+</p>
+
     </div>
   );
 }

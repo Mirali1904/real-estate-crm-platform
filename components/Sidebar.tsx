@@ -61,7 +61,7 @@ export default function Sidebar() {
 
       {/* LOGO */}
 <div className="h-18 flex items-center gap-3 px-4 border-b border-gray-200">
-  <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md">
+  <div className="w-11 h-11 rounded-xl bg-blue-900 flex items-center justify-center text-white shadow-md">
     <svg
       className="w-6 h-6"
       fill="currentColor"
@@ -98,7 +98,7 @@ export default function Sidebar() {
                 text-sm font-medium transition-all
                 ${
                   active
-                    ? "bg-blue-600 text-white shadow"
+                    ? "bg-blue-900 text-white shadow"
                     : "text-gray-700 hover:bg-gray-100"
                 }
               `}
