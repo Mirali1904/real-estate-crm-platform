@@ -189,7 +189,18 @@ export default function DashboardPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 px-6 pt-3 pb-6 md:px-8 md:pt-4 md:pb-8">
+    <main
+  className="
+    bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30
+    px-2 sm:px-3 md:px-4
+    pt-2
+    pb-4
+    max-w-full
+    overflow-x-hidden
+  "
+>
+
+
       
       {/* Task Modal */}
       {showTaskModal && (
@@ -234,14 +245,15 @@ focus:outline-none focus:border-blue-900 focus:ring-0 transition-all"
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
+
         {statCards.map((card, idx) => {
           const Icon = card.icon;
           return (
             <div
               key={idx}
               onClick={card.onClick}
-              className="group relative bg-white rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-100 overflow-hidden"
+              className="group relative bg-white rounded-2xl p-4 sm:p-5 hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-100 overflow-hidden"
             >
               {/* Animated Background Gradient */}
               <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}></div>
@@ -267,8 +279,13 @@ focus:outline-none focus:border-blue-900 focus:ring-0 transition-all"
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100">
+     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 items-stretch">
+
+
+
+        <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-md
+h-full min-h-[420px]
+ border border-gray-100 hover:shadow-2xl transition-all duration-300 border border-gray-100">
           <div className="flex items-start justify-between mb-8">
             <div>
               <h2 className="text-xl font-bold text-gray-900 mb-2">Activity Overview</h2>
@@ -282,7 +299,10 @@ focus:outline-none focus:border-blue-900 focus:ring-0 transition-all"
           <ActivityBarChart />
         </div>
 
-        <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100">
+       <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-md
+h-full min-h-[420px]
+ border border-gray-100 hover:shadow-2xl transition-all duration-300 border border-gray-100">
+
           <div className="flex items-start justify-between mb-8">
             <div>
               <h2 className="text-xl font-bold text-gray-900 mb-2">User Activity Analytics</h2>
@@ -298,9 +318,11 @@ focus:outline-none focus:border-blue-900 focus:ring-0 transition-all"
       </div>
 
       {/* Recent Properties & Server Load */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-stretch">
+
+
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
-          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50/30">
+          <div className="p-4 sm:p-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50/30">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Recent Properties</h2>
@@ -321,7 +343,11 @@ focus:outline-none focus:border-blue-900 focus:ring-0 transition-all"
                 {properties.slice(0, 3).map((p, idx) => (
                   <div
                     key={p.id}
-                    className="group relative flex items-center gap-5 p-5 bg-gradient-to-r from-gray-50 to-emerald-50/20 border-2 border-gray-100 rounded-2xl hover:border-emerald-300 hover:shadow-xl transition-all duration-300"
+                    className=" group relative
+  flex flex-col sm:flex-row
+  items-start sm:items-center
+  gap-4
+  p-4 sm:p-5 bg-gradient-to-r from-gray-50 to-emerald-50/20 border-2 border-gray-100 rounded-2xl hover:border-emerald-300 hover:shadow-xl transition-all duration-300"
                     style={{animationDelay: `${idx * 100}ms`}}
                   >
                     <div className="relative">
@@ -334,7 +360,8 @@ focus:outline-none focus:border-blue-900 focus:ring-0 transition-all"
                       <h3 className="text-gray-900 font-bold text-lg mb-1 capitalize">{p.property_type}</h3>
                       <p className="text-gray-600 text-sm line-clamp-2">{p.location}</p>
                     </div>
-                    <div className="text-right flex-shrink-0">
+                    <div className="sm:text-right text-left w-full sm:w-auto">
+
                       <p className="text-gray-900 font-extrabold text-xl mb-1">₹{p.price}</p>
                       <p className="text-gray-500 text-xs">Listed recently</p>
                     </div>
@@ -353,7 +380,7 @@ focus:outline-none focus:border-blue-900 focus:ring-0 transition-all"
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
-          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-emerald-50/30">
+          <div className="p-4 sm:p-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-emerald-50/30">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Server Load</h2>
@@ -364,7 +391,8 @@ focus:outline-none focus:border-blue-900 focus:ring-0 transition-all"
               </span>
             </div>
           </div>
-          <div className="p-6 space-y-7">
+         <div className="p-4 sm:p-6 space-y-6">
+
             <div>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-gray-700 text-sm font-bold">Storage Usage</span>
@@ -414,9 +442,11 @@ focus:outline-none focus:border-blue-900 focus:ring-0 transition-all"
       </div>
 
       {/* Reports & Tasks */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+
+
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
-          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50/30">
+          <div className="p-4 sm:p-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50/30">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Recent Reports</h2>
@@ -443,7 +473,7 @@ focus:outline-none focus:border-blue-900 focus:ring-0 transition-all"
               return (
                 <div
                   key={idx}
-                  className="group flex items-center gap-4 p-5 bg-gradient-to-r from-gray-50 to-white border-2 border-gray-100 rounded-2xl hover:border-blue-200 hover:shadow-lg transition-all duration-300"
+                  className="group flex items-center gap-3 p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-white border-2 border-gray-100 rounded-2xl hover:border-blue-200 hover:shadow-lg transition-all duration-300"
                 >
                   <div className="relative">
                     <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient} rounded-xl blur-md opacity-30 group-hover:opacity-50 transition-opacity`}></div>
@@ -472,8 +502,8 @@ focus:outline-none focus:border-blue-900 focus:ring-0 transition-all"
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
-          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-yellow-50/30">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 h-full min-h-[420px] overflow-hidden hover:shadow-2xl transition-all duration-300">
+          <div className="p-4 sm:p-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-yellow-50/30">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Tasks to Do</h2>

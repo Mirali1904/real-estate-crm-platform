@@ -10,12 +10,17 @@ import {
   UserCheck,
   CalendarDays,
   Bell,
-UsersRound,
-
+  UsersRound,
   LogOut,
 } from "lucide-react";
 
-export default function Sidebar() {
+export default function Sidebar({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
   const [pendingCount, setPendingCount] = useState(0);
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
@@ -23,6 +28,7 @@ export default function Sidebar() {
 
   async function handleLogout() {
     localStorage.removeItem("loggedUser");
+    onClose(); // ✅ mobile pe sidebar close
     router.push("/login");
   }
 
@@ -56,81 +62,93 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="fixed top-0 left-0 h-screen w-56 bg-white border-r border-gray-200 flex flex-col">
+    <>
+      {/* MOBILE OVERLAY */}
+      {open && (
+        <div
+          onClick={onClose}
+          className="fixed inset-0 bg-black/40 z-30 md:hidden"
+        />
+      )}
 
+      {/* SIDEBAR */}
+      <aside
+        className={`
+          fixed top-0 left-0 z-40 h-screen
+          w-56 bg-white border-r border-gray-200
+          flex flex-col
+          transform transition-transform duration-300
+          ${open ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0
+        `}
+      >
+        {/* LOGO */}
+        <div className="h-18 flex items-center gap-3 px-4 border-b border-gray-200">
+          <div className="w-11 h-11 rounded-xl bg-blue-900 flex items-center justify-center text-white shadow-md">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+            </svg>
+          </div>
 
-      {/* LOGO */}
-<div className="h-18 flex items-center gap-3 px-4 border-b border-gray-200">
-  <div className="w-11 h-11 rounded-xl bg-blue-900 flex items-center justify-center text-white shadow-md">
-    <svg
-      className="w-6 h-6"
-      fill="currentColor"
-      viewBox="0 0 20 20"
-    >
-      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-    </svg>
-  </div>
+          <div className="leading-tight">
+            <div className="text-gray-900 font-bold text-xl tracking-wide">
+              RealEstate
+            </div>
+          </div>
+        </div>
 
-  <div className="leading-tight">
-   <div className="text-gray-900 font-bold text-xl tracking-wide">
-  RealEstate
-</div>
+        {/* NAV */}
+        <nav className="flex-1 px-3 py-4 space-y-1">
+          {menu.map((item) => {
+            const active = pathname === item.path;
+            const Icon = item.icon;
 
-    
-  </div>
-</div>
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                onClick={onClose}
+                className={`
+                  group flex items-center gap-3 px-4 py-2.5 rounded-lg
+                  text-sm font-medium transition-all
+                  ${
+                    active
+                      ? "bg-blue-900 text-white shadow"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }
+                `}
+              >
+                <Icon
+                  className={`w-5 h-5 ${
+                    active
+                      ? "text-white"
+                      : "text-gray-500 group-hover:text-gray-700"
+                  }`}
+                />
+                <span className="flex-1 truncate">{item.label}</span>
 
+                {item.badge ? (
+                  <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
+                    {item.badge}
+                  </span>
+                ) : null}
+              </Link>
+            );
+          })}
+        </nav>
 
-
-      {/* NAV */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
-
-        {menu.map((item) => {
-          const active = pathname === item.path;
-          const Icon = item.icon;
-
-          return (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`
-                group flex items-center gap-3 px-4 py-2.5 rounded-lg
-                text-sm font-medium transition-all
-                ${
-                  active
-                    ? "bg-blue-900 text-white shadow"
-                    : "text-gray-700 hover:bg-gray-100"
-                }
-              `}
-            >
-              <Icon
-                className={`w-5 h-5 ${
-                  active ? "text-white" : "text-gray-500 group-hover:text-gray-700"
-                }`}
-              />
-              <span className="flex-1">{item.label}</span>
-
-              {item.badge ? (
-                <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
-                  {item.badge}
-                </span>
-              ) : null}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* FOOTER */}
-      <div className="p-4 border-t border-gray-200">
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg
-                     text-sm font-medium text-red-600 hover:bg-red-50 transition"
-        >
-          <LogOut className="w-5 h-5" />
-          Logout
-        </button>
-      </div>
-    </aside>
+        {/* FOOTER */}
+        <div className="p-4 border-t border-gray-200">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg
+                       text-sm font-medium text-red-600 hover:bg-red-50 transition"
+          >
+            <LogOut className="w-5 h-5" />
+            Logout
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

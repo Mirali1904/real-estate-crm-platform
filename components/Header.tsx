@@ -5,7 +5,12 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 
-export default function Header() {
+export default function Header({
+  onMenuClick,
+}: {
+  onMenuClick: () => void;
+}) {
+
   const router = useRouter();
   const pathname = usePathname() || "";
 
@@ -59,12 +64,21 @@ export default function Header() {
 
   return (
     
-    <header className="h-16 bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm"
-    
-    >
-      <div className="h-full flex items-center justify-between px-6">
+    <header className="h-16 bg-white border-b border-gray-200 shadow-sm">
+
+      <div className="h-full flex items-center justify-between px-3 sm:px-4 md:px-6">
+
 
         <div className="flex items-center gap-3">
+  {/* MOBILE MENU BUTTON */}
+  <button
+    onClick={onMenuClick}
+    className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+    aria-label="Open menu"
+  >
+    ☰
+  </button>
+
   {(isBuyerDetailPage ||
   isSellerDetailPage ||
   isTeamAddPage ||
@@ -87,7 +101,8 @@ export default function Header() {
 
 
 
-  <h1 className="text-xl font-bold text-gray-900">
+ <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
+
     {getPageTitle()}
   </h1>
 </div>
@@ -95,7 +110,8 @@ export default function Header() {
 
 
         {/* RIGHT — SEARCH + ACTIONS */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+
 
           
 
@@ -142,7 +158,7 @@ export default function Header() {
                 />
                 
                 {/* DROPDOWN MENU */}
-                <div className="absolute right-0 top-12 bg-white border border-gray-200 rounded-xl shadow-lg w-56 z-20">
+                <div className="absolute right-0 top-12 bg-white border border-gray-200 rounded-xl shadow-lg w-56 z-50">
                   {/* USER INFO */}
                   <div className="p-4 border-b border-gray-100">
                     <div className="flex items-center gap-3">

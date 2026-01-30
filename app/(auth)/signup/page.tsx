@@ -88,17 +88,19 @@ function validateForm() {
 
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center px-4
-bg-gray-50">
+   <div className="min-h-screen w-full flex items-center justify-center px-3 sm:px-4 md:px-6 bg-gray-50">
+
 
 
 
 
       {/* Signup Card */}
-      <div className="relative w-full max-w-md">
+     <div className="relative w-full sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl">
+
         <div className="bg-white/95 backdrop-blur rounded-2xl
 shadow-[0_30px_80px_rgba(0,0,0,0.35)]
-p-8 md:p-10 space-y-7 w-full">
+p-5 sm:p-6 md:p-8 lg:p-10
+ space-y-7 w-full">
 
 
 
@@ -113,7 +115,8 @@ rounded-xl flex items-center justify-center shadow-lg">
                 <Building2 className="w-7 h-7 text-white" />
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-slate-900">
+           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
+
               RealEstate CRM
             </h1>
             <p className="text-slate-500 text-sm">
@@ -143,7 +146,8 @@ rounded-xl flex items-center justify-center shadow-lg">
                 onChange={(e) => setAgencyName(e.target.value)}
                 placeholder="Dream Homes Realtors"
                 className="
-w-full h-11 px-4
+w-full h-11 sm:h-12
+ px-4
 bg-gray-50
 border border-gray-200
 text-gray-900 placeholder:text-gray-400
@@ -158,8 +162,8 @@ outline-none
 
                 required
               />
-              {errors.agencyName && (
-  <p className="text-sm text-red-500">{errors.agencyName}</p>
+   {errors.name && (
+  <p className="text-sm text-red-500">{errors.name}</p>
 )}
 
             </div>
@@ -176,7 +180,8 @@ outline-none
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Admin name"
                 className="
-w-full h-11 px-4
+w-full h-11 sm:h-12
+ px-4
 bg-gray-50
 border border-gray-200
 text-gray-900 placeholder:text-gray-400
@@ -208,7 +213,8 @@ outline-none
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 className="
-w-full h-11 px-4
+w-full h-11 sm:h-12
+ px-4
 bg-gray-50
 border border-gray-200
 text-gray-900 placeholder:text-gray-400
@@ -229,45 +235,43 @@ outline-none
             </div>
 
             {/* Password */}
-            <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  ref={passwordRef}
-                  placeholder="••••••••"
-                  autoComplete="new-password"
-                  className="
-w-full h-11 px-4
-bg-gray-50
-border border-gray-200
-text-gray-900 placeholder:text-gray-400
-rounded-lg
-focus:border-blue-500
-focus:ring-2 focus:ring-blue-500/30
+          <div className="space-y-2">
+  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+    Password
+  </label>
 
-outline-none
-"
+  <div className="relative">
+    <input
+      id="password"
+      type={showPassword ? "text" : "password"}
+      ref={passwordRef}
+      placeholder="••••••••"
+      autoComplete="new-password"
+      className="
+        w-full h-11 sm:h-12 px-4
+        bg-gray-50
+        border border-gray-200
+        rounded-lg
+        focus:border-blue-500
+        focus:ring-2 focus:ring-blue-500/30
+        outline-none
+      "
+    />
 
+    <button
+      type="button"
+      onClick={() => setShowPassword(!showPassword)}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+    >
+      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+    </button>
+  </div>
 
-                />
-                {errors.password && (
-  <p className="text-sm text-red-500">{errors.password}</p>
-)}
+  {errors.password && (
+    <p className="text-sm text-red-500">{errors.password}</p>
+  )}
+</div>
 
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
 
 
 
@@ -276,7 +280,8 @@ outline-none
               type="submit"
               disabled={loading}
               className="
-    w-full h-11
+    w-full h-11 sm:h-12
+
     bg-blue-900 hover:bg-blue-900
     text-white font-semibold
     rounded-lg

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
@@ -10,38 +10,32 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const user = localStorage.getItem("loggedUser");
-    if (!user) {
-      router.replace("/login");
-    }
+    if (!user) router.replace("/login");
   }, [router]);
 
-  return (
-    <div className="min-h-screen bg-gray-50">
+ return (
+  <div className="min-h-screen bg-gray-50 flex">
+    {/* SIDEBAR */}
+    <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* SIDEBAR — FIXED & THIN */}
-      <Sidebar />
-
-      {/* MAIN CONTENT — SHIFTED BY SIDEBAR WIDTH */}
-      <div className="flex min-h-screen flex-col ml-56">
-
-        {/* HEADER */}
-        <Header />
-
-        {/* PAGE CONTENT */}
-     <main className="flex-1 pr-6 pt-4 pb-6 overflow-y-auto">
-
-
-
-
-
-          {children}
-        </main>
-
+    {/* RIGHT SIDE */}
+    <div className="flex-1 md:ml-56 flex flex-col">
+      {/* HEADER */}
+      <div className="sticky top-0 z-30 bg-white">
+        <Header onMenuClick={() => setSidebarOpen(true)} />
       </div>
+
+      {/* CONTENT */}
+      <main className="px-2 md:px-3 py-3">
+
+        {children}
+      </main>
     </div>
-  );
+  </div>
+);
 }

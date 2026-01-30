@@ -43,21 +43,28 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center px-4
-bg-gray-50]">
+   <div className="relative min-h-screen w-full flex items-center justify-center px-3 sm:px-4 bg-gray-50">
+
+
+
 
 
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-10 left-10 w-72 h-72 bg-blue-900 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-        <div className="absolute bottom-10 right-10 w-72 h-72 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div className="absolute top-10 left-10 w-52 h-52 md:w-72 md:h-72 bg-blue-900 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+
+<div className="absolute bottom-10 right-10 w-52 h-52 md:w-72 md:h-72 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+
 
 
       </div>
 
       {/* Login Card */}
-      <div className="relative w-full max-w-md">
-        <div className="bg-white/95 backdrop-blur rounded-2xl shadow-[0_30px_80px_rgba(0,0,0,0.35)] p-8 md:p-10 space-y-7 w-full">
+     <div className="relative w-full sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl">
+
+
+        <div className="bg-white/95 backdrop-blur rounded-2xl shadow-[0_30px_80px_rgba(0,0,0,0.35)] p-6 sm:p-8 md:p-10 space-y-7 w-full">
+
 
 
           {/* Header */}
@@ -70,7 +77,8 @@ bg-gray-50]">
                 <Building2 className="w-7 h-7 text-white" />
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-slate-900">RealEstate CRM</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+RealEstate CRM</h1>
             <p className="text-slate-500 text-sm">Welcome back to your agency portal</p>
           </div>
 
@@ -95,7 +103,8 @@ bg-gray-50]">
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 className="
-  w-full h-11 px-4 rounded-lg
+  w-full h-11 sm:h-12
+ px-4 rounded-lg
   border border-gray-300
   focus:border-blue-900
   focus:ring-2 focus:ring-blue-400
@@ -122,7 +131,8 @@ bg-gray-50]">
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="
-  w-full h-11 px-4 rounded-lg
+  w-full h-11 sm:h-12
+px-4 rounded-lg
   border border-gray-300
   focus:border-blue-900
   focus:ring-2 focus:ring-blue-400
@@ -158,7 +168,8 @@ bg-gray-50]">
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-11 bg-blue-900 hover:bg-blue-900 text-white rounded-lg transition">
+              className="w-full h-11 sm:h-12
+ bg-blue-900 hover:bg-blue-900 text-white rounded-lg transition">
 
 
 
@@ -169,7 +180,8 @@ bg-gray-50]">
 
 
           {/* Footer */}
-          <div className="pt-4 text-center text-sm text-gray-500">
+          <div className="pt-6 text-center text-sm text-gray-500">
+
             Don't have an account?
             <span
               onClick={() => router.push("/signup")}

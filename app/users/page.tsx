@@ -84,7 +84,8 @@ export default function UsersPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
-      <div className="w-full px-6 lg:px-10 xl:px-14 space-y-6">
+      <div className="w-full px-3 sm:px-4 md:px-5 lg:px-6
+ space-y-6">
 
         <div className="flex items-center gap-3 w-full">
   {/* SEARCH BAR - FULL WIDTH */}
