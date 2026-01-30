@@ -182,7 +182,7 @@ onMessageChange?.();
   return (
     <div className="flex flex-col h-[600px] bg-white rounded-3xl shadow-lg border border-gray-200 overflow-hidden">
       {/* Header - Blue Theme */}
-      <div className="bg-blue-600 px-6 py-4 flex items-center justify-between">
+      <div className="bg-blue-900 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="bg-white/20 backdrop-blur-sm p-2 rounded-xl">
             <Users className="w-5 h-5 text-white" />
@@ -215,7 +215,7 @@ onMessageChange?.();
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="bg-blue-50 rounded-full p-6 shadow-md mb-4">
-              <Users className="w-12 h-12 text-blue-600" />
+              <Users className="w-12 h-12 text-blue-900" />
             </div>
             <h3 className="text-xl font-semibold text-gray-700 mb-2">
               No messages yet
@@ -238,7 +238,7 @@ onMessageChange?.();
               {/* Avatar */}
               {!isMine && (
                 <div
-  className="bg-blue-600 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0"
+  className="bg-blue-900 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0"
 >
   {getInitials(m.sender_name)}
 </div>
@@ -258,7 +258,7 @@ onMessageChange?.();
                 <div
                   className={`px-4 py-3 rounded-2xl shadow-sm ${
                     isMine
-                      ? "bg-blue-600 text-white rounded-br-sm"
+                      ? "bg-blue-900 text-white rounded-br-sm"
                       : "bg-white text-gray-800 rounded-bl-sm border border-gray-200"
                   }`}
                 >
@@ -281,7 +281,7 @@ onMessageChange?.();
 
               {/* Your Avatar - Blue */}
               {isMine && (
-                <div className="bg-blue-600 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0">
+                <div className="bg-blue-900 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0">
                   {getInitials(userName)}
                 </div>
               )}
@@ -296,7 +296,7 @@ onMessageChange?.();
         <div className="flex gap-3 items-end">
           <div className="flex-1 relative">
             <textarea
-              className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 max-h-32"
+              className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent resize-none transition-all duration-200 max-h-32"
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => {
@@ -323,7 +323,7 @@ onMessageChange?.();
           <button
             onClick={sendMessage}
             disabled={sending || !connected || !text.trim()}
-            className="bg-blue-600 text-white p-3 rounded-2xl hover:bg-blue-700 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-200 flex-shrink-0"
+            className="bg-blue-900 text-white p-3 rounded-2xl hover:bg-blue-900 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-200 flex-shrink-0"
           >
             {sending ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

@@ -49,7 +49,7 @@ bg-gray-50]">
 
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-10 left-10 w-72 h-72 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div className="absolute top-10 left-10 w-72 h-72 bg-blue-900 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
         <div className="absolute bottom-10 right-10 w-72 h-72 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
 
 
@@ -63,7 +63,7 @@ bg-gray-50]">
           {/* Header */}
           <div className="text-center space-y-3">
             <div className="flex justify-center">
-              <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-blue-900 flex items-center justify-center">
 
 
 
@@ -97,8 +97,8 @@ bg-gray-50]">
                 className="
   w-full h-11 px-4 rounded-lg
   border border-gray-300
-  focus:border-blue-600
-  focus:ring-2 focus:ring-blue-500
+  focus:border-blue-900
+  focus:ring-2 focus:ring-blue-400
   outline-none
 "
 
@@ -124,8 +124,8 @@ bg-gray-50]">
                   className="
   w-full h-11 px-4 rounded-lg
   border border-gray-300
-  focus:border-blue-600
-  focus:ring-2 focus:ring-blue-500
+  focus:border-blue-900
+  focus:ring-2 focus:ring-blue-400
   outline-none
 "
 
@@ -158,7 +158,7 @@ bg-gray-50]">
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+              className="w-full h-11 bg-blue-900 hover:bg-blue-900 text-white rounded-lg transition">
 
 
 
@@ -175,7 +175,7 @@ bg-gray-50]">
               onClick={() => router.push("/signup")}
               className="
       ml-1 cursor-pointer font-medium
-      text-blue-600
+      text-blue-900
       hover:text-blue-700
       transition-colors
     "

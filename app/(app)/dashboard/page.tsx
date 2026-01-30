@@ -202,13 +202,17 @@ export default function DashboardPage() {
                 placeholder="Task title"
                 value={newTaskTitle}
                 onChange={(e) => setNewTaskTitle(e.target.value)}
-                className="w-full border-2 border-gray-200 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                className="w-full border border-gray-300 rounded-xl px-5 py-3.5 text-sm
+focus:outline-none focus:border-blue-500 focus:ring-0 transition-all"
+
               />
               <input
                 type="date"
                 value={newTaskDueDate}
                 onChange={(e) => setNewTaskDueDate(e.target.value)}
-                className="w-full border-2 border-gray-200 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                className="w-full border border-gray-300 rounded-xl px-5 py-3.5 text-sm
+focus:outline-none focus:border-blue-900 focus:ring-0 transition-all"
+
               />
             </div>
             <div className="flex justify-end gap-3 mt-6">
@@ -220,7 +224,7 @@ export default function DashboardPage() {
               </button>
               <button
                 onClick={createManualTask}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/30"
+                className="px-6 py-3 bg-blue-900 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/30"
               >
                 Save Task
               </button>
@@ -285,8 +289,8 @@ export default function DashboardPage() {
               <p className="text-gray-500 text-sm">Weekly Insights</p>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-              <TrendingUp className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-bold text-blue-600">+8%</span>
+              <TrendingUp className="w-4 h-4 text-blue-900" />
+              <span className="text-sm font-bold text-blue-900">+8%</span>
             </div>
           </div>
           <AnalyticsScatterChart />
@@ -304,7 +308,7 @@ export default function DashboardPage() {
               </div>
               <button
                 onClick={() => router.push("/sellers")}
-                className="group flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-bold transition-all bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl"
+                className="group flex items-center gap-2 text-blue-900 hover:text-blue-700 text-sm font-bold transition-all bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl"
               >
                 View All
                 <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -369,7 +373,7 @@ export default function DashboardPage() {
               <div className="relative w-full bg-gray-200 rounded-full h-3.5 overflow-hidden shadow-inner">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-200/50 to-indigo-200/50"></div>
                 <div
-                  className="relative h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full transition-all duration-700 shadow-lg"
+                  className="relative h-full bg-gradient-to-r from-blue-900 to-indigo-600 rounded-full transition-all duration-700 shadow-lg"
                   style={{ width: `${Math.min((usageGB / spaceGB) * 100, 100)}%` }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent rounded-full"></div>
@@ -420,7 +424,7 @@ export default function DashboardPage() {
               </div>
               <button 
                 onClick={() => router.push("/buyers")} 
-                className="group flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-bold transition-all bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl"
+                className="group flex items-center gap-2 text-blue-900 hover:text-blue-700 text-sm font-bold transition-all bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl"
               >
                 See All
                 <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -477,7 +481,7 @@ export default function DashboardPage() {
               </div>
               <button 
                 onClick={() => setShowTaskModal(true)} 
-                className="text-blue-600 hover:text-blue-700 text-sm font-bold transition-all bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl"
+                className="text-blue-900 hover:text-blue-700 text-sm font-bold transition-all bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl"
               >
                 + Add
               </button>
@@ -497,7 +501,7 @@ export default function DashboardPage() {
                       <input
                         type="checkbox"
                         onChange={() => deleteTask(task.id)}
-                        className="w-5 h-5 rounded-lg border-2 border-gray-300 text-blue-600 cursor-pointer focus:ring-2 focus:ring-blue-500 transition-all"
+                        className="w-5 h-5 rounded-lg border-2 border-gray-300 text-blue-900 cursor-pointer focus:ring-2 focus:ring-blue-500 transition-all"
                       />
                       <div className="flex-1 min-w-0">
                         <h3 className="text-gray-900 font-bold text-sm mb-0.5">{task.title}</h3>

@@ -73,7 +73,7 @@ export default function UsersPage() {
       case "ADMIN":
         return "bg-purple-100 text-purple-800";
       case "AGENT":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 text-blue-900";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -94,13 +94,13 @@ export default function UsersPage() {
       value={search}
       onChange={(e) => setSearch(e.target.value)}
       placeholder="Search by name, email or phone..."
-      className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"
     />
   </div>
 
   {/* INVITE MEMBER BUTTON */}
   <Link href="/users/new">
-    <button className="bg-blue-600 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition font-medium whitespace-nowrap">
+    <button className="bg-blue-900 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-blue-900 transition font-medium whitespace-nowrap">
       <Plus className="w-4 h-4" />
       Invite Member
     </button>
@@ -124,7 +124,7 @@ export default function UsersPage() {
                   {/* Header with Actions */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
-                     <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                     <div className="w-12 h-12 bg-blue-900 rounded-full flex items-center justify-center text-white font-semibold">
   {member.name[0].toUpperCase()}
 </div>
 
@@ -179,7 +179,7 @@ export default function UsersPage() {
                     </div>
                     <div className="text-center">
                       <p className="text-xs text-gray-500 mb-1">Sales</p>
-                      <p className="font-bold text-lg text-blue-600">
+                      <p className="font-bold text-lg text-blue-900">
   ₹{member.sales_amount ?? 0}
 </p>
                     </div>
@@ -195,15 +195,15 @@ export default function UsersPage() {
 
               {/* Add New Member CTA */}
               <Link href="/users/new">
-                <div className="bg-white p-6 rounded-xl border-dashed border-2 border-gray-300 flex flex-col items-center justify-center text-center cursor-pointer hover:border-blue-500 transition-colors group h-full min-h-[400px]">
+                <div className="bg-white p-6 rounded-xl border-dashed border-2 border-gray-300 flex flex-col items-center justify-center text-center cursor-pointer hover:border-blue-900 transition-colors group h-full min-h-[400px]">
                   <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-3 group-hover:bg-blue-50 transition-colors">
-                    <Plus className="w-6 h-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                    <Plus className="w-6 h-6 text-gray-400 group-hover:text-blue-900 transition-colors" />
                   </div>
-                  <h3 className="text-base font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
+                  <h3 className="text-base font-semibold text-gray-900 mb-1 group-hover:text-blue-900 transition-colors">
                     Invite Member
                   </h3>
                   <p className="text-xs text-gray-500 mb-3">Add a new team member to your organization</p>
-                  <button className="bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-blue-700 transition">
+                  <button className="bg-blue-900 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-blue-900 transition">
                     Send Invite
                   </button>
                 </div>

@@ -164,7 +164,7 @@ export default function ShareToGroupModal({
           <button
   onClick={handleShare}
   disabled={loading || selectedGroups.length === 0}
-  className="flex-1 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition disabled:opacity-60"
+  className="flex-1 px-4 py-2 text-sm bg-blue-900 hover:bg-blue-900 text-white rounded-full font-medium transition disabled:opacity-60"
 >
   {loading ? "Sharing..." : "Share"}
 </button>

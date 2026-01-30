@@ -85,7 +85,7 @@ export default async function SharePropertyPage(
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
                   <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Bed className="w-5 h-5 text-blue-600" />
+                    <Bed className="w-5 h-5 text-blue-900" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-gray-900">{property.bedrooms}</p>
@@ -162,7 +162,7 @@ export default async function SharePropertyPage(
             {property.lat && property.lng && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <MapPin className="w-6 h-6 text-blue-600" />
+                  <MapPin className="w-6 h-6 text-blue-900" />
                   <h2 className="text-2xl font-bold text-gray-900">Location</h2>
                 </div>
                 
@@ -172,7 +172,7 @@ export default async function SharePropertyPage(
                     href={`https://www.google.com/maps?q=${property.lat},${property.lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+                    className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-900 font-medium"
                   >
                     View on Google Maps
                     <ExternalLink className="w-4 h-4" />
@@ -196,7 +196,7 @@ export default async function SharePropertyPage(
                 
                 {/* Owner Avatar */}
                 <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-2xl font-bold">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-900 to-purple-500 flex items-center justify-center text-white text-2xl font-bold">
                     {seller.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -213,7 +213,7 @@ export default async function SharePropertyPage(
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs text-gray-500 mb-1">Phone</p>
-                      <a href={`tel:${seller.contact}`} className="font-medium text-gray-900 hover:text-blue-600 break-all">
+                      <a href={`tel:${seller.contact}`} className="font-medium text-gray-900 hover:text-blue-900 break-all">
                         {seller.contact}
                       </a>
                     </div>
@@ -221,11 +221,11 @@ export default async function SharePropertyPage(
 
                   <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
                     <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-5 h-5 text-blue-600" />
+                      <Mail className="w-5 h-5 text-blue-900" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs text-gray-500 mb-1">Email</p>
-                      <a href={`mailto:${seller.email}`} className="font-medium text-gray-900 hover:text-blue-600 break-all">
+                      <a href={`mailto:${seller.email}`} className="font-medium text-gray-900 hover:text-blue-900 break-all">
                         {seller.email}
                       </a>
                     </div>
@@ -242,7 +242,7 @@ export default async function SharePropertyPage(
                   </a>
                   <a
                     href={`mailto:${seller.email}?subject=Inquiry about ${property.property_type} in ${property.location}`}
-                    className="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors text-center"
+                    className="block w-full py-3 px-4 bg-blue-900 hover:bg-blue-900 text-white font-semibold rounded-xl transition-colors text-center"
                   >
                     Send Email
                   </a>

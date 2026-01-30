@@ -32,11 +32,13 @@ export default function AppointmentCalendar({
   }));
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm bg-white">
+   <div className="w-full rounded-xl border border-gray-200 shadow-sm bg-white">
+
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
-        height="auto"
+        height="calc(103vh - 220px)"
+
         events={events}
 
         /* ===== HEADER ===== */

@@ -105,7 +105,7 @@ p-8 md:p-10 space-y-7 w-full">
           {/* Header */}
           <div className="text-center space-y-3">
             <div className="flex justify-center">
-              <div className="w-12 h-12 bg-blue-600
+              <div className="w-12 h-12 bg-blue-900
 rounded-xl flex items-center justify-center shadow-lg">
 
 
@@ -213,8 +213,8 @@ bg-gray-50
 border border-gray-200
 text-gray-900 placeholder:text-gray-400
 rounded-lg
-focus:border-blue-500
-focus:ring-2 focus:ring-blue-500/30
+focus:border-blue-400
+focus:ring-2 focus:ring-blue-400/30
 
 outline-none
 "
@@ -277,7 +277,7 @@ outline-none
               disabled={loading}
               className="
     w-full h-11
-    bg-blue-600 hover:bg-blue-700
+    bg-blue-900 hover:bg-blue-900
     text-white font-semibold
     rounded-lg
     transition-colors
@@ -297,7 +297,7 @@ outline-none
               onClick={() => router.push("/login")}
               className="
       ml-1 cursor-pointer font-medium
-      text-blue-600
+      text-blue-900
       hover:text-blue-700
       transition-colors
     "

@@ -32,11 +32,11 @@ export default function AddBuyerPage() {
     budget_min: "",
     budget_max: "",
     bedrooms: "",
-   brokerage_type: "percent", 
-brokerage_value: "",
+    brokerage_type: "percent",
+    brokerage_value: "",
 
-looking_for: "BUY",               // default BUY
-  furnishing_preference: "",
+    looking_for: "BUY",               // default BUY
+    furnishing_preference: "",
 
 
     agentId: null,
@@ -51,12 +51,12 @@ looking_for: "BUY",               // default BUY
 
 
   function handleChange(
-  e: React.ChangeEvent<
-    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-  >
-) {
-  setForm({ ...form, [e.target.name]: e.target.value });
-}
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
 
 
   function handleLocationChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -127,9 +127,9 @@ looking_for: "BUY",               // default BUY
     }
 
     // Property Type
-if (!form.requirement.trim()) {
-  newErrors.requirement = "Property type is required";
-}
+    if (!form.requirement.trim()) {
+      newErrors.requirement = "Property type is required";
+    }
 
 
 
@@ -160,19 +160,19 @@ if (!form.requirement.trim()) {
     if (form.location && (!form.lat || !form.lng)) {
       newErrors.location = "Please select a location from suggestions";
 
-      
+
     }
     // Brokerage validation
-if (form.brokerage_value && isNaN(Number(form.brokerage_value))) {
-  newErrors.brokerage_value = "Brokerage must be a number";
-}
+    if (form.brokerage_value && isNaN(Number(form.brokerage_value))) {
+      newErrors.brokerage_value = "Brokerage must be a number";
+    }
 
-if (
-  form.brokerage_type === "percent" &&
-  Number(form.brokerage_value) > 100
-) {
-  newErrors.brokerage_value = "Percentage cannot be more than 100";
-}
+    if (
+      form.brokerage_type === "percent" &&
+      Number(form.brokerage_value) > 100
+    ) {
+      newErrors.brokerage_value = "Percentage cannot be more than 100";
+    }
 
 
     setErrors(newErrors);
@@ -219,7 +219,7 @@ if (
         {/* Main Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           {/* Blue Header Bar */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+          <div className="bg-blue-900 px-8 py-6">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
                 <User className="w-8 h-8 text-white" />
@@ -236,122 +236,132 @@ if (
             <div className="space-y-8">
               {/* Section 1: Basic Information */}
               {/* Section 1: Basic Information */}
-<div>
-  <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-    Basic Information
-  </h2>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-900 rounded-full"></div>
+                  Basic Information
+                </h2>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-    {/* Name */}
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Name <span className="text-red-500">*</span>
-      </label>
-      <div className="relative">
-        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          placeholder="Buyer's full name"
-          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl"
-        />
-      </div>
-      {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
-    </div>
+                  {/* Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Name <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        name="name"
+                        value={form.name}
+                        onChange={handleChange}
+                        placeholder="Buyer's full name"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl
+focus:outline-none focus:ring-0 focus:border-blue-900 transition"
 
-    {/* Phone */}
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Phone <span className="text-red-500">*</span>
-      </label>
-      <div className="relative">
-        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input
-          name="phone"
-          value={form.phone}
-          onChange={handleChange}
-          placeholder="Contact number"
-          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl"
-        />
-      </div>
-      {errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone}</p>}
-    </div>
+                      />
+                    </div>
+                    {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
+                  </div>
 
-    {/* Email */}
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Email <span className="text-red-500">*</span>
-      </label>
-      <div className="relative">
-        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          placeholder="buyer@example.com"
-          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl"
-        />
-      </div>
-      {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
-    </div>
+                  {/* Phone */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        name="phone"
+                        value={form.phone}
+                        onChange={handleChange}
+                        placeholder="Contact number"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl
+focus:outline-none focus:ring-0 focus:border-blue-900 transition"
 
-    {/* Looking For */}
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Looking For <span className="text-red-500">*</span>
-      </label>
-      <select
-        name="looking_for"
-        value={form.looking_for}
-        onChange={handleChange}
-        className="w-full px-4 py-3 border border-gray-300 rounded-xl"
-      >
-        <option value="BUY">Buy (Purchase)</option>
-        <option value="RENT">Rent</option>
-      </select>
-      {errors.looking_for && (
-        <p className="text-sm text-red-500 mt-1">{errors.looking_for}</p>
-      )}
-    </div>
+                      />
+                    </div>
+                    {errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone}</p>}
+                  </div>
 
-    {/* Property Type */}
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Property Type <span className="text-red-500">*</span>
-      </label>
-      <div className="relative">
-        <Home className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <select
-          name="requirement"
-          value={form.requirement}
-          onChange={handleChange}
-          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl"
-        >
-          <option value="">Select Property Type</option>
-          <option value="flat">Flat / Apartment</option>
-          <option value="house">Independent House</option>
-          <option value="villa">Villa</option>
-          <option value="plot">Plot / Land</option>
-          <option value="office">Office</option>
-          <option value="shop">Shop / Commercial</option>
-        </select>
-      </div>
-      {errors.requirement && (
-        <p className="text-sm text-red-500 mt-1">{errors.requirement}</p>
-      )}
-    </div>
+                  {/* Email */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        name="email"
+                        value={form.email}
+                        onChange={handleChange}
+                        placeholder="buyer@example.com"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl
+focus:outline-none focus:ring-0 focus:border-blue-900 transition"
 
-  </div>
-</div>
+                      />
+                    </div>
+                    {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
+                  </div>
+
+                  {/* Looking For */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Looking For <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="looking_for"
+                      value={form.looking_for}
+                      onChange={handleChange}
+                     className="w-full px-4 py-3 border border-gray-300 rounded-xl
+focus:outline-none focus:ring-0 focus:border-blue-600 transition"
+
+                    >
+                      <option value="BUY">Buy (Purchase)</option>
+                      <option value="RENT">Rent</option>
+                    </select>
+                    {errors.looking_for && (
+                      <p className="text-sm text-red-500 mt-1">{errors.looking_for}</p>
+                    )}
+                  </div>
+
+                  {/* Property Type */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Property Type <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Home className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <select
+                        name="requirement"
+                        value={form.requirement}
+                        onChange={handleChange}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl
+focus:outline-none focus:ring-0 focus:border-blue-600 transition"
+
+                      >
+                        <option value="">Select Property Type</option>
+                        <option value="flat">Flat / Apartment</option>
+                        <option value="house">Independent House</option>
+                        <option value="villa">Villa</option>
+                        <option value="plot">Plot / Land</option>
+                        <option value="office">Office</option>
+                        <option value="shop">Shop / Commercial</option>
+                      </select>
+                    </div>
+                    {errors.requirement && (
+                      <p className="text-sm text-red-500 mt-1">{errors.requirement}</p>
+                    )}
+                  </div>
+
+                </div>
+              </div>
 
 
               {/* Section 2: Budget & Preferences */}
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <div className="w-2 h-2 bg-blue-900 rounded-full"></div>
                   Budget & Preferences
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -366,7 +376,9 @@ if (
                         value={form.budget_min}
                         onChange={handleChange}
                         placeholder="e.g., 50,00,000"
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm
+focus:outline-none focus:ring-0 focus:border-blue-900 transition"
+
                       />
                       {errors.budget_min && (
                         <p className="text-sm text-red-500 mt-1">{errors.budget_min}</p>
@@ -386,7 +398,9 @@ if (
                         value={form.budget_max}
                         onChange={handleChange}
                         placeholder="e.g., 75,00,000"
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm
+focus:outline-none focus:ring-0 focus:border-blue-900 transition"
+
                       />
                       {errors.budget_max && (
                         <p className="text-sm text-red-500 mt-1">{errors.budget_max}</p>
@@ -395,57 +409,59 @@ if (
                     </div>
                   </div>
 
-                 <div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Bedrooms
-  </label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bedrooms
+                    </label>
 
-  <div className="relative">
-    <Home className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <div className="relative">
+                      <Home className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
-    <select
-      name="bedrooms"
-      value={form.bedrooms}
-      onChange={(e) =>
-        setForm({ ...form, bedrooms: e.target.value })
-      }
-      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm
+                      <select
+                        name="bedrooms"
+                        value={form.bedrooms}
+                        onChange={(e) =>
+                          setForm({ ...form, bedrooms: e.target.value })
+                        }
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm
                  bg-white
-                 focus:outline-none focus:ring-2 focus:ring-blue-500
+                 focus:outline-none focus:ring-1 focus:ring-blue-900
                  focus:border-transparent transition"
-    >
-      <option value="">Select BHK</option>
-      <option value="1">1 BHK</option>
-      <option value="2">2 BHK</option>
-      <option value="3">3 BHK</option>
-      <option value="4">4 BHK</option>
-      <option value="5">5+ BHK</option>
-    </select>
+                      >
+                        <option value="">Select BHK</option>
+                        <option value="1">1 BHK</option>
+                        <option value="2">2 BHK</option>
+                        <option value="3">3 BHK</option>
+                        <option value="4">4 BHK</option>
+                        <option value="5">5+ BHK</option>
+                      </select>
 
-    {errors.bedrooms && (
-      <p className="text-sm text-red-500 mt-1">{errors.bedrooms}</p>
-    )}
-  </div>
+                      {errors.bedrooms && (
+                        <p className="text-sm text-red-500 mt-1">{errors.bedrooms}</p>
+                      )}
+                    </div>
 
-  <div className="mt-4">
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Furnishing Preference
-  </label>
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Furnishing Preference
+                      </label>
 
-  <select
-    name="furnishing_preference"
-    value={form.furnishing_preference}
-    onChange={handleChange}
-    className="w-full px-4 py-3 border border-gray-300 rounded-xl"
-  >
-    <option value="">No Preference</option>
-    <option value="FULLY_FURNISHED">Fully Furnished</option>
-    <option value="SEMI_FURNISHED">Semi Furnished</option>
-    <option value="UNFURNISHED">Unfurnished</option>
-  </select>
-</div>
+                      <select
+                        name="furnishing_preference"
+                        value={form.furnishing_preference}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl
+focus:outline-none focus:ring-0 focus:border-blue-900 transition"
 
-</div>
+                      >
+                        <option value="">No Preference</option>
+                        <option value="FULLY_FURNISHED">Fully Furnished</option>
+                        <option value="SEMI_FURNISHED">Semi Furnished</option>
+                        <option value="UNFURNISHED">Unfurnished</option>
+                      </select>
+                    </div>
+
+                  </div>
 
 
                   <div>
@@ -459,7 +475,8 @@ if (
                         value={form.radius_km}
                         onChange={handleChange}
                         placeholder="e.g., 5"
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-0 focus:border-blue-900
+ transition"
                       />
                       {errors.radius_km && (
                         <p className="text-sm text-red-500 mt-1">{errors.radius_km}</p>
@@ -478,7 +495,7 @@ if (
                         value={form.location}
                         onChange={handleLocationChange}
                         placeholder="e.g., Vastrapur, Ahmedabad"
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-900 focus:border-transparent transition"
                       />
                       {errors.location && (
                         <p className="text-sm text-red-500 mt-1">{errors.location}</p>
@@ -508,7 +525,7 @@ if (
               {/* Section 3: Location Coordinates */}
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <div className="w-2 h-2 bg-blue-900 rounded-full"></div>
                   Location Coordinates
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -520,7 +537,10 @@ if (
                       value={form.lat}
                       readOnly
                       placeholder="Auto-filled from location"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 text-gray-600"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl
+text-sm bg-gray-50 text-gray-600
+focus:outline-none focus:ring-0 focus:border-blue-900 transition"
+
                     />
                   </div>
 
@@ -532,92 +552,99 @@ if (
                       value={form.lng}
                       readOnly
                       placeholder="Auto-filled from location"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 text-gray-600"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl
+text-sm bg-gray-50 text-gray-600
+focus:outline-none focus:ring-0 focus:border-blue-900 transition"
+
                     />
                   </div>
                 </div>
               </div>
-{/* Section 4: Brokerage & Additional Info */}
-<div>
-  <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-    Brokerage & Additional Info
-  </h2>
+              {/* Section 4: Brokerage & Additional Info */}
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-900 rounded-full"></div>
+                  Brokerage & Additional Info
+                </h2>
 
-  <div className="space-y-5">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-      {/* Brokerage Type */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Brokerage Type
-        </label>
-        <select
-          name="brokerage_type"
-          value={form.brokerage_type}
-          onChange={handleChange}
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl"
-        >
-          <option value="percent">Percentage (%)</option>
-          <option value="fixed">Fixed Amount (₹)</option>
-        </select>
-      </div>
+                    {/* Brokerage Type */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Brokerage Type
+                      </label>
+                      <select
+                        name="brokerage_type"
+                        value={form.brokerage_type}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl
+focus:outline-none focus:ring-0 focus:border-blue-900 transition"
 
-      {/* Brokerage Value */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Brokerage Value
-        </label>
-        <input
-          name="brokerage_value"
-          value={form.brokerage_value}
-          onChange={handleChange}
-          placeholder={
-            form.brokerage_type === "percent"
-              ? "e.g. 2.5"
-              : "e.g. 50000"
-          }
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl"
-        />
-      </div>
+                      >
+                        <option value="percent">Percentage (%)</option>
+                        <option value="fixed">Fixed Amount (₹)</option>
+                      </select>
+                    </div>
 
-    </div>
+                    {/* Brokerage Value */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Brokerage Value
+                      </label>
+                      <input
+                        name="brokerage_value"
+                        value={form.brokerage_value}
+                        onChange={handleChange}
+                        placeholder={
+                          form.brokerage_type === "percent"
+                            ? "e.g. 2.5"
+                            : "e.g. 50000"
+                        }
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl
+focus:outline-none focus:ring-0 focus:border-blue-900 transition"
 
-    {errors.brokerage_value && (
-      <p className="text-sm text-red-500 mt-1">
-        {errors.brokerage_value}
-      </p>
-    )}
-  </div>
-</div>
+                      />
+                    </div>
 
+                  </div>
 
-
+                  {errors.brokerage_value && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.brokerage_value}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 px-8 py-5 bg-gray-50 border-t border-gray-200 rounded-b-2xl">
 
-                <button
-                  type="button"
-                  onClick={() => router.push("/buyers")}
-                  className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition flex items-center gap-2"
-                >
-                  <User className="w-4 h-4" />
-                  Add Buyer
-                </button>
-              </div>
+
             </div>
           </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-end gap-3 px-8 py-5 bg-gray-50 border-t border-gray-200 rounded-b-2xl">
+
+            <button
+              type="button"
+              onClick={() => router.push("/buyers")}
+              className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className="px-6 py-2.5 bg-blue-900 text-white rounded-xl text-sm font-medium hover:bg-blue-900 transition flex items-center gap-2"
+            >
+              <User className="w-4 h-4" />
+              Add Buyer
+            </button>
+          </div>
         </div>
-    
+      </div>
+    </div>
+
   );
 }

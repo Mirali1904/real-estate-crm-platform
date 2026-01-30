@@ -226,12 +226,14 @@ export default function BuyerDetailPage() {
 
           <div className="relative flex justify-between items-start gap-6">
             <div className="flex gap-6 flex-1">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center font-bold text-xl shadow-md flex-shrink-0">
+             <div className="w-12 h-12 rounded-full bg-blue-900 text-white flex items-center justify-center font-semibold text-base shadow flex-shrink-0">
+
                 {buyer.name[0].toUpperCase()}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
-                  <h1 className="text-3xl font-bold text-gray-900">{buyer.name}</h1>
+                 <h1 className="text-xl font-semibold text-gray-900">{buyer.name}</h1>
+
                   <span className={`px-4 py-1 text-xs rounded-full font-semibold ${statusBadge(buyer.status)} shadow-sm`}>
                     {buyer.status}
                   </span>
@@ -239,15 +241,16 @@ export default function BuyerDetailPage() {
                 <div className="flex flex-wrap gap-6 mt-4">
 
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="text-lg">✉️</span>
+                   <span className="text-sm">✉️</span>
+
                     <span className="font-medium">{buyer.email}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="text-lg">📞</span>
+                   <span className="text-sm">📞</span>
                     <span className="font-medium">{buyer.phone}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="text-lg">📍</span>
+                    <span className="text-sm">📍</span>
                     <span className="font-medium">{buyer.radius_km} km radius</span>
                   </div>
                 </div>
@@ -255,7 +258,7 @@ export default function BuyerDetailPage() {
             </div>
             <button
               onClick={() => setShowFollowUpModal(true)}
-              className="px-6 py-3 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all shadow-md hover:shadow-lg flex-shrink-0"
+              className="px-4 py-2 text-sm font-medium bg-blue-900 text-white rounded-lg shadow bg-blue-900 text-white rounded-lg hover:bg-blue-900 active:bg-blue-900 transition-all shadow-md hover:shadow-lg flex-shrink-0"
             >
               + Follow-up
             </button>
@@ -281,8 +284,9 @@ export default function BuyerDetailPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-4 font-semibold text-sm whitespace-nowrap border-b-2 transition-all ${activeTab === tab.id
-                    ? "border-blue-600 text-blue-600 bg-blue-50/30"
+                className={`px-4 py-2.5 font-medium text-sm whitespace-nowrap border-b-2 transition-all ${activeTab === tab.id
+
+                    ? "border-blue-900 text-blue-900 bg-blue-50/30"
                     : "border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50/50"
                   }`}
               >
@@ -292,26 +296,28 @@ export default function BuyerDetailPage() {
           </div>
 
           {/* TAB CONTENT */}
-          <div className="p-8">
+         <div className="p-4">
+
             {/* OVERVIEW TAB */}
             {activeTab === "overview" && (
               <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-gray-900">Buyer Information</h3>
+               <h3 className="text-lg font-semibold text-gray-900">Buyer Information</h3>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
-                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Email</p>
+                    <p className="text-xs font-semibold text-blue-900 uppercase tracking-wide mb-2">Email</p>
                     <p className="text-gray-900 font-semibold text-sm break-all">{buyer.email}</p>
                   </div>
                   <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
-                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Phone</p>
+                    <p className="text-xs font-semibold text-blue-900 uppercase tracking-wide mb-2">Phone</p>
                     <p className="text-gray-900 font-semibold text-sm">{buyer.phone}</p>
                   </div>
                   <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
-                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Budget</p>
+                    <p className="text-xs font-semibold text-blue-900 uppercase tracking-wide mb-2">Budget</p>
                     <p className="text-gray-900 font-semibold text-sm">₹{buyer.budget_min} – ₹{buyer.budget_max}</p>
                   </div>
                   <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
-                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Property Type</p>
+                    <p className="text-xs font-semibold text-blue-900 uppercase tracking-wide mb-2">Property Type</p>
                     <p className="text-gray-900 font-semibold text-sm">{buyer.requirement || "—"}</p>
                   </div>
                 </div>
@@ -322,8 +328,10 @@ export default function BuyerDetailPage() {
             {activeTab === "properties" && (
               <div className="space-y-6">
                 {matches.length === 0 ? (
-                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-2xl p-16 text-center border-2 border-dashed border-blue-200">
-                    <div className="text-blue-300 text-6xl mb-4">🏠</div>
+                <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-xl p-8 text-center border border-dashed border-blue-200">
+
+                    <div className="text-blue-300 text-3xl mb-3">🏠</div>
+
                     <p className="text-gray-600 font-semibold text-lg">No matched properties yet</p>
                     <p className="text-gray-500 text-sm mt-2">Properties will appear here as they match buyer criteria</p>
                   </div>
@@ -353,13 +361,13 @@ export default function BuyerDetailPage() {
 
                                 <button
                                   onClick={() => setOpenImages((prev) => ({ ...prev, [seller.id]: !prev[seller.id] }))}
-                                  className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline px-3 py-1 rounded-full hover:bg-blue-50 transition-colors"
+                                  className="text-xs font-semibold text-blue-900 hover:text-blue-900 hover:underline px-3 py-1 rounded-full hover:bg-blue-50 transition-colors"
                                 >
                                   {openImages[seller.id] ? "Hide Images" : "Show Images"}
                                 </button>
                                 <button
                                   onClick={() => setOpenMap((prev) => ({ ...prev, [seller.id]: !prev[seller.id] }))}
-                                  className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline px-3 py-1 rounded-full hover:bg-blue-50 transition-colors"
+                                  className="text-xs font-semibold text-blue-900 hover:text-blue-900 hover:underline px-3 py-1 rounded-full hover:bg-blue-50 transition-colors"
                                 >
                                   {openMap[seller.id] ? "Hide Map" : "Show Map"}
                                 </button>
@@ -400,15 +408,16 @@ export default function BuyerDetailPage() {
                                       {seller.property_type || "Property"}
                                     </h3>
 
-                                    <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700">
+                                    <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-900">
                                       {seller.bedrooms} BHK
                                     </span>
                                   </div>
 
                                   {/* Price */}
-                                  <p className="mt-1 text-xl font-bold text-blue-600">
-                                    ₹{seller.price?.toLocaleString()}
-                                  </p>
+                                  <p className="mt-1 text-lg font-semibold text-blue-900">
+  ₹{seller.price?.toLocaleString()}
+</p>
+
                                 </div>
 
                                 <div className="bg-gray-50 rounded-lg p-3 space-y-1">
@@ -445,11 +454,11 @@ export default function BuyerDetailPage() {
                                     placeholder="Enter area size (sq ft)"
                                     value={areaSize}
                                     onChange={(e) => setAreaSize(e.target.value)}
-                                    className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-900 focus:border-transparent"
                                   />
                                   <button
                                     onClick={handleGovtPriceEstimate}
-                                    className="px-5 py-2.5 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 transition-all shadow-md hover:shadow-lg whitespace-nowrap"
+                                    className="px-5 py-2.5 text-sm font-semibold rounded-lg bg-blue-900 text-white hover:bg-blue-900 active:bg-blue-900 transition-all shadow-md hover:shadow-lg whitespace-nowrap"
                                   >
                                     Get Estimate
                                   </button>
@@ -488,7 +497,7 @@ export default function BuyerDetailPage() {
                                       }
                                     }
                                   }}
-                                  className={`border border-blue-300 rounded-lg px-4 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isDiscarded ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white text-gray-900 hover:bg-blue-50"
+                                  className={`border border-blue-300 rounded-lg px-4 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-900 focus:border-transparent ${isDiscarded ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white text-gray-900 hover:bg-blue-50"
                                     }`}
                                 >
                                   {STATUS_OPTIONS.map((opt) => (
@@ -509,7 +518,8 @@ export default function BuyerDetailPage() {
             {/* INTERNAL REMARKS TAB */}
             {activeTab === "remarks" && (
               <div className="space-y-8">
-                <h3 className="text-2xl font-bold text-gray-900">
+               <h3 className="text-lg font-semibold text-gray-900">
+
                   Internal Remarks
                 </h3>
 
@@ -519,9 +529,9 @@ export default function BuyerDetailPage() {
                   <textarea
                     value={latestRemark}
                     onChange={(e) => setLatestRemark(e.target.value)}
-                    rows={5}
+                    rows={4}
                     className="w-full border-2 border-blue-200 rounded-xl px-5 py-4 text-sm font-medium
-                     focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none bg-blue-50 placeholder-gray-400"
+                     focus:ring-2 focus:ring-blue-900 focus:border-blue-900 resize-none bg-blue-50 placeholder-gray-400"
                     placeholder="Write your internal notes and observations here..."
                   />
                 </div>
@@ -529,8 +539,8 @@ export default function BuyerDetailPage() {
                 <button
                   disabled={savingRemark}
                   onClick={saveRemark}
-                  className="px-6 py-3 text-sm font-semibold rounded-lg bg-blue-600 text-white
-                   hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+                  className="px-6 py-3 text-sm font-semibold rounded-lg bg-blue-900 text-white
+                   hover:bg-blue-900 active:bg-blue-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
                 >
                   {savingRemark ? "💾 Saving..." : "✓ Save Remark"}
                 </button>
@@ -546,9 +556,9 @@ export default function BuyerDetailPage() {
                       {remarksHistory.map((r, idx) => (
                         <div
                           key={r.id}
-                          className="relative border-l-4 border-blue-500 bg-gradient-to-r from-blue-50 to-white p-5 rounded-r-xl shadow-sm hover:shadow-md transition-shadow"
+                          className="relative border-l-4 border-blue-900 bg-gradient-to-r from-blue-50 to-white p-5 rounded-r-xl shadow-sm hover:shadow-md transition-shadow"
                         >
-                          <div className="absolute -left-1.5 top-5 w-3 h-3 rounded-full bg-blue-600 border-2 border-white"></div>
+                          <div className="absolute -left-1.5 top-5 w-3 h-3 rounded-full bg-blue-900 border-2 border-white"></div>
                           <p className="text-sm text-gray-800 font-medium leading-relaxed">{r.remark}</p>
                           <p className="text-xs text-gray-500 mt-3 font-semibold">
                             {new Date(r.created_at).toLocaleString()}
@@ -572,10 +582,11 @@ export default function BuyerDetailPage() {
             {activeTab === "followups" && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-2xl font-bold text-gray-900">Follow-ups</h3>
+                 <h3 className="text-lg font-semibold text-gray-900">Follow-ups</h3>
+
                   <button
                     onClick={() => setShowFollowUpModal(true)}
-                    className="text-sm px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all font-semibold shadow-md hover:shadow-lg"
+                    className="text-sm px-4 py-2 bg-blue-900 text-white rounded-lg font-medium shadow text-white rounded-lg hover:bg-blue-900 active:bg-blue-900 transition-all font-semibold shadow-md hover:shadow-lg"
                   >
                     + Schedule Follow-up
                   </button>
@@ -587,18 +598,21 @@ export default function BuyerDetailPage() {
             {/* ACTIVITY TIMELINE TAB */}
             {activeTab === "activity" && (
               <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-gray-900">Activity Timeline</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Activity Timeline</h3>
+
                 {activityLogs.length === 0 ? (
-                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-2xl p-16 text-center border-2 border-dashed border-blue-200">
-                    <div className="text-blue-300 text-6xl mb-4">📋</div>
+                 <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-xl p-8 text-center border border-dashed border-blue-200">
+
+                    <div className="text-blue-300 text-3xl mb-3">📋</div>
+
                     <p className="text-gray-600 font-semibold text-lg">No activity yet</p>
                     <p className="text-gray-500 text-sm mt-2">Activity will appear here as interactions occur</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {activityLogs.map((log, idx) => (
-                      <div key={idx} className="relative border-l-4 border-blue-500 bg-gradient-to-r from-blue-50 to-white p-5 rounded-r-xl shadow-sm hover:shadow-md transition-shadow">
-                        <div className="absolute -left-1.5 top-5 w-3 h-3 rounded-full bg-blue-600 border-2 border-white"></div>
+                      <div key={idx} className="relative border-l-4 border-blue-900 bg-gradient-to-r from-blue-50 to-white p-5 rounded-r-xl shadow-sm hover:shadow-md transition-shadow">
+                        <div className="absolute -left-1.5 top-5 w-3 h-3 rounded-full bg-blue-900 border-2 border-white"></div>
                         <div className="text-sm text-gray-800 font-semibold">{log.description}</div>
                         <div className="text-xs text-gray-500 mt-2 font-medium">
                           <span className="font-semibold">by {log.performed_by_name ?? "System"}</span>
@@ -633,7 +647,7 @@ export default function BuyerDetailPage() {
                   onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
                   className="w-full text-sm file:mr-4 file:py-3 file:px-4
                        file:rounded-lg file:border-0 file:font-semibold
-                       file:bg-blue-100 file:text-blue-700
+                       file:bg-blue-100 file:text-blue-900
                        hover:file:bg-blue-200 file:cursor-pointer"
                 />
               </div>
@@ -647,7 +661,7 @@ export default function BuyerDetailPage() {
                 </button>
 
                 <button
-                  className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 font-semibold transition-all shadow-md hover:shadow-lg"
+                  className="px-5 py-2.5 bg-blue-900 text-white rounded-lg hover:bg-blue-900 active:bg-blue-900 font-semibold transition-all shadow-md hover:shadow-lg"
                   onClick={async () => {
                     if (!uploadFile || !uploadLoanId) return;
                     const formData = new FormData();
@@ -694,12 +708,13 @@ export default function BuyerDetailPage() {
 function InfoCard({ label, value }: any) {
   return (
     <div className="bg-white rounded-xl shadow-lg border border-blue-100 p-5 hover:shadow-xl transition-shadow">
-     <p className="text-[11px] font-bold text-blue-600 uppercase tracking-widest mb-2">
+     <p className="text-[11px] font-bold text-blue-900 uppercase tracking-widest mb-2">
   {label}
 </p>
-<p className="text-lg font-bold text-gray-900">
+<p className="text-base font-semibold text-gray-900">
   {value}
 </p>
+
 
     </div>
   );

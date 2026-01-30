@@ -244,15 +244,15 @@ export default function SellersPage() {
               placeholder="Search properties by name, location, budget, or BHK (e.g., 2 BHK, 1500000)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-12 pl-12 pr-4 text-sm rounded-lg border border-blue-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-600 transition-all"
+              className="w-full h-12 pl-12 pr-4 text-sm rounded-lg border border-blue-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-900 transition-all"
             />
           </div>
           <button className="h-12 w-12 flex items-center justify-center border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-all flex-shrink-0">
-            <Filter className="w-5 h-5 text-blue-600" />
+            <Filter className="w-5 h-5 text-blue-900" />
           </button>
           <button
             onClick={() => router.push("/sellers/new")}
-            className="px-6 py-3 h-12 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-800 active:bg-gray-700 transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+            className="px-6 py-3 h-12 text-sm font-semibold bg-blue-900 text-white rounded-lg hover:bg-blue-900 active:bg-gray-700 transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0"
           >
             <Plus className="w-4 h-4" />
             Add Property
@@ -295,7 +295,7 @@ export default function SellersPage() {
                 <h4 className="text-3xl font-bold text-gray-900">{commercialCount}</h4>
               </div>
               <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>

@@ -129,7 +129,7 @@ export default function FollowUpList({
           {/* LEFT */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-semibold">
+              <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-900 font-semibold">
                 {fu.follow_up_type}
               </span>
 
@@ -171,7 +171,7 @@ export default function FollowUpList({
             {fu.status === "PENDING" && (
               <button
                 onClick={() => markAsDone(fu.id)}
-                className="text-sm text-blue-600 font-medium hover:text-blue-700"
+                className="text-sm text-blue-900 font-medium hover:text-blue-900"
               >
                 ✓ Mark as Done
               </button>

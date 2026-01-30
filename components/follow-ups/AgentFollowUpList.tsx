@@ -78,7 +78,7 @@ export default function AgentFollowUpList({
 
     // Scheduled
     if (s === "SCHEDULED") {
-      return <Calendar className="w-5 h-5 text-blue-500" />;
+      return <Calendar className="w-5 h-5 text-blue-900" />;
     }
 
     // Overdue
@@ -142,7 +142,7 @@ export default function AgentFollowUpList({
                       follow_up_date: e.target.value,
                     })
                   }
-                  className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 transition-all"
                 />
               </div>
 
@@ -178,7 +178,7 @@ export default function AgentFollowUpList({
                       note: e.target.value,
                     })
                   }
-                  className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none transition-all"
+                  className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 resize-none transition-all"
                   rows={4}
                 />
               </div>
@@ -202,7 +202,7 @@ export default function AgentFollowUpList({
                   setEditFollowUp(null);
                   window.location.reload();
                 }}
-                className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 text-sm font-medium bg-blue-900 text-white rounded-lg hover:bg-blue-900 transition-colors"
               >
                 Save Changes
               </button>
@@ -299,7 +299,7 @@ export default function AgentFollowUpList({
                   {!isCompleted && (
                     <button
                       onClick={() => onMarkAsDone(followUp.id)}
-                      className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors"
+                      className="px-4 py-2 text-sm font-medium bg-blue-900 text-white rounded-lg hover:bg-blue-900 transition-colors"
                     >
                       Complete
                     </button>

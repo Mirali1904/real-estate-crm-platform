@@ -256,7 +256,7 @@ const res = await fetch(url, {
       {/* ===== BUYER STYLE HEADER ===== */}
       <div className="w-full mt-4 bg-white rounded-xl overflow-hidden">
 
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+        <div className="bg-gradient-to-r from-blue-900 to-blue-900 px-8 py-6">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
               <Home className="text-white w-7 h-7" />
@@ -279,7 +279,7 @@ const res = await fetch(url, {
           {/* BASIC INFO */}
           <section>
             <h2 className="text-lg font-semibold mb-5 flex items-center gap-2">
-              <span className="w-2 h-2 bg-blue-600 rounded-full" />
+              <span className="w-2 h-2 bg-blue-900 rounded-full" />
               Basic Information
             </h2>
 
@@ -344,7 +344,7 @@ const res = await fetch(url, {
         w-full pl-10 pr-4 py-3
         border border-gray-300 rounded-xl
         text-sm bg-white
-        focus:outline-none focus:ring-2 focus:ring-blue-500
+        focus:outline-none focus:ring-2 focus:ring-blue-900
         focus:border-transparent transition
       "
     >
@@ -376,7 +376,7 @@ const res = await fetch(url, {
           {/* PROPERTY DETAILS */}
           <section>
             <h2 className="text-lg font-semibold mb-5 flex items-center gap-2">
-              <span className="w-2 h-2 bg-blue-600 rounded-full" />
+              <span className="w-2 h-2 bg-blue-900 rounded-full" />
               Property Details
             </h2>
 
@@ -412,7 +412,7 @@ const res = await fetch(url, {
                     className="
         w-full pl-10 pr-4 py-3
         border border-gray-300 rounded-xl text-sm bg-white
-        focus:outline-none focus:ring-2 focus:ring-blue-500
+        focus:outline-none focus:ring-2 focus:ring-blue-900
         focus:border-transparent transition
       "
                   >
@@ -438,7 +438,13 @@ const res = await fetch(url, {
     onChange={(e) =>
       setForm({ ...form, looking_for: e.target.value })
     }
-    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
+    className="
+  w-full px-4 py-3
+  border border-gray-300 rounded-xl text-sm bg-white
+  focus:outline-none focus:ring-2 focus:ring-blue-900
+  focus:border-transparent transition
+"
+
   >
     <option value="SELL">Sell</option>
     <option value="RENT">Rent</option>
@@ -457,7 +463,13 @@ const res = await fetch(url, {
     onChange={(e) =>
       setForm({ ...form, furnishing_preference: e.target.value })
     }
-    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
+    className="
+  w-full px-4 py-3
+  border border-gray-300 rounded-xl text-sm bg-white
+  focus:outline-none focus:ring-2 focus:ring-blue-900
+  focus:border-transparent transition
+"
+
   >
     <option value="">No Preference</option>
     <option value="FULLY_FURNISHED">Fully Furnished</option>
@@ -481,7 +493,13 @@ const res = await fetch(url, {
           onChange={(e) =>
             setForm({ ...form, brokerage_type: e.target.value })
           }
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
+          className="
+  w-full px-4 py-3
+  border border-gray-300 rounded-xl text-sm bg-white
+  focus:outline-none focus:ring-2 focus:ring-blue-900
+  focus:border-transparent transition
+"
+
         >
           <option value="percent">Percentage (%)</option>
           <option value="fixed">Fixed Amount (₹)</option>
@@ -506,7 +524,13 @@ const res = await fetch(url, {
               ? "e.g. 2.5"
               : "e.g. 5000"
           }
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
+         className="
+  w-full px-4 py-3
+  border border-gray-300 rounded-xl text-sm bg-white
+  focus:outline-none focus:ring-2 focus:ring-blue-900
+  focus:border-transparent transition
+"
+
         />
       </div>
     </div>
@@ -524,7 +548,7 @@ const res = await fetch(url, {
           {/* LOCATION */}
           <section>
             <h2 className="text-lg font-semibold mb-5 flex items-center gap-2">
-              <span className="w-2 h-2 bg-blue-600 rounded-full" />
+              <span className="w-2 h-2 bg-blue-900 rounded-full" />
               Location
             </h2>
 
@@ -645,7 +669,7 @@ function Field({
             w-full ${Icon ? "pl-10" : "pl-4"} pr-4 py-3
             border border-gray-300 rounded-xl text-sm
             ${readOnly ? "bg-gray-50 text-gray-600" : "bg-white"}
-            focus:outline-none focus:ring-2 focus:ring-blue-500
+            focus:outline-none focus:ring-2 focus:ring-blue-900
             focus:border-transparent transition
           `}
         />
@@ -667,7 +691,7 @@ function Textarea({ label, name, value, onChange }: any) {
         className="
           w-full rounded-lg border border-gray-300
           px-4 py-2.5 text-sm
-          focus:outline-none focus:ring-2 focus:ring-blue-500
+          focus:outline-none focus:ring-2 focus:ring-blue-900
         "
         placeholder="Example: Exclusive seller, price negotiable till 95L"
       />

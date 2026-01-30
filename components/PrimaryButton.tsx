@@ -9,14 +9,14 @@ export default function PrimaryButton({
     <button
       {...props}
       className={`
-        bg-blue-600
+        bg-blue-900
         text-white
         px-5
         py-2.5
         rounded-full
         text-sm
         font-medium
-        hover:bg-blue-700
+        hover:bg-blue-900
         transition
         shadow-sm
         disabled:opacity-60

@@ -89,7 +89,7 @@ export default function ProfilePage() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <div className="w-12 h-12 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <div className="w-12 h-12 border-3 border-blue-900 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
           <p className="text-gray-600 font-medium">Loading profile...</p>
         </div>
       </div>
@@ -111,7 +111,7 @@ export default function ProfilePage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               
               {/* Header Section with Gradient */}
-              <div className="relative h-32 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600"></div>
+              <div className="relative h-32 bg-gradient-to-r from-blue-500 via-blue-900 to-indigo-600"></div>
               
               {/* Profile Content */}
               <div className="relative px-8 pb-8">
@@ -164,13 +164,13 @@ export default function ProfilePage() {
                     {/* Contact Information */}
                     <div>
                       <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-                        <div className="w-1 h-4 bg-blue-600 rounded-full"></div>
+                        <div className="w-1 h-4 bg-blue-900 rounded-full"></div>
                         Contact Information
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
                           <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Mail className="w-5 h-5 text-blue-600" />
+                            <Mail className="w-5 h-5 text-blue-900" />
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="text-xs text-gray-500 font-medium uppercase mb-0.5">Email</p>
@@ -193,7 +193,7 @@ export default function ProfilePage() {
                     {/* Address */}
                     <div>
                       <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-                        <div className="w-1 h-4 bg-blue-600 rounded-full"></div>
+                        <div className="w-1 h-4 bg-blue-900 rounded-full"></div>
                         Address
                       </h3>
                       <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
@@ -217,7 +217,7 @@ export default function ProfilePage() {
                     {/* Bio */}
                     <div>
                       <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-                        <div className="w-1 h-4 bg-blue-600 rounded-full"></div>
+                        <div className="w-1 h-4 bg-blue-900 rounded-full"></div>
                         About
                       </h3>
                       <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
@@ -242,7 +242,7 @@ export default function ProfilePage() {
                     {/* Personal Information */}
                     <div className="space-y-4">
                       <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-2">
-                        <User className="w-4 h-4 text-blue-600" />
+                        <User className="w-4 h-4 text-blue-900" />
                         Personal Information
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -294,7 +294,7 @@ export default function ProfilePage() {
                     {/* Professional Information */}
                     <div className="space-y-4 pt-4 border-t border-gray-200">
                       <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-2">
-                        <Briefcase className="w-4 h-4 text-blue-600" />
+                        <Briefcase className="w-4 h-4 text-blue-900" />
                         Professional Information
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -325,7 +325,7 @@ export default function ProfilePage() {
                     {/* Address */}
                     <div className="space-y-4 pt-4 border-t border-gray-200">
                       <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-blue-600" />
+                        <MapPin className="w-4 h-4 text-blue-900" />
                         Address
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -389,7 +389,7 @@ export default function ProfilePage() {
                     {/* Bio */}
                     <div className="space-y-4 pt-4 border-t border-gray-200">
                       <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-blue-600" />
+                        <FileText className="w-4 h-4 text-blue-900" />
                         Bio
                       </h4>
                       <div>
@@ -408,7 +408,7 @@ export default function ProfilePage() {
                     <div className="flex gap-3 pt-4">
                       <button
                         onClick={handleSave}
-                        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
+                        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-900 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
                       >
                         <Check className="w-4 h-4" />
                         Save Changes

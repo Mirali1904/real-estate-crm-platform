@@ -73,7 +73,7 @@ async function deleteDocument(docId: number) {
 
       <button
         onClick={() => fileRef.current?.click()}
-        className="text-sm text-blue-600 underline"
+        className="text-sm text-blue-900 underline"
       >
         Upload Document
       </button>
@@ -106,7 +106,7 @@ async function deleteDocument(docId: number) {
     <a
       href={d.file_path}
       target="_blank"
-      className="text-blue-600 underline"
+      className="text-blue-900 underline"
     >
       {d.file_name}
     </a>

@@ -10,7 +10,7 @@ export default function SecondaryButton({
       {...props}
       className={`
         bg-blue-50
-        text-blue-600
+        text-blue-900
         px-4
         py-1.5
         rounded-full

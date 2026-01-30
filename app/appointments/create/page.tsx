@@ -73,7 +73,7 @@ export default function CreateAppointmentPage() {
           }
         />
 
-        <button className="w-full bg-indigo-600 text-white py-2 rounded">
+        <button className="w-full bg-blue-900 text-white py-2 rounded">
           Save Appointment
         </button>
       </form>

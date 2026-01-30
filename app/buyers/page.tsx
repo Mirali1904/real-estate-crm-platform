@@ -160,7 +160,7 @@ export default function BuyersPage() {
 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-11 pl-10 pr-4 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                className="w-full h-11 pl-10 pr-4 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-900 focus:border-blue-900"
               />
             </div>
             <button className="h-11 w-11 flex items-center justify-center border border-gray-300 rounded-lg bg-white hover:bg-gray-50">
@@ -169,7 +169,7 @@ export default function BuyersPage() {
           </div>
           <button
             onClick={() => router.push("/buyers/new")}
-            className="h-11 px-4 bg-blue-600 text-white rounded-lg font-medium flex items-center gap-2 hover:bg-blue-700"
+            className="h-11 px-4 bg-blue-900 text-white rounded-lg font-medium flex items-center gap-2 hover:bg-blue-900"
           >
             <Plus className="w-4 h-4" />
             Add Buyer
@@ -227,7 +227,7 @@ export default function BuyersPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-semibold text-blue-600">
+                          <span className="text-xs font-semibold text-blue-900">
                             {buyer.name[0].toUpperCase()}
                           </span>
                         </div>
@@ -277,7 +277,7 @@ export default function BuyersPage() {
                     </td>
                     <td className="px-6 py-4">
                       {buyer.assigned_agent_name ? (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-900">
                           {buyer.assigned_agent_name}
                         </span>
                       ) : (
@@ -289,7 +289,7 @@ export default function BuyersPage() {
                     </td>
                     {/* Looking For */}
 <td className="px-6 py-4">
-  <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
+  <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-900">
     {buyer.looking_for === "RENT" ? "Rent" : "Buy"}
   </span>
 </td>
@@ -310,7 +310,7 @@ export default function BuyersPage() {
                     >
                       <div className="flex justify-end gap-2">
                         <button
-                          className="px-4 py-1.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
+                          className="px-4 py-1.5 text-xs font-medium rounded-full bg-blue-100 text-blue-900 hover:bg-blue-200 transition"
                           onClick={() => {
                             setAssignBuyerId(buyer.id);
                             setSelectedAgent(buyer.assigned_agent_id || null);
@@ -320,14 +320,14 @@ export default function BuyersPage() {
                         </button>
 
                         <button
-                          className="px-4 py-1.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
+                          className="px-4 py-1.5 text-xs font-medium rounded-full bg-blue-100 text-blue-900 hover:bg-blue-200 transition"
                           onClick={() => setShareBuyerId(buyer.id)}
                         >
                           Share
                         </button>
 
                         <button
-                          className="px-4 py-1.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
+                          className="px-4 py-1.5 text-xs font-medium rounded-full bg-blue-100 text-blue-900 hover:bg-blue-200 transition"
                           onClick={() => handleDelete(buyer.id)}
                         >
                           Delete
@@ -375,13 +375,13 @@ export default function BuyersPage() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 w-[400px] shadow-xl border border-slate-200">
 
-            <h2 className="text-lg font-semibold mb-4 text-blue-600">
+            <h2 className="text-lg font-semibold mb-4 text-blue-900">
   Assign Agent
 </h2>
 
             <select
   className="w-full border rounded-lg px-3 py-2 mb-4 text-sm
-  focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+  focus:ring-2 focus:ring-blue-900 focus:border-blue-900"
 
 
               value={selectedAgent || ""}

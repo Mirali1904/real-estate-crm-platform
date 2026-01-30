@@ -26,7 +26,7 @@ type Seller = {
 
 const LOAN_CARD_STYLE: Record<string, string> = {
   INQUIRY: "border-gray-300 bg-gray-50",
-  PROCESSING: "border-blue-300 bg-blue-50",
+  PROCESSING: "border-blue-900 bg-blue-50",
   DOCUMENTS_PENDING: "border-yellow-300 bg-yellow-50",
   APPROVED: "border-green-300 bg-green-50",
   REJECTED: "border-red-300 bg-red-50",
@@ -210,7 +210,7 @@ export default function SellerDetailPage() {
       case "Site Visit Done":
         return "bg-green-100 text-green-700";
       case "Contacted":
-        return "bg-blue-100 text-blue-700";
+        return "bg-blue-100 text-blue-900";
       case "Dropped":
         return "bg-gray-200 text-gray-500";
       default:
@@ -254,21 +254,25 @@ export default function SellerDetailPage() {
         <div className="relative overflow-hidden bg-white rounded-2xl shadow-lg border border-blue-100 p-4">
 
           <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-b from-blue-50 to-transparent rounded-full -mr-20 -mt-20 opacity-60"></div>
-          
+
           <div className="relative flex justify-between items-start gap-6">
             <div className="flex gap-6 flex-1">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center font-bold text-xl shadow-md flex-shrink-0">
+              <div className="w-12 h-12 rounded-full bg-blue-900 text-white flex items-center justify-center font-semibold text-base shadow flex-shrink-0">
+
                 {(seller.owner_name || seller.name)?.[0]?.toUpperCase() || "S"}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
-                  <h1 className="text-3xl font-bold text-gray-900">{seller.property_type || "Property"}</h1>
+                  <h1 className="text-xl font-semibold text-gray-900">
+                    {seller.property_type || "Property"}
+                  </h1>
+
                   <span className={`px-2.5 py-0.5 text-[11px] rounded-full font-medium ${statusBadge(seller.status)}`}>
-  {seller.status}
-</span>
+                    {seller.status}
+                  </span>
 
                 </div>
-               <div className="flex flex-wrap gap-6 mt-3">
+                <div className="flex flex-wrap gap-6 mt-3">
 
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <span className="text-lg">👤</span>
@@ -292,7 +296,7 @@ export default function SellerDetailPage() {
             <div className="flex gap-3 flex-shrink-0">
               <button
                 onClick={() => setShowFollowUpModal(true)}
-                className="px-6 py-3 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all shadow-md hover:shadow-lg"
+                className="px-6 py-3 text-sm font-semibold bg-blue-900 text-white rounded-lg hover:bg-blue-900 active:bg-blue-900 transition-all shadow-md hover:shadow-lg"
               >
                 + Follow-up
               </button>
@@ -313,7 +317,7 @@ export default function SellerDetailPage() {
                   setShowToast(true);
                   setCopied(false);
                 }}
-                className="px-6 py-3 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all shadow-md hover:shadow-lg"
+                className="px-6 py-3 text-sm font-semibold bg-blue-900 text-white rounded-lg hover:bg-blue-900 active:bg-blue-900 transition-all shadow-md hover:shadow-lg"
               >
                 🔗 Share
               </button>
@@ -345,7 +349,7 @@ export default function SellerDetailPage() {
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 }}
-                className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all shadow-md"
+                className="px-5 py-2.5 bg-blue-900 text-white rounded-lg text-sm font-semibold hover:bg-blue-900 transition-all shadow-md"
               >
                 Copy
               </button>
@@ -374,11 +378,10 @@ export default function SellerDetailPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-4 font-semibold text-sm whitespace-nowrap border-b-2 transition-all ${
-                  activeTab === tab.id
-                    ? "border-blue-600 text-blue-600 bg-blue-50/30"
+                className={`px-4 py-2.5 font-medium text-sm whitespace-nowrap border-b-2 transition-all ${activeTab === tab.id
+                    ? "border-blue-900 text-blue-900 bg-blue-50/30"
                     : "border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50/50"
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -390,27 +393,28 @@ export default function SellerDetailPage() {
             {/* OVERVIEW TAB */}
             {activeTab === "overview" && (
               <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-gray-900">Seller Information</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Seller Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
-                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Seller Name</p>
+                    <p className="text-xs font-semibold text-blue-900 uppercase tracking-wide mb-2">Seller Name</p>
                     <p className="text-gray-900 font-semibold text-sm">{seller.owner_name || seller.name || "—"}</p>
                   </div>
                   <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
-                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Property Type</p>
+                    <p className="text-xs font-semibold text-blue-900 uppercase tracking-wide mb-2">Property Type</p>
                     <p className="text-gray-900 font-semibold text-sm">{seller.property_type}</p>
                   </div>
                   <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
-                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Price</p>
+                    <p className="text-xs font-semibold text-blue-900 uppercase tracking-wide mb-2">Price</p>
                     <p className="text-gray-900 font-semibold text-sm">₹{seller.price}</p>
                   </div>
                   <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
-                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Bedrooms</p>
+                    <p className="text-xs font-semibold text-blue-900 uppercase tracking-wide mb-2">Bedrooms</p>
                     <p className="text-gray-900 font-semibold text-sm">{seller.bedrooms} BHK</p>
                   </div>
                   {seller.location && (
                     <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100 col-span-full">
-                      <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Location</p>
+                      <p className="text-xs font-semibold text-blue-900 uppercase tracking-wide mb-2">Location</p>
                       <p className="text-gray-900 font-semibold text-sm">{seller.location}</p>
                     </div>
                   )}
@@ -422,8 +426,9 @@ export default function SellerDetailPage() {
             {activeTab === "buyers" && (
               <div className="space-y-6">
                 {buyers.length === 0 ? (
-                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-2xl p-16 text-center border-2 border-dashed border-blue-200">
-                    <div className="text-blue-300 text-6xl mb-4">👥</div>
+                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-xl p-8 text-center border border-dashed border-blue-200">
+
+                    <div className="text-blue-900 text-6xl mb-4">👥</div>
                     <p className="text-gray-600 font-semibold text-lg">No matched buyers yet</p>
                     <p className="text-gray-500 text-sm mt-2">Buyers will appear here as they match property criteria</p>
                   </div>
@@ -434,11 +439,10 @@ export default function SellerDetailPage() {
                     return (
                       <div
                         key={buyer.buyer_id}
-                        className={`relative overflow-hidden bg-white rounded-2xl shadow-lg border transition-all ${
-                          isDropped
+                        className={`relative overflow-hidden bg-white rounded-2xl shadow-lg border transition-all ${isDropped
                             ? "opacity-60 border-gray-300"
                             : "border-blue-200 hover:shadow-xl hover:border-blue-300"
-                        }`}
+                          }`}
                         style={{
                           borderLeft: isDropped ? undefined : "5px solid #2563eb"
                         }}
@@ -485,9 +489,8 @@ export default function SellerDetailPage() {
                                     setBuyers(data.buyers || []);
                                   }
                                 }}
-                                className={`border border-blue-300 rounded-lg px-4 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                  isDropped ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white text-gray-900 hover:bg-blue-50"
-                                }`}
+                                className={`border border-blue-900 rounded-lg px-4 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-900 focus:border-transparent ${isDropped ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white text-gray-900 hover:bg-blue-50"
+                                  }`}
                               >
                                 {STATUS_OPTIONS.map((opt) => (
                                   <option key={opt}>{opt}</option>
@@ -506,21 +509,22 @@ export default function SellerDetailPage() {
             {/* INTERNAL REMARKS TAB */}
             {activeTab === "remarks" && (
               <div className="space-y-8">
-                <h3 className="text-2xl font-bold text-gray-900">Internal Remarks</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Internal Remarks</h3>
                 <div className="space-y-3">
                   <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Add New Remark</label>
                   <textarea
                     value={latestRemark}
                     onChange={(e) => setLatestRemark(e.target.value)}
-                    rows={5}
-                    className="w-full border-2 border-blue-200 rounded-xl px-5 py-4 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none bg-blue-50 placeholder-gray-400"
+                    rows={4}
+                    className="w-full border-2 border-blue-200 rounded-xl px-5 py-4 text-sm font-medium focus:ring-2 focus:ring-blue-900 focus:border-blue-900 resize-none bg-blue-50 placeholder-gray-400"
                     placeholder="Write your internal notes and observations here..."
                   />
                 </div>
                 <button
                   disabled={savingRemark}
                   onClick={saveRemark}
-                  className="px-6 py-3 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+                  className="px-6 py-3 text-sm font-semibold rounded-lg bg-blue-900 text-white hover:bg-blue-900 active:bg-blue-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
                 >
                   {savingRemark ? "💾 Saving..." : "✓ Save Remark"}
                 </button>
@@ -531,9 +535,9 @@ export default function SellerDetailPage() {
                       {remarksHistory.map((r, idx) => (
                         <div
                           key={r.id}
-                          className="relative border-l-4 border-blue-500 bg-gradient-to-r from-blue-50 to-white p-5 rounded-r-xl shadow-sm hover:shadow-md transition-shadow"
+                          className="relative border-l-4 border-blue-900 bg-gradient-to-r from-blue-50 to-white p-5 rounded-r-xl shadow-sm hover:shadow-md transition-shadow"
                         >
-                          <div className="absolute -left-1.5 top-5 w-3 h-3 rounded-full bg-blue-600 border-2 border-white"></div>
+                          <div className="absolute -left-1.5 top-5 w-3 h-3 rounded-full bg-blue-900 border-2 border-white"></div>
                           <p className="text-sm text-gray-800 font-medium leading-relaxed">{r.remark}</p>
                           <p className="text-xs text-gray-500 mt-3 font-semibold">
                             {new Date(r.created_at).toLocaleString()}
@@ -550,16 +554,18 @@ export default function SellerDetailPage() {
             {activeTab === "loans" && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-2xl font-bold text-gray-900">Loan Details</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Loan Details</h3>
                   <button
                     onClick={() => setShowLoanModal(true)}
-                    className="text-sm px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all font-semibold shadow-md hover:shadow-lg"
+                    className="text-sm px-6 py-3 bg-blue-900 text-white rounded-lg hover:bg-blue-900 active:bg-blue-900 transition-all font-semibold shadow-md hover:shadow-lg"
                   >
                     + Add Loan
                   </button>
                 </div>
                 {loans.length === 0 ? (
-                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-2xl p-16 text-center border-2 border-dashed border-blue-200">
+                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-xl p-8 text-center border border-dashed border-blue-200">
+
                     <div className="text-blue-300 text-6xl mb-4">💰</div>
                     <p className="text-gray-600 font-semibold text-lg">No loans added yet</p>
                     <p className="text-gray-500 text-sm mt-2">Add loan details to track financing progress</p>
@@ -591,7 +597,7 @@ export default function SellerDetailPage() {
                                 )
                               );
                             }}
-                            className="text-sm border-2 border-gray-300 rounded-lg px-3 py-2 bg-white font-semibold focus:ring-2 focus:ring-blue-500"
+                            className="text-sm border-2 border-gray-300 rounded-lg px-3 py-2 bg-white font-semibold focus:ring-2 focus:ring-blue-900"
                           >
                             <option value="INQUIRY">Inquiry</option>
                             <option value="PROCESSING">Processing</option>
@@ -611,8 +617,8 @@ export default function SellerDetailPage() {
                             <ul className="space-y-1.5">
                               {loan.documents.map((doc: any) => (
                                 <li key={doc.id} className="flex items-center gap-2">
-                                  <span className="text-blue-600">📄</span>
-                                  <a href={doc.file_path} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-700 font-medium">
+                                  <span className="text-blue-900">📄</span>
+                                  <a href={doc.file_path} target="_blank" rel="noopener noreferrer" className="text-blue-900 underline hover:text-blue-900 font-medium">
                                     {doc.file_name}
                                   </a>
                                 </li>
@@ -626,7 +632,7 @@ export default function SellerDetailPage() {
                               setUploadLoanId(loan.id);
                               loanFileInputRef.current?.click();
                             }}
-                            className="text-blue-600 underline font-semibold hover:text-blue-700 text-sm"
+                            className="text-blue-900 underline font-semibold hover:text-blue-900 text-sm"
                           >
                             + Upload Document
                           </button>
@@ -643,7 +649,7 @@ export default function SellerDetailPage() {
                               setLoanRemarks(loan.remarks || "");
                               setShowLoanModal(true);
                             }}
-                            className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+                            className="text-sm font-semibold text-blue-900 hover:text-blue-900"
                           >
                             ✏️ Edit
                           </button>
@@ -674,9 +680,10 @@ export default function SellerDetailPage() {
             {/* PROPERTY PHOTOS TAB */}
             {activeTab === "photos" && (
               <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-gray-900">Property Photos</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Property Photos</h3>
                 <div
-                  className="border-2 border-dashed border-blue-300 rounded-2xl p-12 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/30 transition-all bg-gradient-to-b from-blue-50 to-white"
+                  className="border-2 border-dashed border-blue-300 rounded-2xl p-12 text-center cursor-pointer hover:border-blue-900 hover:bg-blue-50/30 transition-all bg-gradient-to-b from-blue-50 to-white"
                   onClick={() => document.getElementById("photoUploadInput")?.click()}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
@@ -684,7 +691,7 @@ export default function SellerDetailPage() {
                     setSelectedFiles(e.dataTransfer.files);
                   }}
                 >
-                  <div className="text-6xl mb-4 text-blue-400">📷</div>
+                  <div className="text-6xl mb-4 text-blue-900">📷</div>
                   <p className="text-gray-700 font-semibold text-lg">Drag & drop property photos here</p>
                   <p className="text-sm text-gray-500 mt-2">or click to browse</p>
                   <input
@@ -702,15 +709,17 @@ export default function SellerDetailPage() {
                     </p>
                     <button
                       onClick={uploadPhotos}
-                      className="px-6 py-2.5 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 transition-all shadow-md"
+                      className="px-6 py-2.5 text-sm font-semibold rounded-lg bg-blue-900 text-white hover:bg-blue-900 active:bg-blue-900 transition-all shadow-md"
                     >
                       Upload Photos
                     </button>
                   </div>
                 )}
                 {photos.length === 0 ? (
-                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-2xl p-16 text-center border-2 border-dashed border-blue-200">
-                    <div className="text-blue-300 text-6xl mb-4">📷</div>
+                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-xl p-8 text-center border border-dashed border-blue-200">
+
+                    <div className="text-blue-300 text-3xl mb-3">📷</div>
+
                     <p className="text-gray-600 font-semibold text-lg">No photos uploaded yet</p>
                     <p className="text-gray-500 text-sm mt-2">Upload property photos to showcase the listing</p>
                   </div>
@@ -721,7 +730,7 @@ export default function SellerDetailPage() {
                         key={photo.id}
                         src={photo.photo_url}
                         alt="Property"
-                        className="h-48 w-full object-cover rounded-xl border-2 border-gray-200 hover:border-blue-400 transition-all shadow-sm hover:shadow-md"
+                        className="h-48 w-full object-cover rounded-xl border-2 border-gray-200 hover:border-blue-900 transition-all shadow-sm hover:shadow-md"
                       />
                     ))}
                   </div>
@@ -733,16 +742,18 @@ export default function SellerDetailPage() {
             {activeTab === "followups" && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-2xl font-bold text-gray-900">Follow-ups</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Follow-ups</h3>
                   <button
                     onClick={() => setShowFollowUpModal(true)}
-                    className="text-sm px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all font-semibold shadow-md hover:shadow-lg"
+                    className="text-sm px-6 py-3 bg-blue-900 text-white rounded-lg hover:bg-blue-900 active:bg-blue-900 transition-all font-semibold shadow-md hover:shadow-lg"
                   >
                     + Schedule Follow-up
                   </button>
                 </div>
                 {sellerFollowUps.length === 0 ? (
-                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-2xl p-16 text-center border-2 border-dashed border-blue-200">
+                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-xl p-8 text-center border border-dashed border-blue-200">
+
                     <div className="text-blue-300 text-6xl mb-4">📅</div>
                     <p className="text-gray-600 font-semibold text-lg">No follow-ups yet</p>
                     <p className="text-gray-500 text-sm mt-2">Schedule follow-ups to stay on track</p>
@@ -753,7 +764,7 @@ export default function SellerDetailPage() {
                       <div key={fu.id} className="flex justify-between items-center border-2 border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-white">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">
+                            <span className="text-xs bg-blue-100 text-blue-900 px-3 py-1 rounded-full font-semibold">
                               {fu.follow_up_type}
                             </span>
                             <span className="text-xs text-gray-500 font-medium">
@@ -764,16 +775,15 @@ export default function SellerDetailPage() {
                         </div>
                         <div className="flex items-center gap-3">
                           <span
-                            className={`text-xs px-4 py-1.5 rounded-full font-semibold ${
-                              fu.status === "DONE" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
-                            }`}
+                            className={`text-xs px-4 py-1.5 rounded-full font-semibold ${fu.status === "DONE" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                              }`}
                           >
                             {fu.status}
                           </span>
                           {fu.status === "PENDING" && (
                             <button
                               onClick={() => markSellerFollowUpDone(fu.id)}
-                              className="text-sm text-blue-600 hover:text-blue-700 font-semibold hover:underline"
+                              className="text-sm text-blue-900 hover:text-blue-900 font-semibold hover:underline"
                             >
                               ✔ Mark Done
                             </button>
@@ -789,9 +799,11 @@ export default function SellerDetailPage() {
             {/* ACTIVITY TIMELINE TAB */}
             {activeTab === "activity" && (
               <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-gray-900">Activity Timeline</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Activity Timeline</h3>
                 {activityLogs.length === 0 ? (
-                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-2xl p-16 text-center border-2 border-dashed border-blue-200">
+                  <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-xl p-8 text-center border border-dashed border-blue-200">
+
                     <div className="text-blue-300 text-6xl mb-4">📋</div>
                     <p className="text-gray-600 font-semibold text-lg">No activity yet</p>
                     <p className="text-gray-500 text-sm mt-2">Activity will appear here as interactions occur</p>
@@ -799,8 +811,8 @@ export default function SellerDetailPage() {
                 ) : (
                   <div className="space-y-4">
                     {activityLogs.map((log, idx) => (
-                      <div key={idx} className="relative border-l-4 border-blue-500 bg-gradient-to-r from-blue-50 to-white p-5 rounded-r-xl shadow-sm hover:shadow-md transition-shadow">
-                        <div className="absolute -left-1.5 top-5 w-3 h-3 rounded-full bg-blue-600 border-2 border-white"></div>
+                      <div key={idx} className="relative border-l-4 border-blue-900 bg-gradient-to-r from-blue-50 to-white p-5 rounded-r-xl shadow-sm hover:shadow-md transition-shadow">
+                        <div className="absolute -left-1.5 top-5 w-3 h-3 rounded-full bg-blue-900 border-2 border-white"></div>
                         <div className="text-sm text-gray-800 font-semibold">{log.description}</div>
                         <div className="text-xs text-gray-500 mt-2 font-medium">
                           <span className="font-semibold">by {log.performed_by_name ?? "System"}</span>
@@ -827,7 +839,7 @@ export default function SellerDetailPage() {
               <select
                 value={loanType}
                 onChange={(e) => setLoanType(e.target.value)}
-                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-500"
+                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-900"
               >
                 <option value="HOME_LOAN">Home Loan</option>
                 <option value="BALANCE_TRANSFER">Balance Transfer</option>
@@ -836,14 +848,14 @@ export default function SellerDetailPage() {
                 placeholder="Bank Name"
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
-                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-500"
+                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-900"
               />
               <input
                 type="number"
                 placeholder="Loan Amount"
                 value={loanAmount}
                 onChange={(e) => setLoanAmount(e.target.value)}
-                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-500"
+                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-900"
               />
               <div className="flex gap-3">
                 <input
@@ -851,14 +863,14 @@ export default function SellerDetailPage() {
                   placeholder="Interest Rate %"
                   value={interestRate}
                   onChange={(e) => setInterestRate(e.target.value)}
-                  className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-500"
+                  className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-900"
                 />
                 <input
                   type="number"
                   placeholder="Tenure (Years)"
                   value={tenureYears}
                   onChange={(e) => setTenureYears(e.target.value)}
-                  className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-500"
+                  className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-900"
                 />
               </div>
               <textarea
@@ -866,7 +878,7 @@ export default function SellerDetailPage() {
                 placeholder="Internal remarks"
                 value={loanRemarks}
                 onChange={(e) => setLoanRemarks(e.target.value)}
-                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-500"
+                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-900"
               />
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                 <button
@@ -879,7 +891,7 @@ export default function SellerDetailPage() {
                   Cancel
                 </button>
                 <button
-                  className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 font-semibold transition-all shadow-md hover:shadow-lg"
+                  className="px-5 py-2.5 bg-blue-900 text-white rounded-lg hover:bg-blue-900 active:bg-blue-900 font-semibold transition-all shadow-md hover:shadow-lg"
                   onClick={async () => {
                     const payload = {
                       loan_type: loanType,
@@ -972,12 +984,12 @@ export default function SellerDetailPage() {
 function InfoCard({ label, value }: any) {
   return (
     <div className="bg-white rounded-xl shadow-lg border border-blue-100 p-5 hover:shadow-xl transition-shadow">
-      <p className="text-[11px] font-bold text-blue-600 uppercase tracking-widest mb-2">
-  {label}
-</p>
-<p className="text-lg font-bold text-gray-900">
-  {value}
-</p>
+      <p className="text-[11px] font-bold text-blue-900 uppercase tracking-widest mb-2">
+        {label}
+      </p>
+      <p className="text-base font-semibold text-gray-900">
+        {value}
+      </p>
 
     </div>
   );

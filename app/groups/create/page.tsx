@@ -117,7 +117,7 @@ export default function CreateGroupPage() {
 
 
     {/* 🔵 BLUE HEADER (same as Team page) */}
-    <div className="bg-blue-600 px-8 py-6 flex items-center gap-4">
+    <div className="bg-blue-900 px-8 py-6 flex items-center gap-4">
   <div className="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center text-white">
     <svg
       className="w-6 h-6"
@@ -150,7 +150,7 @@ export default function CreateGroupPage() {
       {/* SECTION: BASIC INFO */}
       <div className="space-y-5">
         <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+          <span className="w-2 h-2 rounded-full bg-blue-900"></span>
           Basic Information
         </h3>
 
@@ -167,7 +167,7 @@ export default function CreateGroupPage() {
             }
             placeholder="e.g. Vadodara Real Estate Network"
             className="w-full rounded-lg border px-4 py-2.5
-                       focus:ring-2 focus:ring-blue-500 outline-none"
+                       focus:ring-1 focus:ring-blue-900 outline-none"
             required
           />
         </div>
@@ -185,7 +185,7 @@ export default function CreateGroupPage() {
             }
             placeholder="Describe the purpose of this group..."
             className="w-full rounded-lg border px-4 py-2.5 resize-none
-                       focus:ring-2 focus:ring-blue-500 outline-none"
+                       focus:ring-1 focus:ring-blue-900 outline-none"
           />
         </div>
       </div>
@@ -193,7 +193,7 @@ export default function CreateGroupPage() {
       {/* SECTION: ADD AGENCY */}
       <div className="space-y-4">
         <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+          <span className="w-2 h-2 rounded-full bg-blue-900"></span>
           Members
         </h3>
 
@@ -203,7 +203,7 @@ export default function CreateGroupPage() {
             fetchAvailableUsers();
             setShowAddMemberModal(true);
           }}
-          className="text-blue-600 text-sm font-medium hover:underline"
+          className="text-blue-900 text-sm font-medium hover:underline"
         >
           + Add Agency
         </button>
@@ -257,9 +257,9 @@ export default function CreateGroupPage() {
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-600 text-white px-7 py-2.5
+          className="bg-blue-900 text-white px-7 py-2.5
                      rounded-full text-sm font-medium
-                     hover:bg-blue-700 disabled:opacity-60"
+                     hover:bg-blue-900 disabled:opacity-60"
         >
           {loading ? "Creating..." : "Create Group"}
         </button>

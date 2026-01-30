@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Search, Users, MessageCircle, MoreHorizontal, Lock, Globe } from "lucide-react";
+import { Plus, Search, Users, MessageCircle, MoreHorizontal, Lock, Globe, TrendingUp } from "lucide-react";
 
 interface Group {
   id: number;
@@ -26,83 +26,102 @@ function timeAgo(dateString: string) {
   const diffMonths = Math.floor(diffDays / 30);
 
   if (diffMinutes < 1) return "Just now";
-  if (diffMinutes < 60) return `${diffMinutes} min ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-  if (diffDays < 30) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
-  return `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 30) return `${diffDays}d ago`;
+  return `${diffMonths}mo ago`;
 }
 
-
-
 function GroupCard({ group, onClick }: { group: Group; onClick: () => void }) {
-  const isPrivate = true; // You can adjust based on your data
+  const isPrivate = true;
 
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer p-6 border border-gray-200 group"
+      className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100 group relative"
     >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <Users className="w-5 h-5 text-blue-600" />
+      {/* Gradient Header Bar */}
+      <div className="h-2 bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900"></div>
+      
+      <div className="p-6">
+        {/* Header Section */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start gap-4 flex-1">
+            {/* Icon */}
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-900 to-blue-800 flex items-center justify-center flex-shrink-0 shadow-lg">
+              <Users className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-              {group.name}
-            </h3>
+            
+            {/* Title & Description */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-900 transition-colors mb-1.5 truncate">
+                {group.name}
+              </h3>
+              <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                {group.description || "No description provided"}
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-gray-600 min-h-[40px]">
-            {group.description || "No description provided"}
-          </p>
+          
+          <button 
+            onClick={(e) => e.stopPropagation()}
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-gray-100 rounded-lg ml-2"
+          >
+            <MoreHorizontal className="w-5 h-5 text-gray-500" />
+          </button>
         </div>
-        <button className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-gray-100 rounded-lg">
-          <MoreHorizontal className="w-4 h-4 text-gray-600" />
+
+        {/* Privacy & Admin Info */}
+        <div className="flex items-center gap-2 mb-5 flex-wrap">
+          <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 ${
+            isPrivate
+              ? "bg-orange-50 text-orange-700 border border-orange-200"
+              : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+          }`}>
+            {isPrivate ? <Lock className="w-3.5 h-3.5" /> : <Globe className="w-3.5 h-3.5" />}
+            {isPrivate ? "Private" : "Public"}
+          </span>
+          <span className="text-xs text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+            <span className="font-medium text-gray-700">Admin:</span> {group.creator_name}
+          </span>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-3.5 border border-blue-200/50">
+            <div className="flex items-center justify-center mb-1">
+              <Users className="w-4 h-4 text-blue-900 mr-1" />
+              <p className="text-xs font-medium text-blue-900">Members</p>
+            </div>
+            <p className="text-2xl font-bold text-blue-900 text-center">{group.member_count}</p>
+          </div>
+          
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl p-3.5 border border-purple-200/50">
+            <div className="flex items-center justify-center mb-1">
+              <MessageCircle className="w-4 h-4 text-purple-900 mr-1" />
+              <p className="text-xs font-medium text-purple-900">Posts</p>
+            </div>
+            <p className="text-2xl font-bold text-purple-900 text-center">{group.post_count ?? 0}</p>
+          </div>
+          
+          <div className="bg-gradient-to-br from-teal-50 to-teal-100/50 rounded-xl p-3.5 border border-teal-200/50">
+            <div className="flex items-center justify-center mb-1">
+              <TrendingUp className="w-4 h-4 text-teal-900 mr-1" />
+              <p className="text-xs font-medium text-teal-900">Active</p>
+            </div>
+            <p className="text-sm font-bold text-teal-900 text-center">{timeAgo(group.created_at)}</p>
+          </div>
+        </div>
+
+        {/* Action Button */}
+        <button 
+          className="w-full bg-gradient-to-r from-blue-900 to-blue-800 text-white py-3 rounded-xl text-sm font-semibold hover:from-blue-800 hover:to-blue-700 transition-all shadow-lg shadow-blue-900/20 hover:shadow-xl hover:shadow-blue-900/30 flex items-center justify-center gap-2"
+          onClick={onClick}
+        >
+          <MessageCircle className="w-4 h-4" />
+          View Group
         </button>
       </div>
-
-      {/* Privacy & Admin */}
-      <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
-        <span className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${isPrivate
-            ? "bg-orange-100 text-orange-800"
-            : "bg-blue-100 text-blue-800"
-          }`}>
-          {isPrivate ? <Lock className="w-3 h-3" /> : <Globe className="w-3 h-3" />}
-          {isPrivate ? "Private" : "Public"}
-        </span>
-        <span className="text-xs text-gray-500">
-          Admin: {group.creator_name}
-        </span>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <p className="text-xs text-gray-500 mb-1">Members</p>
-          <p className="text-xl font-bold text-gray-900">{group.member_count}</p>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <p className="text-xs text-gray-500 mb-1">Posts</p>
-          <p className="text-xl font-bold text-gray-900">
-            {group.post_count ?? 0}
-          </p>
-
-        </div>
-        <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <p className="text-xs text-gray-500 mb-1">Active</p>
-          <p className="text-sm font-bold text-teal-600 truncate">
-            {timeAgo(group.created_at)}
-          </p>
-
-        </div>
-      </div>
-
-      {/* Action Button */}
-      <button className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2">
-        <MessageCircle className="w-4 h-4" />
-        View Group
-      </button>
     </div>
   );
 }
@@ -144,34 +163,32 @@ export default function GroupsPage() {
 
   if (loading) {
     return (
-      <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
+      <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading groups...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full min-h-screen bg-gray-50">
+    <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       <div className="w-full px-6 space-y-6">
-
-
-
         {/* Search + Create Group Row */}
-        <div className="flex flex-col md:flex-row md:items-center gap-4 mt-4">
-
-
-
-          {/* Search Bar - Full Width */}
+        <div className="flex flex-col md:flex-row md:items-center gap-4 mt-6">
+          {/* Search Bar */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search groups..."
+              placeholder="Search groups by name, description, or admin..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm
-                 focus:ring-2 focus:ring-blue-300 focus:border-blue-400
-                 outline-none bg-white"
+              className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl text-sm
+                 focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900
+                 outline-none bg-white shadow-sm hover:border-gray-300 transition-colors
+                 placeholder:text-gray-400"
             />
           </div>
 
@@ -179,39 +196,43 @@ export default function GroupsPage() {
           {user && user.role !== "AGENT" && (
             <button
               onClick={() => router.push("/groups/create")}
-              className="bg-blue-600 text-white px-5 py-2.5 rounded-lg
-                 text-sm font-medium hover:bg-blue-700 transition
-                 flex items-center gap-2 whitespace-nowrap"
+              className="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-6 py-3.5 rounded-xl
+                 text-sm font-semibold hover:from-blue-800 hover:to-blue-700 transition-all
+                 flex items-center gap-2 whitespace-nowrap shadow-lg shadow-blue-900/20
+                 hover:shadow-xl hover:shadow-blue-900/30"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-5 h-5" />
               Create Group
             </button>
           )}
         </div>
 
-
         {/* Content */}
         {filteredGroups.length === 0 ? (
-          <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-12 text-center">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              Create Your First Group
+          <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-16 text-center shadow-sm">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-900 to-blue-800 flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Users className="w-10 h-10 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              {search ? "No Groups Found" : "Create Your First Group"}
             </h3>
-            <p className="text-sm text-gray-500 mb-4">
-              Groups help your team collaborate and share information efficiently
+            <p className="text-sm text-gray-600 mb-6 max-w-md mx-auto">
+              {search 
+                ? "Try adjusting your search terms or create a new group"
+                : "Groups help your team collaborate and share information efficiently"}
             </p>
             {user && user.role !== "AGENT" && (
               <button
                 onClick={() => router.push("/groups/create")}
-                className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition inline-flex items-center gap-2"
+                className="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:from-blue-800 hover:to-blue-700 transition-all inline-flex items-center gap-2 shadow-lg shadow-blue-900/20"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-5 h-5" />
                 Create Group
               </button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
             {filteredGroups.map((group) => (
               <GroupCard
                 key={group.id}

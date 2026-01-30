@@ -67,7 +67,7 @@ export default function AppointmentsPage() {
 
   const getStatusColor = (status: string) => {
     const colors: any = {
-      scheduled: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
+      scheduled: "bg-blue-50 text-blue-900 ring-1 ring-blue-200",
       confirmed: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
       pending: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
       cancelled: "bg-red-50 text-red-700 ring-1 ring-red-200",
@@ -92,7 +92,8 @@ export default function AppointmentsPage() {
         {/* HEADER */}
         <Header />
 
-        <div className="w-full px-8 pt-3 pb-6">
+        <div className="w-full px-4 lg:px-6 pt-3 pb-6">
+
 
           {/* View Toggle & Search Bar */}
           <div className="flex items-center justify-between gap-4 mb-6">
@@ -103,8 +104,8 @@ export default function AppointmentsPage() {
                 onClick={() => setView("list")}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm transition-all ${
                   view === "list"
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "text-gray-600 hover:text-blue-600"
+                    ? "bg-blue-900 text-white shadow-sm"
+                    : "text-gray-600 hover:text-blue-900"
                 }`}
               >
                 <List className="w-4 h-4" />
@@ -114,8 +115,8 @@ export default function AppointmentsPage() {
                 onClick={() => setView("calendar")}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm transition-all ${
                   view === "calendar"
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "text-blue-600 hover:text-blue-600"
+                    ? "bg-blue-900 text-white shadow-sm"
+                    : "text-blue-900 hover:text-blue-900"
                 }`}
               >
                 <Calendar className="w-4 h-4" />
@@ -132,7 +133,7 @@ export default function AppointmentsPage() {
                   placeholder="Search by name or purpose..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 transition-all"
                 />
               </div>
 
@@ -141,7 +142,7 @@ export default function AppointmentsPage() {
                   setEditAppointment(null);
                   setShowModal(true);
                 }}
-                className="bg-blue-600 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 transition-colors"
+                className="bg-blue-900 hover:bg-blue-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 New Appointment
@@ -150,7 +151,8 @@ export default function AppointmentsPage() {
           </div>
 
           {/* Content Area */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-visible">
+
             
             {/* LIST VIEW */}
             {view === "list" && (
@@ -226,7 +228,7 @@ export default function AppointmentsPage() {
                                 className="p-2 rounded-lg hover:bg-blue-50 transition-colors group"
                                 title="Edit"
                               >
-                                <Edit2 className="w-4 h-4 text-gray-500 group-hover:text-blue-600" />
+                                <Edit2 className="w-4 h-4 text-gray-500 group-hover:text-blue-900" />
                               </button>
 
                               <button
@@ -250,7 +252,8 @@ export default function AppointmentsPage() {
 
             {/* CALENDAR VIEW */}
             {view === "calendar" && (
-              <div className="p-6">
+  <div className="w-full p-2">
+
                 <AppointmentCalendar
                   appointments={appointments}
                   onEventClick={(appointment: any) => {
