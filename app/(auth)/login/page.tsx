@@ -43,7 +43,7 @@ export default function LoginPage() {
   }
 
   return (
-   <div className="relative min-h-screen w-full flex items-center justify-center px-3 sm:px-4 bg-gray-50">
+    <div className="relative min-h-screen w-full flex items-center justify-center px-3 sm:px-4 bg-gray-50">
 
 
 
@@ -53,14 +53,15 @@ export default function LoginPage() {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 left-10 w-52 h-52 md:w-72 md:h-72 bg-blue-900 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
 
-<div className="absolute bottom-10 right-10 w-52 h-52 md:w-72 md:h-72 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div className="absolute bottom-10 right-10 w-52 h-52 md:w-72 md:h-72 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
 
 
 
       </div>
 
       {/* Login Card */}
-     <div className="relative w-full sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl">
+      <div className="relative w-full max-w-md sm:max-w-md md:max-w-lg">
+
 
 
         <div className="bg-white/95 backdrop-blur rounded-2xl shadow-[0_30px_80px_rgba(0,0,0,0.35)] p-6 sm:p-8 md:p-10 space-y-7 w-full">
@@ -78,7 +79,7 @@ export default function LoginPage() {
               </div>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-RealEstate CRM</h1>
+              RealEstate CRM</h1>
             <p className="text-slate-500 text-sm">Welcome back to your agency portal</p>
           </div>
 

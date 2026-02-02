@@ -18,84 +18,81 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{
-  agencyName?: string;
-  name?: string;
-  email?: string;
-  password?: string;
-}>({});
+    agencyName?: string;
+    name?: string;
+    email?: string;
+    password?: string;
+  }>({});
 
-function validateForm() {
-  const newErrors: typeof errors = {};
+  function validateForm() {
+    const newErrors: typeof errors = {};
 
-  if (!agencyName.trim()) {
-    newErrors.agencyName = "Agency name is required";
-  } else if (agencyName.length < 3) {
-    newErrors.agencyName = "Agency name must be at least 3 characters";
+    if (!agencyName.trim()) {
+      newErrors.agencyName = "Agency name is required";
+    } else if (agencyName.length < 3) {
+      newErrors.agencyName = "Agency name must be at least 3 characters";
+    }
+
+    if (!name.trim()) {
+      newErrors.name = "Your name is required";
+    } else if (name.length < 2) {
+      newErrors.name = "Name must be at least 2 characters";
+    }
+
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
+      newErrors.email = "Invalid email address";
+    }
+
+    const password = passwordRef.current?.value || "";
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   }
-
-  if (!name.trim()) {
-    newErrors.name = "Your name is required";
-  } else if (name.length < 2) {
-    newErrors.name = "Name must be at least 2 characters";
-  }
-
-  if (!email.trim()) {
-    newErrors.email = "Email is required";
-  } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-    newErrors.email = "Invalid email address";
-  }
-
-  const password = passwordRef.current?.value || "";
-  if (!password) {
-    newErrors.password = "Password is required";
-  } else if (password.length < 8) {
-    newErrors.password = "Password must be at least 8 characters";
-  }
-
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-}
 
 
   async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault();
-  setError("");
+    e.preventDefault();
+    setError("");
 
-  if (!validateForm()) return; //  STOP if invalid
+    if (!validateForm()) return; //  STOP if invalid
 
-  setLoading(true);
+    setLoading(true);
 
-  const res = await fetch("/api/auth/signup", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      tenantName: agencyName,
-      name,
-      email,
-      password: passwordRef.current?.value || "",
-    }),
-  });
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tenantName: agencyName,
+        name,
+        email,
+        password: passwordRef.current?.value || "",
+      }),
+    });
 
-  if (res.ok) {
-    router.push("/login");
-  } else {
-    const data = await res.json().catch(() => null);
-    setError(data?.message || "Signup failed");
+    if (res.ok) {
+      router.push("/login");
+    } else {
+      const data = await res.json().catch(() => null);
+      setError(data?.message || "Signup failed");
+    }
+
+    setLoading(false);
   }
-
-  setLoading(false);
-}
 
 
   return (
-   <div className="min-h-screen w-full flex items-center justify-center px-3 sm:px-4 md:px-6 bg-gray-50">
-
-
-
-
+    <div className="min-h-screen w-full flex items-center justify-center px-3 sm:px-4 md:px-6 bg-gray-50">
 
       {/* Signup Card */}
-     <div className="relative w-full sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl">
+      <div className="relative w-full max-w-md sm:max-w-md md:max-w-lg">
+
 
         <div className="bg-white/95 backdrop-blur rounded-2xl
 shadow-[0_30px_80px_rgba(0,0,0,0.35)]
@@ -115,7 +112,7 @@ rounded-xl flex items-center justify-center shadow-lg">
                 <Building2 className="w-7 h-7 text-white" />
               </div>
             </div>
-           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
 
               RealEstate CRM
             </h1>
@@ -162,9 +159,9 @@ outline-none
 
                 required
               />
-   {errors.name && (
-  <p className="text-sm text-red-500">{errors.name}</p>
-)}
+              {errors.name && (
+                <p className="text-sm text-red-500">{errors.name}</p>
+              )}
 
             </div>
 
@@ -196,8 +193,8 @@ outline-none
                 required
               />
               {errors.agencyName && (
-  <p className="text-sm text-red-500">{errors.agencyName}</p>
-)}
+                <p className="text-sm text-red-500">{errors.agencyName}</p>
+              )}
 
             </div>
 
@@ -229,25 +226,25 @@ outline-none
                 required
               />
               {errors.email && (
-  <p className="text-sm text-red-500">{errors.email}</p>
-)}
+                <p className="text-sm text-red-500">{errors.email}</p>
+              )}
 
             </div>
 
             {/* Password */}
-          <div className="space-y-2">
-  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-    Password
-  </label>
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
 
-  <div className="relative">
-    <input
-      id="password"
-      type={showPassword ? "text" : "password"}
-      ref={passwordRef}
-      placeholder="••••••••"
-      autoComplete="new-password"
-      className="
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  ref={passwordRef}
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  className="
         w-full h-11 sm:h-12 px-4
         bg-gray-50
         border border-gray-200
@@ -256,21 +253,21 @@ outline-none
         focus:ring-2 focus:ring-blue-500/30
         outline-none
       "
-    />
+                />
 
-    <button
-      type="button"
-      onClick={() => setShowPassword(!showPassword)}
-      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-    >
-      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-    </button>
-  </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
 
-  {errors.password && (
-    <p className="text-sm text-red-500">{errors.password}</p>
-  )}
-</div>
+              {errors.password && (
+                <p className="text-sm text-red-500">{errors.password}</p>
+              )}
+            </div>
 
 
 
@@ -310,15 +307,7 @@ outline-none
               Login
             </span>
           </div>
-
-
-
-
-
-
-
-
-        </div>
+          </div>
       </div>
     </div>
   );

@@ -284,11 +284,10 @@ export default function BuyerDetailPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 sm:px-4 py-2.5 font-medium text-xs sm:text-sm whitespace-nowrap border-b-2 transition-all flex-shrink-0 ${
-                  activeTab === tab.id
+                className={`px-3 sm:px-4 py-2.5 font-medium text-xs sm:text-sm whitespace-nowrap border-b-2 transition-all flex-shrink-0 ${activeTab === tab.id
                     ? "border-blue-900 text-blue-900 bg-blue-50/30"
                     : "border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50/50"
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -341,7 +340,7 @@ export default function BuyerDetailPage() {
               </div>
             )}
 
-            {/* MATCHED PROPERTIES TAB */}
+            {/* MATCHED PROPERTIES TAB - PROFESSIONAL VERSION */}
             {activeTab === "properties" && (
               <div className="space-y-4 sm:space-y-6">
                 {matches.length === 0 ? (
@@ -362,19 +361,79 @@ export default function BuyerDetailPage() {
                       statusMap[seller.id] ?? seller.buyer_property_status ?? "New";
                     const isDiscarded = status === "Discarded";
 
+                    // Match percentage data
+                    const matchPercentage = seller.matchPercentage || 0;
+                    const matchDetails = seller.matchDetails || {};
+                    const matchScore = seller.matchScore || 0;
+                    const maxScore = seller.maxScore || 6;
+
+                    // Badge color based on percentage
+                    const getMatchBadgeColor = (percentage: number) => {
+                      if (percentage === 100) return "bg-gradient-to-r from-green-500 to-green-600 text-white";
+                      if (percentage >= 80) return "bg-gradient-to-r from-blue-500 to-blue-600 text-white";
+                      if (percentage >= 60) return "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white";
+                      return "bg-gradient-to-r from-gray-400 to-gray-500 text-white";
+                    };
+
                     return (
                       <div
                         key={seller.id}
-                        className={`relative overflow-hidden bg-white rounded-2xl shadow-lg border transition-all ${
-                          isDiscarded
+                        className={`relative overflow-hidden bg-white rounded-2xl shadow-lg border transition-all ${isDiscarded
                             ? "opacity-60 border-gray-300"
                             : "border-blue-200 hover:shadow-xl hover:border-blue-300"
-                        }`}
+                          }`}
                         style={{
                           borderLeft: isDiscarded ? undefined : "5px solid #2563eb",
                         }}
                       >
+                        {/* 🎯 MATCH PERCENTAGE BADGE - Compact Top Right */}
+                        <div className="absolute top-3 right-3 z-10">
+                          <div className={`${getMatchBadgeColor(matchPercentage)} px-3 py-1.5 rounded-full shadow-md font-bold text-xs flex items-center gap-1.5`}>
+                            <span className="text-sm">🎯</span>
+                            <span>{matchPercentage}%</span>
+                          </div>
+                        </div>
+
                         <div className="p-3 sm:p-4 lg:p-6">
+                          {/* ✨ PROFESSIONAL MATCH PILLS - Horizontal Flow */}
+                          <div className="mb-4 flex flex-wrap gap-2">
+                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${matchDetails.location ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'}`}>
+                              <span>{matchDetails.location ? '✓' : '✗'}</span>
+                              <span>Location</span>
+                            </div>
+
+                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${matchDetails.budget ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'}`}>
+                              <span>{matchDetails.budget ? '✓' : '✗'}</span>
+                              <span>Budget</span>
+                            </div>
+
+                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${matchDetails.bedrooms ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'}`}>
+                              <span>{matchDetails.bedrooms ? '✓' : '✗'}</span>
+                              <span>Bedrooms</span>
+                            </div>
+
+                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${matchDetails.propertyType ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'}`}>
+                              <span>{matchDetails.propertyType ? '✓' : '✗'}</span>
+                              <span>Type</span>
+                            </div>
+
+                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${matchDetails.lookingFor ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'}`}>
+                              <span>{matchDetails.lookingFor ? '✓' : '✗'}</span>
+                              <span>Buy/Rent</span>
+                            </div>
+
+                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${matchDetails.furnishing ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'}`}>
+                              <span>{matchDetails.furnishing ? '✓' : '✗'}</span>
+                              <span>Furnishing</span>
+                            </div>
+
+                            {/* Match Score Summary Pill */}
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-900 border border-blue-200">
+                              <span className="text-sm">📊</span>
+                              <span>{matchScore}/{maxScore}</span>
+                            </div>
+                          </div>
+
                           <div className="flex flex-col lg:flex-row justify-between gap-4 items-start">
                             {/* LEFT COLUMN */}
                             <div className="space-y-4 flex-1 w-full min-w-0">
@@ -563,11 +622,10 @@ export default function BuyerDetailPage() {
                                       }
                                     }
                                   }}
-                                  className={`border border-blue-300 rounded-lg px-4 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-900 focus:border-transparent w-full ${
-                                    isDiscarded
+                                  className={`border border-blue-300 rounded-lg px-4 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-900 focus:border-transparent w-full ${isDiscarded
                                       ? "bg-gray-100 text-gray-500 cursor-not-allowed"
                                       : "bg-white text-gray-900 hover:bg-blue-50"
-                                  }`}
+                                    }`}
                                 >
                                   {STATUS_OPTIONS.map((opt) => (
                                     <option key={opt}>{opt}</option>

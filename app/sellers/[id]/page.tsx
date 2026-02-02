@@ -171,12 +171,14 @@ export default function SellerDetailPage() {
           setSeller(data);
           await fetchRemarks();
         }
-        const buyersRes = await fetch(`/api/sellers/${sellerId}/buyer-status`, {
-          headers: { "x-tenant-id": String(tenantId) },
-        });
+        const buyersRes = await fetch(
+          `/api/sellers/${sellerId}/matches`,  // ✅ Changed
+          { headers: { "x-tenant-id": String(tenantId) } }
+        );
+
         if (buyersRes.ok) {
           const data = await buyersRes.json();
-          setBuyers(data.buyers || []);
+          setBuyers(data.matches || []);  // ✅ Changed
         }
         const photosRes = await fetch(`/api/sellers/${sellerId}/photos`);
         if (photosRes.ok) {
@@ -372,11 +374,10 @@ export default function SellerDetailPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 sm:px-4 py-2.5 font-medium text-xs sm:text-sm whitespace-nowrap border-b-2 transition-all flex-shrink-0 ${
-                  activeTab === tab.id
-                    ? "border-blue-900 text-blue-900 bg-blue-50/30"
-                    : "border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50/50"
-                }`}
+                className={`px-3 sm:px-4 py-2.5 font-medium text-xs sm:text-sm whitespace-nowrap border-b-2 transition-all flex-shrink-0 ${activeTab === tab.id
+                  ? "border-blue-900 text-blue-900 bg-blue-50/30"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50/50"
+                  }`}
               >
                 {tab.label}
               </button>
@@ -417,76 +418,171 @@ export default function SellerDetailPage() {
               </div>
             )}
 
-            {/* MATCHED BUYERS TAB */}
+            {/* MATCHED BUYERS TAB – BUYER STYLE UI */}
             {activeTab === "buyers" && (
               <div className="space-y-4 sm:space-y-6">
                 {buyers.length === 0 ? (
                   <div className="bg-gradient-to-b from-blue-50 to-gray-50 rounded-xl p-6 sm:p-8 text-center border border-dashed border-blue-200">
-                    <div className="text-blue-900 text-4xl sm:text-6xl mb-3 sm:mb-4">👥</div>
-                    <p className="text-gray-600 font-semibold text-base sm:text-lg">No matched buyers yet</p>
-                    <p className="text-gray-500 text-sm mt-2">Buyers will appear here as they match property criteria</p>
+                    <div className="text-blue-300 text-3xl mb-3">👥</div>
+                    <p className="text-gray-600 font-semibold text-base sm:text-lg">
+                      No matched buyers yet
+                    </p>
+                    <p className="text-gray-500 text-sm mt-2">
+                      Buyers will appear here as they match property criteria
+                    </p>
                   </div>
                 ) : (
                   buyers.map((buyer) => {
                     const status = buyer.status || "New";
                     const isDropped = status === "Dropped";
+
+                    const matchPercentage = buyer.matchPercentage || 0;
+                    const matchDetails = buyer.matchDetails || {};
+                    const matchScore = buyer.matchScore || 0;
+                    const maxScore = buyer.maxScore || 6;
+
+                    const getMatchBadgeColor = (percentage: number) => {
+                      if (percentage === 100)
+                        return "bg-gradient-to-r from-green-500 to-green-600 text-white";
+                      if (percentage >= 80)
+                        return "bg-gradient-to-r from-blue-500 to-blue-600 text-white";
+                      if (percentage >= 60)
+                        return "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white";
+                      return "bg-gradient-to-r from-gray-400 to-gray-500 text-white";
+                    };
+
                     return (
                       <div
                         key={buyer.buyer_id}
-                        className={`relative overflow-hidden bg-white rounded-2xl shadow-lg border transition-all ${
-                          isDropped
+                        className={`relative overflow-hidden bg-white rounded-2xl shadow-lg border transition-all ${isDropped
                             ? "opacity-60 border-gray-300"
                             : "border-blue-200 hover:shadow-xl hover:border-blue-300"
-                        }`}
+                          }`}
                         style={{
-                          borderLeft: isDropped ? undefined : "5px solid #2563eb"
+                          borderLeft: isDropped ? undefined : "5px solid #2563eb",
                         }}
                       >
-                        <div className="p-4 sm:p-6">
-                          <div className="flex flex-col lg:flex-row justify-between gap-4 sm:gap-6">
-                            <div className="space-y-3 flex-1 min-w-0">
-                              <div className="mb-3">
-                                <p className="font-bold text-gray-900 text-lg sm:text-xl truncate">{buyer.name}</p>
-                                <p className="text-gray-600 text-xs sm:text-sm mt-1 break-all">{buyer.email} • {buyer.phone}</p>
+                        {/* 🎯 MATCH % BADGE */}
+                        <div className="absolute top-3 right-3 z-10">
+                          <div
+                            className={`${getMatchBadgeColor(
+                              matchPercentage
+                            )} px-3 py-1.5 rounded-full shadow-md font-bold text-xs flex items-center gap-1.5`}
+                          >
+                            <span>🎯</span>
+                            <span>{matchPercentage}%</span>
+                          </div>
+                        </div>
+
+                        <div className="p-3 sm:p-4 lg:p-6">
+                          {/* MATCH PILLS */}
+                          <div className="mb-4 flex flex-wrap gap-2">
+                            {[
+                              ["Location", matchDetails.location],
+                              ["Budget", matchDetails.budget],
+                              ["Bedrooms", matchDetails.bedrooms],
+                              ["Type", matchDetails.propertyType],
+                              ["Buy/Rent", matchDetails.lookingFor],
+                              ["Furnishing", matchDetails.furnishing],
+                            ].map(([label, ok]: any) => (
+                              <div
+                                key={label}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${ok
+                                    ? "bg-green-50 text-green-700 border border-green-200"
+                                    : "bg-gray-50 text-gray-400 border border-gray-200"
+                                  }`}
+                              >
+                                <span>{ok ? "✓" : "✗"}</span>
+                                <span>{label}</span>
                               </div>
-                              <div className="bg-gray-50 rounded-lg p-3 sm:p-4 space-y-2">
+                            ))}
+
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-900 border border-blue-200">
+                              <span>📊</span>
+                              <span>
+                                {matchScore}/{maxScore}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col lg:flex-row justify-between gap-4">
+                            {/* LEFT */}
+                            <div className="space-y-4 flex-1">
+                              <div>
+                                <p className="text-lg font-bold text-gray-900">
+                                  {buyer.name}
+                                </p>
+                                <p className="text-xs text-gray-600 break-all">
+                                  {buyer.email} • {buyer.phone}
+                                </p>
+                              </div>
+
+                              <div className="bg-gray-50 rounded-lg p-3 space-y-2">
                                 <div>
-                                  <p className="text-xs font-semibold text-gray-500 uppercase">Budget Range</p>
-                                  <p className="text-gray-900 font-medium text-sm">₹{buyer.budget_min} – ₹{buyer.budget_max}</p>
+                                  <p className="text-xs font-semibold text-gray-500 uppercase">
+                                    Budget Range
+                                  </p>
+                                  <p className="text-sm font-medium">
+                                    ₹{buyer.budget_min} – ₹{buyer.budget_max}
+                                  </p>
                                 </div>
+
                                 <div>
-                                  <p className="text-xs font-semibold text-gray-500 uppercase">Buyer–Property Status</p>
-                                  <p className="text-gray-900 font-medium text-sm">{status}</p>
+                                  <p className="text-xs font-semibold text-gray-500 uppercase">
+                                    Distance
+                                  </p>
+                                  <p className="text-sm font-medium">
+                                    {buyer.distance_km?.toFixed(2)} km away
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <p className="text-xs font-semibold text-gray-500 uppercase">
+                                    Buyer–Property Status
+                                  </p>
+                                  <p className="text-sm font-medium">{status}</p>
                                 </div>
                               </div>
                             </div>
-                            <div className="flex flex-col gap-2 w-full lg:w-auto lg:min-w-[200px]">
-                              <label className="text-xs font-bold text-gray-700 uppercase tracking-wide">Seller Action</label>
+
+                            {/* RIGHT */}
+                            <div className="flex flex-col gap-2 w-full lg:w-[220px]">
+                              <label className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                                Seller Action
+                              </label>
                               <select
                                 value={status}
                                 disabled={isDropped}
                                 onChange={async (e) => {
                                   const newStatus = e.target.value;
-                                  await fetch(`/api/buyers/${buyer.buyer_id}/property-status`, {
-                                    method: "POST",
-                                    headers: {
-                                      "Content-Type": "application/json",
-                                      "x-tenant-id": String(tenantId),
-                                    },
-                                    body: JSON.stringify({ sellerId, status: newStatus }),
-                                  });
-                                  const buyersRes = await fetch(
-                                    `/api/sellers/${sellerId}/buyer-status`,
-                                    { headers: { "x-tenant-id": String(tenantId) } }
+
+                                  await fetch(
+                                    `/api/buyers/${buyer.buyer_id}/property-status`,
+                                    {
+                                      method: "POST",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                        "x-tenant-id": String(tenantId),
+                                      },
+                                      body: JSON.stringify({ sellerId, status: newStatus }),
+                                    }
                                   );
-                                  if (buyersRes.ok) {
-                                    const data = await buyersRes.json();
-                                    setBuyers(data.buyers || []);
+
+                                  const res = await fetch(
+                                    `/api/sellers/${sellerId}/matches`,
+                                    {
+                                      headers: { "x-tenant-id": String(tenantId) },
+                                    }
+                                  );
+                                  if (res.ok) {
+                                    const data = await res.json();
+                                    setBuyers(data.matches || []);
                                   }
                                 }}
-                                className={`border border-blue-900 rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-900 focus:border-transparent w-full ${
-                                  isDropped ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white text-gray-900 hover:bg-blue-50"
-                                }`}
+                                className={`border border-blue-300 rounded-lg px-4 py-2.5 text-sm font-semibold ${isDropped
+                                    ? "bg-gray-100 text-gray-500"
+                                    : "bg-white hover:bg-blue-50"
+                                  }`}
                               >
                                 {STATUS_OPTIONS.map((opt) => (
                                   <option key={opt}>{opt}</option>
@@ -767,9 +863,8 @@ export default function SellerDetailPage() {
                         </div>
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
                           <span
-                            className={`text-xs px-3 sm:px-4 py-1.5 rounded-full font-semibold text-center ${
-                              fu.status === "DONE" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
-                            }`}
+                            className={`text-xs px-3 sm:px-4 py-1.5 rounded-full font-semibold text-center ${fu.status === "DONE" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                              }`}
                           >
                             {fu.status}
                           </span>
