@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, User, Mail, Lock, Shield } from "lucide-react";
+import { usePermission } from "@/hooks/usePermission";
+import AccessDenied from "@/components/AccessDenied";
+
 
 type LoggedUser = {
   id: number;
@@ -15,6 +18,10 @@ type LoggedUser = {
 
 export default function NewUserPage() {
   const router = useRouter();
+
+  const { hasPermission, loading: permissionLoading } =
+  usePermission("team.manage");
+
 
   const [currentUser, setCurrentUser] = useState<LoggedUser | null>(null);
   const [name, setName] = useState("");
@@ -114,6 +121,13 @@ export default function NewUserPage() {
       setLoading(false);
     }
   };
+
+  if (permissionLoading) return null;
+
+if (!hasPermission) {
+  return <AccessDenied />;
+}
+
 
   if (!currentUser) return null;
 

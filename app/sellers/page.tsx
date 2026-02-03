@@ -5,14 +5,27 @@ import { useRouter } from "next/navigation";
 import { Plus, Search, Filter, MoreHorizontal, MapPin, Home, DollarSign, User } from "lucide-react";
 import ShareToGroupModal from "@/components/groups/ShareToGroupModal";
 import { FileText } from "lucide-react";
+import { usePermission } from "@/hooks/usePermission";
+
+
 
 // Dropdown Menu Component
-function DropdownMenu({ seller, onAssign, onShare, onEdit, onDelete }: { 
+function DropdownMenu({ 
+  seller, 
+  onAssign, 
+  onShare, 
+  onEdit, 
+  onDelete,
+  canEdit,
+  canDelete 
+}: { 
   seller: Seller; 
   onAssign: () => void; 
   onShare: () => void; 
   onEdit: () => void;
-  onDelete: () => void; 
+  onDelete: () => void;
+  canEdit: boolean;
+  canDelete: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -41,15 +54,17 @@ function DropdownMenu({ seller, onAssign, onShare, onEdit, onDelete }: {
             className="absolute right-0 bottom-full mb-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-[9999]"
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                onAssign();
-              }}
-              className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
-            >
-              👤 {seller.assigned_agent_id ? "Reassign Agent" : "Assign Agent"}
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  onAssign();
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+              >
+                👤 {seller.assigned_agent_id ? "Reassign Agent" : "Assign Agent"}
+              </button>
+            )}
 
             <button
               onClick={() => {
@@ -61,25 +76,29 @@ function DropdownMenu({ seller, onAssign, onShare, onEdit, onDelete }: {
               👥 Share with Group
             </button>
 
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                onEdit();
-              }}
-              className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
-            >
-              ✏️ Edit Property
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  onEdit();
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+              >
+                ✏️ Edit Property
+              </button>
+            )}
 
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                onDelete();
-              }}
-              className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-            >
-              🗑️ Delete
-            </button>
+            {canDelete && (
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  onDelete();
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+              >
+                🗑️ Delete
+              </button>
+            )}
           </div>
         </>
       )}
@@ -109,6 +128,11 @@ type Seller = {
 
 export default function SellersPage() {
   const router = useRouter();
+
+  // ✅ PERMISSION CHECKS
+  const { hasPermission: canAddSeller, loading: addLoading } = usePermission("sellers.add");
+  const { hasPermission: canEditSeller, loading: editLoading } = usePermission("sellers.edit");
+  const { hasPermission: canDeleteSeller, loading: deleteLoading } = usePermission("sellers.delete");
 
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [displaySellers, setDisplaySellers] = useState<Seller[]>([]);
@@ -232,8 +256,7 @@ export default function SellersPage() {
   return (
     <div className="w-full min-h-screen bg-gray-50">
       {/* Main Content */}
-      <div className="w-full px-2 sm:px-3 md:px-4
- pt-3 sm:pt-4 pb-8 sm:pb-12 space-y-4 sm:space-y-6 lg:space-y-8">
+      <div className="w-full px-2 sm:px-3 md:px-4 pt-3 sm:pt-4 pb-8 sm:pb-12 space-y-4 sm:space-y-6 lg:space-y-8">
 
         {/* Search Bar and Add Button */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
@@ -251,14 +274,18 @@ export default function SellersPage() {
             <button className="h-11 sm:h-12 w-11 sm:w-12 flex items-center justify-center border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-all flex-shrink-0">
               <Filter className="w-4 sm:w-5 h-4 sm:h-5 text-blue-900" />
             </button>
-            <button
-              onClick={() => router.push("/sellers/new")}
-              className="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 sm:py-3 h-11 sm:h-12 text-sm font-semibold bg-blue-900 text-white rounded-lg hover:bg-blue-900 active:bg-gray-700 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden xs:inline">Add Property</span>
-              <span className="xs:hidden">Add Property</span>
-            </button>
+            
+            {/* ✅ ADD PROPERTY BUTTON - CONDITIONAL */}
+            {!addLoading && canAddSeller && (
+              <button
+                onClick={() => router.push("/sellers/new")}
+                className="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 sm:py-3 h-11 sm:h-12 text-sm font-semibold bg-blue-900 text-white rounded-lg hover:bg-blue-800 active:bg-gray-700 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden xs:inline">Add Property</span>
+                <span className="xs:hidden">Add Property</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -457,8 +484,11 @@ export default function SellersPage() {
                     View Details
                   </button>
                   
+                  {/* ✅ DROPDOWN MENU WITH PERMISSIONS */}
                   <DropdownMenu 
-                    seller={seller} 
+                    seller={seller}
+                    canEdit={!editLoading && canEditSeller}
+                    canDelete={!deleteLoading && canDeleteSeller}
                     onAssign={() => {
                       setAssignSellerId(seller.id);
                       setSelectedAgent(seller.assigned_agent_id || null);
@@ -484,7 +514,7 @@ export default function SellersPage() {
       </div>
 
       {/* ASSIGN MODAL */}
-      {assignSellerId && (
+      {assignSellerId && canEditSeller && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 sm:p-8 w-full max-w-md space-y-4 sm:space-y-6 shadow-2xl border border-gray-200">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">👤 Assign Agent</h2>

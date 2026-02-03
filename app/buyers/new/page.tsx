@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, User, Phone, Mail, Home, MapPin, DollarSign } from "lucide-react";
+import { usePermission } from "@/hooks/usePermission";
+import AccessDenied from "@/components/AccessDenied";
+
 
 /* ---------------- DEBOUNCE HOOK ---------------- */
 function useDebounce(value: string, delay: number) {
@@ -18,6 +21,11 @@ function useDebounce(value: string, delay: number) {
 
 export default function AddBuyerPage() {
   const router = useRouter();
+  const { hasPermission, loading: permissionLoading } =
+    usePermission("buyers.add");
+
+
+
 
   const [form, setForm] = useState({
     name: "",
@@ -209,6 +217,14 @@ export default function AddBuyerPage() {
     }
   }
 
+  if (permissionLoading) return null;
+
+  if (!hasPermission) {
+    return <AccessDenied />;
+  }
+
+
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="w-full px-6 py-6">
@@ -313,7 +329,7 @@ focus:outline-none focus:ring-0 focus:border-blue-900 transition"
                       name="looking_for"
                       value={form.looking_for}
                       onChange={handleChange}
-                     className="w-full px-4 py-3 border border-gray-300 rounded-xl
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl
 focus:outline-none focus:ring-0 focus:border-blue-600 transition"
 
                     >

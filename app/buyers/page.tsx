@@ -6,6 +6,8 @@
   import PrimaryButton from "@/components/PrimaryButton";
   import SecondaryButton from "@/components/SecondaryButton";
   import ShareToGroupModal from "@/components/groups/ShareToGroupModal";
+  import { usePermission } from "@/hooks/usePermission";
+
 
 
   type Buyer = {
@@ -32,6 +34,16 @@
 
   export default function BuyersPage() {
     const router = useRouter();
+   const { hasPermission: canAddBuyer, loading: addLoading } =
+  usePermission("buyers.add");
+
+const { hasPermission: canDeleteBuyer, loading: deleteLoading } =
+  usePermission("buyers.delete");
+
+const { hasPermission: canAssignBuyer, loading: assignLoading } =
+  usePermission("buyers.edit");
+
+
     const [buyers, setBuyers] = useState<Buyer[]>([]);
     const [displayBuyers, setDisplayBuyers] = useState<Buyer[]>([]);
     const [loading, setLoading] = useState(true);
@@ -167,13 +179,16 @@
                 <Filter className="w-4 h-4 text-gray-600" />
               </button>
             </div>
-            <button
-              onClick={() => router.push("/buyers/new")}
-              className="h-11 px-4 bg-blue-900 text-white rounded-lg font-medium flex items-center gap-2 hover:bg-blue-900"
-            >
-              <Plus className="w-4 h-4" />
-              Add Buyer
-            </button>
+           {!addLoading && canAddBuyer && (
+  <button
+    onClick={() => router.push("/buyers/new")}
+    className="h-11 px-4 bg-blue-900 text-white rounded-lg font-medium flex items-center gap-2"
+  >
+    <Plus className="w-4 h-4" />
+    Add Buyer
+  </button>
+)}
+
           </div>
 
           {/* Buyers Table */}
@@ -308,31 +323,43 @@
                         className="px-6 py-4"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="flex justify-end gap-2">
-                          <button
-                            className="px-4 py-1.5 text-xs font-medium rounded-full bg-blue-100 text-blue-900 hover:bg-blue-200 transition"
-                            onClick={() => {
-                              setAssignBuyerId(buyer.id);
-                              setSelectedAgent(buyer.assigned_agent_id || null);
-                            }}
-                          >
-                            {buyer.assigned_agent_name ? "Reassign" : "Assign"}
-                          </button>
+                       <div className="flex justify-end gap-2">
 
-                          <button
-                            className="px-4 py-1.5 text-xs font-medium rounded-full bg-blue-100 text-blue-900 hover:bg-blue-200 transition"
-                            onClick={() => setShareBuyerId(buyer.id)}
-                          >
-                            Share
-                          </button>
+  {/* ASSIGN / REASSIGN */}
+  {!assignLoading && canAssignBuyer && (
+    <button
+      className="px-4 py-1.5 text-xs font-medium rounded-full
+                 bg-blue-100 text-blue-900 hover:bg-blue-200 transition"
+      onClick={() => {
+        setAssignBuyerId(buyer.id);
+        setSelectedAgent(buyer.assigned_agent_id || null);
+      }}
+    >
+      {buyer.assigned_agent_name ? "Reassign" : "Assign"}
+    </button>
+  )}
 
-                          <button
-                            className="px-4 py-1.5 text-xs font-medium rounded-full bg-blue-100 text-blue-900 hover:bg-blue-200 transition"
-                            onClick={() => handleDelete(buyer.id)}
-                          >
-                            Delete
-                          </button>
-                        </div>
+  {/* SHARE – allowed for everyone */}
+  <button
+    className="px-4 py-1.5 text-xs font-medium rounded-full
+               bg-blue-100 text-blue-900 hover:bg-blue-200 transition"
+    onClick={() => setShareBuyerId(buyer.id)}
+  >
+    Share
+  </button>
+
+  {/* DELETE */}
+  {!deleteLoading && canDeleteBuyer && (
+    <button
+      className="px-4 py-1.5 text-xs font-medium rounded-full
+                 bg-blue-100 text-blue-900 hover:bg-blue-200 transition"
+      onClick={() => handleDelete(buyer.id)}
+    >
+      Delete
+    </button>
+  )}
+</div>
+
                       </td>
                     </tr>
                   ))}
@@ -371,7 +398,8 @@
         )}
 
         {/* Assign Agent Modal */}
-        {assignBuyerId && (
+        {assignBuyerId && canAssignBuyer && (
+
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl p-6 w-[400px] shadow-xl border border-slate-200">
 

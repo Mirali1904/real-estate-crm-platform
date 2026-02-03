@@ -4,6 +4,12 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import { usePermission } from "@/hooks/usePermission";
+import AccessDenied from "@/components/AccessDenied";
+
+
+
+
 
 import {
   Home,
@@ -27,6 +33,13 @@ const SellerLocationMap = dynamic(
 export default function AddSellerPage() {
   const router = useRouter();
 
+  const { hasPermission: canAddSeller, loading: addLoading } =
+    usePermission("sellers.add");
+
+  const { hasPermission: canEditSeller, loading: editLoading } =
+    usePermission("sellers.edit");
+
+
   const [form, setForm] = useState({
     seller_name: "",
     owner_contact: "",
@@ -38,9 +51,9 @@ export default function AddSellerPage() {
     price: "",
     bedrooms: "",
     brokerage_type: "percent",
-brokerage_value: "",
-looking_for: "SELL",
-furnishing_preference: "",
+    brokerage_value: "",
+    looking_for: "SELL",
+    furnishing_preference: "",
 
 
 
@@ -55,37 +68,37 @@ furnishing_preference: "",
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const searchParams = useSearchParams();
-const sellerId = searchParams?.get("id") ?? null;
+  const sellerId = searchParams?.get("id") ?? null;
 
-const isEdit = !!sellerId;
+  const isEdit = !!sellerId;
 
 
-useEffect(() => {
-  if (!sellerId) return;
+  useEffect(() => {
+    if (!sellerId) return;
 
-  fetch(`/api/sellers/${sellerId}`)
-    .then((res) => res.json())
-    .then((data) => {
-      setForm({
-        seller_name: data.name ?? "",
-        owner_contact: data.owner_contact ?? "",
-        email: data.email ?? "",
-        property_type: data.property_type ?? "",
-        location: data.location ?? "",
-        lat: data.lat ?? "",
-        lng: data.lng ?? "",
-        price: data.price ? String(data.price) : "",
-        bedrooms: data.bedrooms ? String(data.bedrooms) : "",
-        brokerage_type: data.brokerage_type ?? "percent",
-        brokerage_value: data.brokerage_value
-          ? String(data.brokerage_value)
-          : "",
-        looking_for: "SELL",          
-        furnishing_preference: "",      
-        agentId: null,
+    fetch(`/api/sellers/${sellerId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setForm({
+          seller_name: data.name ?? "",
+          owner_contact: data.owner_contact ?? "",
+          email: data.email ?? "",
+          property_type: data.property_type ?? "",
+          location: data.location ?? "",
+          lat: data.lat ?? "",
+          lng: data.lng ?? "",
+          price: data.price ? String(data.price) : "",
+          bedrooms: data.bedrooms ? String(data.bedrooms) : "",
+          brokerage_type: data.brokerage_type ?? "percent",
+          brokerage_value: data.brokerage_value
+            ? String(data.brokerage_value)
+            : "",
+          looking_for: "SELL",
+          furnishing_preference: "",
+          agentId: null,
+        });
       });
-    });
-}, [sellerId]);
+  }, [sellerId]);
 
 
 
@@ -177,17 +190,17 @@ useEffect(() => {
     }
 
     // Brokerage
-   
-if (form.brokerage_value && isNaN(Number(form.brokerage_value))) {
-  newErrors.brokerage_value = "Brokerage must be a number";
-}
 
-if (
-  form.brokerage_type === "percent" &&
-  Number(form.brokerage_value) > 100
-) {
-  newErrors.brokerage_value = "Percentage cannot be more than 100";
-}
+    if (form.brokerage_value && isNaN(Number(form.brokerage_value))) {
+      newErrors.brokerage_value = "Brokerage must be a number";
+    }
+
+    if (
+      form.brokerage_type === "percent" &&
+      Number(form.brokerage_value) > 100
+    ) {
+      newErrors.brokerage_value = "Percentage cannot be more than 100";
+    }
 
 
     // Location
@@ -216,38 +229,54 @@ if (
 
     form.agentId = user.id;
 
-   const url = isEdit
-  ? `/api/sellers/${sellerId}`
-  : "/api/sellers/create";
+    const url = isEdit
+      ? `/api/sellers/${sellerId}`
+      : "/api/sellers/create";
 
-const method = isEdit ? "PUT" : "POST";
+    const method = isEdit ? "PUT" : "POST";
 
-const res = await fetch(url, {
-  method,
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    tenantId,
-    agentId: form.agentId,
-    name: form.seller_name,
-    owner_contact: form.owner_contact,
-    email: form.email,
-    property_type: form.property_type,
-    location: form.location,
-    lat: form.lat,
-    lng: form.lng,
-    price: form.price,
-    bedrooms: form.bedrooms,
-    brokerage_type: form.brokerage_type,
-    brokerage_value: form.brokerage_value,
-    looking_for: form.looking_for,
-    furnishing_preference: form.furnishing_preference,
-  }),
-});
+    const res = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tenantId,
+        agentId: form.agentId,
+        name: form.seller_name,
+        owner_contact: form.owner_contact,
+        email: form.email,
+        property_type: form.property_type,
+        location: form.location,
+        lat: form.lat,
+        lng: form.lng,
+        price: form.price,
+        bedrooms: form.bedrooms,
+        brokerage_type: form.brokerage_type,
+        brokerage_value: form.brokerage_value,
+        looking_for: form.looking_for,
+        furnishing_preference: form.furnishing_preference,
+      }),
+    });
 
 
     if (res.ok) router.push("/sellers");
     else alert("Failed to save property");
   }
+
+
+  if (addLoading || editLoading) {
+    return <p className="p-6">Checking permissions...</p>;
+  }
+
+
+  if (isEdit && !canEditSeller) {
+    return <AccessDenied />;
+  }
+
+
+  if (!isEdit && !canAddSeller) {
+    return <AccessDenied />;
+  }
+
 
   return (
     <div className="w-full px-6 pt-2">
@@ -266,8 +295,8 @@ const res = await fetch(url, {
                 RealEstateCRM
               </h1>
               <p className="text-blue-100 text-sm">
-  {isEdit ? "Edit Property" : "Add New Property"}
-</p>
+                {isEdit ? "Edit Property" : "Add New Property"}
+              </p>
 
             </div>
           </div>
@@ -327,43 +356,43 @@ const res = await fetch(url, {
               )}
 
               <div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Property Type
-  </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Property Type
+                </label>
 
-  <div className="relative">
-    <Home className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <div className="relative">
+                  <Home className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
-    <select
-      name="property_type"
-      value={form.property_type}
-      onChange={(e) =>
-        setForm({ ...form, property_type: e.target.value })
-      }
-      className="
+                  <select
+                    name="property_type"
+                    value={form.property_type}
+                    onChange={(e) =>
+                      setForm({ ...form, property_type: e.target.value })
+                    }
+                    className="
         w-full pl-10 pr-4 py-3
         border border-gray-300 rounded-xl
         text-sm bg-white
         focus:outline-none focus:ring-2 focus:ring-blue-900
         focus:border-transparent transition
       "
-    >
-      <option value="">Select Property Type</option>
-      <option value="flat">Flat / Apartment</option>
-      <option value="house">Independent House</option>
-      <option value="villa">Villa</option>
-      <option value="plot">Plot / Land</option>
-      <option value="office">Office</option>
-      <option value="shop">Shop / Commercial</option>
-    </select>
-  </div>
+                  >
+                    <option value="">Select Property Type</option>
+                    <option value="flat">Flat / Apartment</option>
+                    <option value="house">Independent House</option>
+                    <option value="villa">Villa</option>
+                    <option value="plot">Plot / Land</option>
+                    <option value="office">Office</option>
+                    <option value="shop">Shop / Commercial</option>
+                  </select>
+                </div>
 
-  {errors.property_type && (
-    <p className="text-sm text-red-500 mt-1">
-      {errors.property_type}
-    </p>
-  )}
-</div>
+                {errors.property_type && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.property_type}
+                  </p>
+                )}
+              </div>
 
 
               {errors.property_type && (
@@ -427,114 +456,114 @@ const res = await fetch(url, {
               </div>
 
               {/* LOOKING FOR */}
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Looking For
-  </label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Looking For
+                </label>
 
-  <select
-    name="looking_for"
-    value={form.looking_for}
-    onChange={(e) =>
-      setForm({ ...form, looking_for: e.target.value })
-    }
-    className="
+                <select
+                  name="looking_for"
+                  value={form.looking_for}
+                  onChange={(e) =>
+                    setForm({ ...form, looking_for: e.target.value })
+                  }
+                  className="
   w-full px-4 py-3
   border border-gray-300 rounded-xl text-sm bg-white
   focus:outline-none focus:ring-2 focus:ring-blue-900
   focus:border-transparent transition
 "
 
-  >
-    <option value="SELL">Sell</option>
-    <option value="RENT">Rent</option>
-  </select>
-</div>
+                >
+                  <option value="SELL">Sell</option>
+                  <option value="RENT">Rent</option>
+                </select>
+              </div>
 
-{/* FURNISHING */}
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Furnishing Preference
-  </label>
+              {/* FURNISHING */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Furnishing Preference
+                </label>
 
-  <select
-    name="furnishing_preference"
-    value={form.furnishing_preference}
-    onChange={(e) =>
-      setForm({ ...form, furnishing_preference: e.target.value })
-    }
-    className="
+                <select
+                  name="furnishing_preference"
+                  value={form.furnishing_preference}
+                  onChange={(e) =>
+                    setForm({ ...form, furnishing_preference: e.target.value })
+                  }
+                  className="
   w-full px-4 py-3
   border border-gray-300 rounded-xl text-sm bg-white
   focus:outline-none focus:ring-2 focus:ring-blue-900
   focus:border-transparent transition
 "
 
-  >
-    <option value="">No Preference</option>
-    <option value="FULLY_FURNISHED">Fully Furnished</option>
-    <option value="SEMI_FURNISHED">Semi Furnished</option>
-    <option value="UNFURNISHED">Unfurnished</option>
-  </select>
-</div>
+                >
+                  <option value="">No Preference</option>
+                  <option value="FULLY_FURNISHED">Fully Furnished</option>
+                  <option value="SEMI_FURNISHED">Semi Furnished</option>
+                  <option value="UNFURNISHED">Unfurnished</option>
+                </select>
+              </div>
 
 
               <div className="md:col-span-2">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-      {/* BROKERAGE TYPE */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Brokerage Type
-        </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* BROKERAGE TYPE */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Brokerage Type
+                    </label>
 
-        <select
-          name="brokerage_type"
-          value={form.brokerage_type}
-          onChange={(e) =>
-            setForm({ ...form, brokerage_type: e.target.value })
-          }
-          className="
+                    <select
+                      name="brokerage_type"
+                      value={form.brokerage_type}
+                      onChange={(e) =>
+                        setForm({ ...form, brokerage_type: e.target.value })
+                      }
+                      className="
   w-full px-4 py-3
   border border-gray-300 rounded-xl text-sm bg-white
   focus:outline-none focus:ring-2 focus:ring-blue-900
   focus:border-transparent transition
 "
 
-        >
-          <option value="percent">Percentage (%)</option>
-          <option value="fixed">Fixed Amount (₹)</option>
-        </select>
-      </div>
+                    >
+                      <option value="percent">Percentage (%)</option>
+                      <option value="fixed">Fixed Amount (₹)</option>
+                    </select>
+                  </div>
 
-      {/* BROKERAGE VALUE */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Brokerage Value
-        </label>
+                  {/* BROKERAGE VALUE */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Brokerage Value
+                    </label>
 
-        <input
-          type="number"
-          name="brokerage_value"
-          value={form.brokerage_value}
-          onChange={(e) =>
-            setForm({ ...form, brokerage_value: e.target.value })
-          }
-          placeholder={
-            form.brokerage_type === "percent"
-              ? "e.g. 2.5"
-              : "e.g. 5000"
-          }
-         className="
+                    <input
+                      type="number"
+                      name="brokerage_value"
+                      value={form.brokerage_value}
+                      onChange={(e) =>
+                        setForm({ ...form, brokerage_value: e.target.value })
+                      }
+                      placeholder={
+                        form.brokerage_type === "percent"
+                          ? "e.g. 2.5"
+                          : "e.g. 5000"
+                      }
+                      className="
   w-full px-4 py-3
   border border-gray-300 rounded-xl text-sm bg-white
   focus:outline-none focus:ring-2 focus:ring-blue-900
   focus:border-transparent transition
 "
 
-        />
-      </div>
-    </div>
-  </div>
+                    />
+                  </div>
+                </div>
+              </div>
 
 
 
@@ -626,8 +655,8 @@ const res = await fetch(url, {
           {/* ACTION */}
           <div className="flex justify-end pt-6 border-t">
             <PrimaryButton onClick={handleSubmit}>
-  {isEdit ? "Update Property" : "Save Property"}
-</PrimaryButton>
+              {isEdit ? "Update Property" : "Save Property"}
+            </PrimaryButton>
 
           </div>
 

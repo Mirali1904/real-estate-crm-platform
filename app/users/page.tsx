@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Mail, Phone, MoreHorizontal, Shield, CheckCircle, Plus, Search } from "lucide-react";
+import { usePermission } from "@/hooks/usePermission";
+import AccessDenied from "@/components/AccessDenied";
+
 
 type LoggedUser = {
   id: number;
@@ -33,6 +36,10 @@ export default function UsersPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // ✅ PERMISSION CHECKS - YE ADD KARO
+  const { hasPermission: canManageTeam } = usePermission("team.manage");
+  const { hasPermission: canViewTeam } = usePermission("team.view");
 
   useEffect(() => {
     const raw = localStorage.getItem("loggedUser");
@@ -79,34 +86,41 @@ export default function UsersPage() {
     }
   };
 
+  // ✅ ACCESS DENIED CHECK
   if (!currentUser) return null;
+  
+if (!canViewTeam && !loading) {
+  return <AccessDenied />;
+}
+
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
-      <div className="w-full px-3 sm:px-4 md:px-5 lg:px-6
- space-y-6">
+      <div className="w-full px-3 sm:px-4 md:px-5 lg:px-6 space-y-6">
 
         <div className="flex items-center gap-3 w-full">
-  {/* SEARCH BAR - FULL WIDTH */}
-  <div className="relative flex-1">
-    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-    <input
-      value={search}
-      onChange={(e) => setSearch(e.target.value)}
-      placeholder="Search by name, email or phone..."
-      className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"
-    />
-  </div>
+          {/* SEARCH BAR - FULL WIDTH */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, email or phone..."
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"
+            />
+          </div>
 
-  {/* INVITE MEMBER BUTTON */}
-  <Link href="/users/new">
-    <button className="bg-blue-900 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-blue-900 transition font-medium whitespace-nowrap">
-      <Plus className="w-4 h-4" />
-      Invite Member
-    </button>
-  </Link>
-</div>
+          {/* ✅ INVITE MEMBER BUTTON - CONDITIONAL */}
+          {canManageTeam && (
+            <Link href="/users/new">
+              <button className="bg-blue-900 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition font-medium whitespace-nowrap">
+                <Plus className="w-4 h-4" />
+                Invite Member
+              </button>
+            </Link>
+          )}
+        </div>
 
 
         {/* Loading State */}
@@ -115,7 +129,7 @@ export default function UsersPage() {
         ) : (
           <>
             {/* Team Grid */}
-           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
 
               {filteredUsers.map((member) => (
                 <div
@@ -125,9 +139,9 @@ export default function UsersPage() {
                   {/* Header with Actions */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
-                     <div className="w-12 h-12 bg-blue-900 rounded-full flex items-center justify-center text-white font-semibold">
-  {member.name[0].toUpperCase()}
-</div>
+                      <div className="w-12 h-12 bg-blue-900 rounded-full flex items-center justify-center text-white font-semibold">
+                        {member.name[0].toUpperCase()}
+                      </div>
 
                       <div>
                         <h3 className="text-base font-semibold text-gray-900">{member.name}</h3>
@@ -174,41 +188,50 @@ export default function UsersPage() {
                   <div className="grid grid-cols-2 gap-2 p-3 bg-gray-50 rounded-lg mb-4">
                     <div className="text-center">
                       <p className="text-xs text-gray-500 mb-1">Properties</p>
-                     <p className="font-bold text-lg text-gray-900">
-  {member.properties_count ?? 0}
-</p>
+                      <p className="font-bold text-lg text-gray-900">
+                        {member.properties_count ?? 0}
+                      </p>
                     </div>
                     <div className="text-center">
                       <p className="text-xs text-gray-500 mb-1">Sales</p>
                       <p className="font-bold text-lg text-blue-900">
-  ₹{member.sales_amount ?? 0}
-</p>
+                        ₹{member.sales_amount ?? 0}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Permission Badge */}
-                  <button className="w-full border border-gray-200 bg-transparent rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-2">
-                    <Shield className="w-4 h-4" />
-                    Manage Permissions
-                  </button>
+                  {/* ✅ PERMISSION BADGE - CONDITIONAL */}
+                  {canManageTeam ? (
+                    <button className="w-full border border-gray-200 bg-transparent rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      Manage Permissions
+                    </button>
+                  ) : (
+                    <div className="w-full border border-gray-200 bg-gray-50 rounded-lg py-2.5 text-sm font-medium text-gray-400 flex items-center justify-center gap-2 cursor-not-allowed">
+                      <Shield className="w-4 h-4" />
+                      View Only
+                    </div>
+                  )}
                 </div>
               ))}
 
-              {/* Add New Member CTA */}
-              <Link href="/users/new">
-                <div className="bg-white p-6 rounded-xl border-dashed border-2 border-gray-300 flex flex-col items-center justify-center text-center cursor-pointer hover:border-blue-900 transition-colors group h-full min-h-[400px]">
-                  <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-3 group-hover:bg-blue-50 transition-colors">
-                    <Plus className="w-6 h-6 text-gray-400 group-hover:text-blue-900 transition-colors" />
+              {/* ✅ ADD NEW MEMBER CTA - CONDITIONAL */}
+              {canManageTeam && (
+                <Link href="/users/new">
+                  <div className="bg-white p-6 rounded-xl border-dashed border-2 border-gray-300 flex flex-col items-center justify-center text-center cursor-pointer hover:border-blue-900 transition-colors group h-full min-h-[400px]">
+                    <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-3 group-hover:bg-blue-50 transition-colors">
+                      <Plus className="w-6 h-6 text-gray-400 group-hover:text-blue-900 transition-colors" />
+                    </div>
+                    <h3 className="text-base font-semibold text-gray-900 mb-1 group-hover:text-blue-900 transition-colors">
+                      Invite Member
+                    </h3>
+                    <p className="text-xs text-gray-500 mb-3">Add a new team member to your organization</p>
+                    <button className="bg-blue-900 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-blue-800 transition">
+                      Send Invite
+                    </button>
                   </div>
-                  <h3 className="text-base font-semibold text-gray-900 mb-1 group-hover:text-blue-900 transition-colors">
-                    Invite Member
-                  </h3>
-                  <p className="text-xs text-gray-500 mb-3">Add a new team member to your organization</p>
-                  <button className="bg-blue-900 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-blue-900 transition">
-                    Send Invite
-                  </button>
-                </div>
-              </Link>
+                </Link>
+              )}
             </div>
 
             {/* No Results */}
