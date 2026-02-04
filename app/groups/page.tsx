@@ -131,26 +131,39 @@ export default function GroupsPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null); // ✅ NEW
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    const raw = localStorage.getItem("loggedUser");
-    if (!raw) {
-      setLoading(false);
-      return;
-    }
+useEffect(() => {
+  const raw = localStorage.getItem("loggedUser");
+  if (!raw) {
+    setLoading(false);
+    return;
+  }
 
-    const parsed = JSON.parse(raw);
-    setUser(parsed);
+  const parsed = JSON.parse(raw);
+  console.log("🔍 User data:", parsed);
+  setUser(parsed);
 
-    fetch(`/api/groups?tenantId=${parsed.tenantId}&userId=${parsed.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setGroups(Array.isArray(data) ? data : data.groups || []);
-      })
-      .catch(() => setGroups([]))
-      .finally(() => setLoading(false));
-  }, []);
+  // ✅ NEW API ROUTE
+  fetch(`/api/users/by-id/${parsed.id}`)
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        console.log("👤 User role from DB:", data.user.role);
+        setUserRole(data.user.role);
+      }
+    })
+    .catch((err) => console.error("Error fetching user role:", err));
+
+  fetch(`/api/groups?tenantId=${parsed.tenantId}&userId=${parsed.id}`)
+    .then((res) => res.json())
+    .then((data) => {
+      setGroups(Array.isArray(data) ? data : data.groups || []);
+    })
+    .catch(() => setGroups([]))
+    .finally(() => setLoading(false));
+}, []);
 
   const filteredGroups = groups.filter((group) => {
     const q = search.toLowerCase();
@@ -192,8 +205,8 @@ export default function GroupsPage() {
             />
           </div>
 
-          {/* Create Group Button */}
-          {user && user.role !== "AGENT" && (
+          {/* Create Group Button - ✅ FIXED */}
+          {user && userRole === "ADMIN" && (
             <button
               onClick={() => router.push("/groups/create")}
               className="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-6 py-3.5 rounded-xl
@@ -221,7 +234,7 @@ export default function GroupsPage() {
                 ? "Try adjusting your search terms or create a new group"
                 : "Groups help your team collaborate and share information efficiently"}
             </p>
-            {user && user.role !== "AGENT" && (
+            {user && userRole === "ADMIN" && (
               <button
                 onClick={() => router.push("/groups/create")}
                 className="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:from-blue-800 hover:to-blue-700 transition-all inline-flex items-center gap-2 shadow-lg shadow-blue-900/20"
