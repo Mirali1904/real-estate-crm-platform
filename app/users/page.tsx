@@ -3,10 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Mail, Phone, MoreHorizontal, Shield, CheckCircle, Plus, Search } from "lucide-react";
+import { Mail, Phone, MoreHorizontal, Shield, CheckCircle, Plus, Search, Edit, Trash2 } from "lucide-react";
 import { usePermission } from "@/hooks/usePermission";
 import AccessDenied from "@/components/AccessDenied";
-
 
 type LoggedUser = {
   id: number;
@@ -23,11 +22,9 @@ type UserRow = {
   email: string;
   role: string;
   created_at: string;
-
   properties_count: number;
   sales_amount: number;
 };
-
 
 export default function UsersPage() {
   const router = useRouter();
@@ -36,8 +33,8 @@ export default function UsersPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null); // ✅ NEW
 
-  // ✅ PERMISSION CHECKS - YE ADD KARO
   const { hasPermission: canManageTeam } = usePermission("team.manage");
   const { hasPermission: canViewTeam } = usePermission("team.view");
 
@@ -86,22 +83,40 @@ export default function UsersPage() {
     }
   };
 
-  // ✅ ACCESS DENIED CHECK
-  if (!currentUser) return null;
-  
-if (!canViewTeam && !loading) {
-  return <AccessDenied />;
-}
+  // ✅ DELETE USER
+  const handleDelete = async (userId: number) => {
+    if (!confirm("Are you sure you want to delete this user?")) return;
 
+    try {
+      const res = await fetch(`/api/users/delete`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (res.ok) {
+        setUsers((prev) => prev.filter((u) => u.id !== userId));
+        alert("User deleted successfully");
+      } else {
+        const data = await res.json();
+        alert(data.message || "Failed to delete user");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Failed to delete user");
+    }
+  };
+
+  if (!currentUser) return null;
+
+  if (!canViewTeam && !loading) {
+    return <AccessDenied />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-
-      {/* Main Content */}
       <div className="w-full px-3 sm:px-4 md:px-5 lg:px-6 space-y-6">
-
         <div className="flex items-center gap-3 w-full">
-          {/* SEARCH BAR - FULL WIDTH */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -112,7 +127,6 @@ if (!canViewTeam && !loading) {
             />
           </div>
 
-          {/* ✅ INVITE MEMBER BUTTON - CONDITIONAL */}
           {canManageTeam && (
             <Link href="/users/new">
               <button className="bg-blue-900 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition font-medium whitespace-nowrap">
@@ -123,19 +137,15 @@ if (!canViewTeam && !loading) {
           )}
         </div>
 
-
-        {/* Loading State */}
         {loading ? (
           <p className="text-sm text-gray-500">Loading team members...</p>
         ) : (
           <>
-            {/* Team Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-
               {filteredUsers.map((member) => (
                 <div
                   key={member.id}
-                  className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all group"
+                  className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all group relative"
                 >
                   {/* Header with Actions */}
                   <div className="flex items-start justify-between mb-4">
@@ -151,9 +161,52 @@ if (!canViewTeam && !loading) {
                         </span>
                       </div>
                     </div>
-                    <button className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-gray-100 rounded-lg">
-                      <MoreHorizontal className="w-4 h-4 text-gray-600" />
-                    </button>
+
+                    {/* ✅ 3-DOT MENU */}
+                    {canManageTeam && (
+                      <div className="relative">
+                        <button
+  onClick={() => setOpenMenuId(openMenuId === member.id ? null : member.id)}
+  className="opacity-0 group-hover:opacity-100 transition-all p-2 rounded-lg hover:bg-gray-100 hover:scale-105 active:scale-95"
+>
+
+                          <MoreHorizontal className="w-4 h-4 text-gray-600" />
+                        </button>
+
+                       {openMenuId === member.id && (
+  <div className="absolute right-0 top-11 z-20 w-44 origin-top-right rounded-xl bg-white shadow-xl ring-1 ring-black/5 animate-in fade-in zoom-in-95">
+    
+    {/* EDIT */}
+    <button
+      onClick={() => {
+        setOpenMenuId(null);
+        router.push(`/users/edit/${member.id}`);
+      }}
+      className="flex w-full items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition rounded-t-xl"
+    >
+      <Edit className="w-4 h-4 text-blue-700" />
+      <span className="font-medium">Edit Member</span>
+    </button>
+
+    {/* DIVIDER */}
+    <div className="h-px bg-gray-100" />
+
+    {/* DELETE */}
+    <button
+      onClick={() => {
+        setOpenMenuId(null);
+        handleDelete(member.id);
+      }}
+      className="flex w-full items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition rounded-b-xl"
+    >
+      <Trash2 className="w-4 h-4" />
+      <span className="font-medium">Delete Member</span>
+    </button>
+  </div>
+)}
+
+                      </div>
+                    )}
                   </div>
 
                   {/* Contact Info */}
@@ -201,7 +254,6 @@ if (!canViewTeam && !loading) {
                     </div>
                   </div>
 
-                  {/* ✅ PERMISSION BADGE - CONDITIONAL */}
                   {canManageTeam ? (
                     <button className="w-full border border-gray-200 bg-transparent rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-2">
                       <Shield className="w-4 h-4" />
@@ -216,7 +268,6 @@ if (!canViewTeam && !loading) {
                 </div>
               ))}
 
-              {/* ✅ ADD NEW MEMBER CTA - CONDITIONAL */}
               {canManageTeam && (
                 <Link href="/users/new">
                   <div className="bg-white p-6 rounded-xl border-dashed border-2 border-gray-300 flex flex-col items-center justify-center text-center cursor-pointer hover:border-blue-900 transition-colors group h-full min-h-[400px]">
@@ -235,7 +286,6 @@ if (!canViewTeam && !loading) {
               )}
             </div>
 
-            {/* No Results */}
             {filteredUsers.length === 0 && !loading && (
               <div className="text-center py-12">
                 <p className="text-gray-500">No team members found</p>

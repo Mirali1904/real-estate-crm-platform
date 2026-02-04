@@ -5,15 +5,16 @@ import Link from "next/link";
 
 export default function AccessDenied() {
   return (
-    <div className="min-h-screen flex items-start justify-center bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 px-6 pt-20">
+   <div className="min-h-screen flex items-start justify-center bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 px-6 pt-8">
+
 
       <div className="relative w-full max-w-4xl min-h-[520px] flex items-center">
 
         
         {/* Card */}
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-200
-                p-16 text-center w-full min-h-[420px]
-                flex flex-col justify-center">
+   <div className="bg-white rounded-3xl shadow-xl border border-gray-200
+        p-16 text-center w-full min-h-[520px]
+        flex flex-col justify-center">
 
           
           {/* Icon */}
